@@ -1,4 +1,23 @@
 
+// iOS-safe scroll lock
+let _scrollY = 0;
+function lockScroll() {
+  _scrollY = window.scrollY;
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${_scrollY}px`;
+  document.body.style.left = '0';
+  document.body.style.right = '0';
+  document.body.style.overflow = 'hidden';
+}
+function unlockScroll() {
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.left = '';
+  document.body.style.right = '';
+  document.body.style.overflow = '';
+  window.scrollTo(0, _scrollY);
+}
+
 // Emoji lookup by recipe title keywords
 const EMOJI_MAP = [
   [/\b(egg|eggs|omelette|omelet|frittata|scrambled|poached)\b/i, '🥚'],
@@ -196,11 +215,17 @@ function openShoppingListModal() {
 
   const m = document.getElementById('shopModal');
   m.showModal(); m.focus();
+  lockScroll();
+}
+
+function closeShopModal() {
+  document.getElementById('shopModal').close();
+  unlockScroll();
 }
 
 document.getElementById('shopFab').addEventListener('click', openShoppingListModal);
-document.getElementById('shopModalClose').addEventListener('click', () => document.getElementById('shopModal').close());
-document.getElementById('shopModal').addEventListener('click', e => { if (e.target === document.getElementById('shopModal')) document.getElementById('shopModal').close(); });
+document.getElementById('shopModalClose').addEventListener('click', closeShopModal);
+document.getElementById('shopModal').addEventListener('click', e => { if (e.target === document.getElementById('shopModal')) closeShopModal(); });
 
 function getSortedItems(cat) {
   const indexed = recipes[cat].map((r, i) => ({ r, i }));
@@ -388,6 +413,8 @@ function openModal(cat, idx) {
 
   modalFav.onclick = () => { toggleFavorite(r.title, modalFav); updateModalFav(); };
   modalShopBtn.onclick = () => { toggleShopList(r.title, modalShopBtn); updateModalShop(); };
+  document.getElementById('modalCookBtn').onclick = () => { closeModal(); openCookingMode(r.steps); };
+  document.getElementById('modalShare').onclick = () => shareRecipe(r);
 
   let servings = 1;
   renderModalBody(r, servings);
@@ -402,14 +429,14 @@ function openModal(cat, idx) {
   previousFocus = document.activeElement;
   modal.showModal();
   modal.focus();
-  document.body.style.overflow = 'hidden';
+  lockScroll();
   history.replaceState(null, '', '#' + r.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
 }
 
 function closeModal() {
   modal._ac?.abort();
   modal.close();
-  document.body.style.overflow = '';
+  unlockScroll();
   previousFocus?.focus();
   history.replaceState(null, '', window.location.pathname);
 }
@@ -860,11 +887,12 @@ sheetBackdrop.addEventListener('click', closeSheet);
 document.getElementById('sheetApply').addEventListener('click', closeSheet);
 document.getElementById('sheetClose').addEventListener('click', closeSheet);
 
-// Swipe down to close
+// Swipe down on handle only to close
+const sheetHandle = sheetSidebar.querySelector('.sheet-handle');
 let touchStartY = 0;
-sheetSidebar.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
-sheetSidebar.addEventListener('touchend', e => {
-  if (e.changedTouches[0].clientY - touchStartY > 60) closeSheet();
+sheetHandle.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
+sheetHandle.addEventListener('touchend', e => {
+  if (e.changedTouches[0].clientY - touchStartY > 40) closeSheet();
 }, { passive: true });
 
 // Cookie helpers
@@ -1210,3 +1238,239 @@ fetch('recipes.json')
     if (el) parent.appendChild(el);
   });
 })();
+
+// ─── Share recipe ────────────────────────────────────────────────────────────
+
+function shareRecipe(r) {
+  const shareBtn = document.getElementById('modalShare');
+  const url = window.location.href;
+  if (navigator.share) {
+    navigator.share({ title: r.title, text: r.desc, url }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(url).then(() => {
+      const orig = shareBtn.textContent;
+      shareBtn.textContent = 'Copied!';
+      setTimeout(() => { shareBtn.textContent = orig; }, 2000);
+    });
+  }
+}
+
+// ─── Cooking mode ─────────────────────────────────────────────────────────────
+
+let cookSteps = [];
+let cookIdx = 0;
+let wakeLock = null;
+
+function openCookingMode(steps) {
+  cookSteps = steps;
+  cookIdx = 0;
+  renderCookStep();
+  document.getElementById('cookModal').showModal();
+  lockScroll();
+  if (navigator.wakeLock) {
+    navigator.wakeLock.request('screen').then(wl => { wakeLock = wl; }).catch(() => {});
+  }
+}
+
+function renderCookStep() {
+  document.getElementById('cookStepLabel').textContent = `Step ${cookIdx + 1} of ${cookSteps.length}`;
+  document.getElementById('cookStepText').textContent = cookSteps[cookIdx];
+  const dots = document.getElementById('cookDots');
+  dots.innerHTML = cookSteps.map((_, i) =>
+    `<div class="cook-dot${i === cookIdx ? ' active' : ''}"></div>`
+  ).join('');
+  document.getElementById('cookPrev').disabled = cookIdx === 0;
+  document.getElementById('cookNext').textContent = cookIdx === cookSteps.length - 1 ? 'Done' : '→';
+}
+
+function closeCookingMode() {
+  document.getElementById('cookModal').close();
+  unlockScroll();
+  if (wakeLock) { wakeLock.release(); wakeLock = null; }
+}
+
+document.getElementById('cookClose').addEventListener('click', closeCookingMode);
+document.getElementById('cookPrev').addEventListener('click', () => {
+  if (cookIdx > 0) { cookIdx--; renderCookStep(); }
+});
+document.getElementById('cookNext').addEventListener('click', () => {
+  if (cookIdx < cookSteps.length - 1) { cookIdx++; renderCookStep(); }
+  else closeCookingMode();
+});
+
+// ─── Onboarding tip ───────────────────────────────────────────────────────────
+
+if (!localStorage.getItem('nogluten-visited')) {
+  setTimeout(() => {
+    const tip = document.getElementById('onboardingTip');
+    if (tip) tip.hidden = false;
+  }, 1500);
+}
+
+document.getElementById('onboardTry').addEventListener('click', () => {
+  document.getElementById('onboardingTip').hidden = true;
+  localStorage.setItem('nogluten-visited', '1');
+  if (window.innerWidth <= 768) openSheet();
+  else document.getElementById('pantrySearch').focus();
+});
+
+document.getElementById('onboardDismiss').addEventListener('click', () => {
+  document.getElementById('onboardingTip').hidden = true;
+  localStorage.setItem('nogluten-visited', '1');
+});
+
+// ─── Recipe submission form ───────────────────────────────────────────────────
+
+function buildSubmitForm() {
+  const body = document.getElementById('submitBody');
+  if (body.dataset.built) return;
+  body.dataset.built = '1';
+  body.innerHTML = `
+    <form id="submitForm" autocomplete="off">
+      <div class="submit-section">
+        <div class="submit-field"><label class="submit-label">Title</label><input class="submit-input" id="sf-title" type="text" placeholder="e.g. Salmon Rice Bowl" required></div>
+        <div class="submit-field"><label class="submit-label">Category</label><select class="submit-input" id="sf-cat"><option value="breakfast">Breakfast</option><option value="lunch">Lunch</option><option value="dinner" selected>Dinner</option><option value="snack">Snack</option></select></div>
+        <div class="submit-field"><label class="submit-label">Cook time</label><input class="submit-input" id="sf-time" type="text" placeholder="e.g. 25 min"></div>
+        <div class="submit-field"><label class="submit-label">Description</label><textarea class="submit-input" id="sf-desc" rows="2" placeholder="Short description"></textarea></div>
+        <div class="submit-field"><label class="submit-label">Benefits / tips</label><textarea class="submit-input" id="sf-tips" rows="2" placeholder="Health benefits or cooking tips"></textarea></div>
+      </div>
+      <div class="submit-section">
+        <div class="submit-section-label">Ingredients <button type="button" class="submit-add-btn" id="sf-add-ing">+ Add</button></div>
+        <div id="sf-ings">
+          <div class="submit-ing-row">
+            <input class="submit-input sf-ing-amount" type="text" placeholder="200">
+            <input class="submit-input sf-ing-unit" type="text" placeholder="g">
+            <input class="submit-input sf-ing-item" type="text" placeholder="chicken breast">
+            <button type="button" class="submit-rm-btn">−</button>
+          </div>
+        </div>
+      </div>
+      <div class="submit-section">
+        <div class="submit-section-label">Method <button type="button" class="submit-add-btn" id="sf-add-step">+ Add step</button></div>
+        <div id="sf-steps">
+          <div class="submit-step-row">
+            <span class="submit-step-num">1</span>
+            <textarea class="submit-input sf-step-text" rows="2" placeholder="First step..."></textarea>
+            <button type="button" class="submit-rm-btn">−</button>
+          </div>
+        </div>
+      </div>
+      <div class="submit-section">
+        <div class="submit-section-label">Nutrition <span style="font-size:0.75rem;color:var(--text-muted);font-weight:400">(per serving)</span></div>
+        <div class="submit-nutrition-grid">
+          <div class="submit-field"><label class="submit-label">Energy (kcal)</label><input class="submit-input" id="sf-kcal" type="number" placeholder="450"></div>
+          <div class="submit-field"><label class="submit-label">Energy (kJ)</label><input class="submit-input" id="sf-kj" type="number" placeholder="1880"></div>
+          <div class="submit-field"><label class="submit-label">Protein (g)</label><input class="submit-input" id="sf-protein" type="number" placeholder="35"></div>
+          <div class="submit-field"><label class="submit-label">Carbs (g)</label><input class="submit-input" id="sf-carbs" type="number" placeholder="45"></div>
+          <div class="submit-field"><label class="submit-label">of which sugars (g)</label><input class="submit-input" id="sf-sugars" type="number" placeholder="8"></div>
+          <div class="submit-field"><label class="submit-label">Fat (g)</label><input class="submit-input" id="sf-fat" type="number" placeholder="12"></div>
+          <div class="submit-field"><label class="submit-label">of which saturates (g)</label><input class="submit-input" id="sf-sat" type="number" placeholder="3"></div>
+          <div class="submit-field"><label class="submit-label">Fibre (g)</label><input class="submit-input" id="sf-fibre" type="number" placeholder="5"></div>
+          <div class="submit-field"><label class="submit-label">Sodium (g)</label><input class="submit-input" id="sf-sodium" type="number" placeholder="0.8"></div>
+        </div>
+      </div>
+    </form>
+    <div class="submit-section" id="submitOutput" hidden>
+      <div class="submit-section-label">Generated JSON — paste into recipes.json</div>
+      <textarea class="submit-input submit-json" id="submitJson" rows="20" readonly></textarea>
+    </div>
+  `;
+
+  document.getElementById('sf-add-ing').addEventListener('click', () => {
+    const row = document.createElement('div');
+    row.className = 'submit-ing-row';
+    row.innerHTML = `
+      <input class="submit-input sf-ing-amount" type="text" placeholder="200">
+      <input class="submit-input sf-ing-unit" type="text" placeholder="g">
+      <input class="submit-input sf-ing-item" type="text" placeholder="ingredient">
+      <button type="button" class="submit-rm-btn">−</button>
+    `;
+    document.getElementById('sf-ings').appendChild(row);
+  });
+
+  document.getElementById('sf-add-step').addEventListener('click', () => {
+    const steps = document.getElementById('sf-steps');
+    const num = steps.children.length + 1;
+    const row = document.createElement('div');
+    row.className = 'submit-step-row';
+    row.innerHTML = `
+      <span class="submit-step-num">${num}</span>
+      <textarea class="submit-input sf-step-text" rows="2" placeholder="Step ${num}..."></textarea>
+      <button type="button" class="submit-rm-btn">−</button>
+    `;
+    steps.appendChild(row);
+  });
+
+  body.addEventListener('click', e => {
+    if (e.target.classList.contains('submit-rm-btn')) {
+      e.target.closest('.submit-ing-row, .submit-step-row')?.remove();
+    }
+  });
+}
+
+function generateRecipeJson() {
+  const title = document.getElementById('sf-title').value.trim();
+  if (!title) { alert('Please enter a title.'); return; }
+
+  const ingredients = [...document.querySelectorAll('.submit-ing-row')].map(row => ({
+    amount: row.querySelector('.sf-ing-amount').value.trim(),
+    unit: row.querySelector('.sf-ing-unit').value.trim(),
+    item: row.querySelector('.sf-ing-item').value.trim(),
+  })).filter(i => i.item);
+
+  const steps = [...document.querySelectorAll('.sf-step-text')].map(t => t.value.trim()).filter(Boolean);
+  const tips = document.getElementById('sf-tips').value.trim();
+
+  const recipe = {
+    title,
+    desc: document.getElementById('sf-desc').value.trim(),
+    time: document.getElementById('sf-time').value.trim(),
+    protein: parseFloat(document.getElementById('sf-protein').value) || 0,
+    kcal: parseFloat(document.getElementById('sf-kcal').value) || 0,
+    ingredients,
+    steps,
+    ...(tips && { tips }),
+    nutrition: {
+      energy_kcal:          parseFloat(document.getElementById('sf-kcal').value)    || 0,
+      energy_kj:            parseFloat(document.getElementById('sf-kj').value)      || 0,
+      protein_g:            parseFloat(document.getElementById('sf-protein').value)  || 0,
+      carbs_g:              parseFloat(document.getElementById('sf-carbs').value)    || 0,
+      of_which_sugars_g:    parseFloat(document.getElementById('sf-sugars').value)   || 0,
+      fat_g:                parseFloat(document.getElementById('sf-fat').value)      || 0,
+      of_which_saturated_g: parseFloat(document.getElementById('sf-sat').value)      || 0,
+      fibre_g:              parseFloat(document.getElementById('sf-fibre').value)    || 0,
+      sodium_g:             parseFloat(document.getElementById('sf-sodium').value)   || 0,
+    },
+  };
+
+  const output = document.getElementById('submitOutput');
+  document.getElementById('submitJson').value = JSON.stringify(recipe, null, 2);
+  output.hidden = false;
+  output.scrollIntoView({ behavior: 'smooth' });
+}
+
+function openSubmitModal() {
+  buildSubmitForm();
+  document.getElementById('submitModal').showModal();
+  lockScroll();
+}
+
+document.getElementById('submitClose').addEventListener('click', () => {
+  document.getElementById('submitModal').close();
+  unlockScroll();
+});
+document.getElementById('submitModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('submitModal')) {
+    document.getElementById('submitModal').close();
+    unlockScroll();
+  }
+});
+document.getElementById('submitGenBtn').addEventListener('click', generateRecipeJson);
+
+// Cmd/Ctrl+Shift+N opens recipe submission form
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'N') {
+    e.preventDefault();
+    openSubmitModal();
+  }
+});
