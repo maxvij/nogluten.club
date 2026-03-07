@@ -10,7 +10,10 @@
     // Live-update when OS theme changes, but only if user hasn't manually set a preference
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
       if (!localStorage.getItem('theme')) {
-        document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+        var t = e.matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+        var icon = document.querySelector('.theme-icon');
+        if (icon) icon.textContent = t === 'light' ? '☽' : '☀';
       }
     });
   })();
@@ -371,13 +374,11 @@
     display: flex;
     flex-direction: column;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
   }
 
   .recipe-card:hover {
     border-color: var(--accent);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   }
 
   .recipe-card::before {
@@ -456,24 +457,28 @@
 
   .card-actions { display: flex; gap: 0.375rem; align-items: center; flex-shrink: 0; }
 
-  .card-fav:hover, .card-fav.active { color: #e05555; }
-
   .card-fav {
-    position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
-    background: none;
-    border: none;
-    cursor: pointer;
     font-size: 1rem;
+    background: none;
+    border: 1px solid var(--border);
     color: var(--text-muted);
-    padding: 0.25rem;
-    line-height: 1;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 4px;
-    transition: color 0.15s;
-    z-index: 1;
+    cursor: pointer;
+    flex-shrink: 0;
   }
+  .card-fav:hover { border-color: #e05555; color: #e05555; }
+  .card-fav.active { background: #e05555; border-color: #e05555; color: #fff; }
 
+  .card-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
   .card-shop-btn {
     font-family: 'Inter', sans-serif;
     font-size: 0.75rem;
@@ -485,7 +490,6 @@
     border-radius: 4px;
     cursor: pointer;
     white-space: nowrap;
-    transition: border-color 0.15s, color 0.15s;
   }
   .card-shop-btn:hover { border-color: var(--accent); color: var(--accent); }
   .card-shop-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
@@ -705,6 +709,68 @@
     margin-top: 0.5rem;
   }
 
+  /* Serving selector */
+  .serving-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .serving-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-right: 0.25rem;
+  }
+  .serving-btn {
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--border);
+    background: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .serving-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .serving-count {
+    font-size: 0.875rem;
+    color: var(--text);
+    min-width: 1.5ch;
+    text-align: center;
+  }
+
+  /* Nutrition panel */
+  .nutrition-panel {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+  }
+  .nutrition-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.45rem 0.875rem;
+    border-bottom: 1px solid var(--border);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+  }
+  .nutrition-row:last-child { border-bottom: none; }
+  .nutrition-row.energy {
+    background: var(--surface2);
+  }
+  .nutrition-row.sub {
+    padding-left: 1.875rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+  .nutrition-label { color: var(--text-mid); }
+  .nutrition-value { color: var(--text); font-variant-numeric: tabular-nums; }
+  .nutrition-kj { font-size: 0.8rem; color: var(--text-muted); margin-left: 0.5rem; }
+
   /* Empty state */
   .empty-state {
     text-align: center;
@@ -820,87 +886,36 @@
 
   .pantry-clear:hover { color: var(--text); }
 
-  /* Card match badge */
+  /* Card match chip */
   .card-match {
+    display: none;
+    font-size: 0.75rem;
     font-family: 'Inter', sans-serif;
-    font-size: 0.875rem;
+    letter-spacing: 0.03em;
+    padding: 0 0.5rem;
+    height: 22px;
+    border-radius: 999px;
+    align-items: center;
+    white-space: nowrap;
+    font-weight: 500;
   }
-
-  .card-match.match-full  { color: var(--accent2); }
-  .card-match.match-some  { color: var(--text-muted); }
+  .card-match.visible    { display: inline-flex; }
+  .card-match.match-low  { background: var(--surface2); color: var(--text-muted); }
+  .card-match.match-mid  { background: #c97820; color: #fff; }
+  .card-match.match-high { background: var(--accent); color: #fff; }
 
   /* Greeting card */
-  .greeting-card {
-    position: relative;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--accent);
-    border-radius: 8px;
-    padding: 1rem 2.75rem 1rem 1.25rem;
-    margin-bottom: 2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-  }
-
-  .greeting-text {
-    font-family: 'Playfair Display', serif;
-    font-size: 1rem;
-    font-weight: 400;
-    color: var(--text);
-  }
-
-  .greeting-suggestion {
+  .greeting-inline {
     font-size: 0.875rem;
     color: var(--text-muted);
   }
-
-  .greeting-suggestion a {
-    color: var(--accent);
-    text-decoration: underline;
-    cursor: pointer;
-    background: none;
-    border: none;
-    font: inherit;
-    padding: 0;
-  }
-
-  .greeting-suggestion a:hover { opacity: 0.8; }
-
-  .greeting-close {
-    position: absolute;
-    top: 0.625rem;
-    right: 0.625rem;
-    background: none;
-    border: none;
+  .greeting-inline a {
     color: var(--text-muted);
-    cursor: pointer;
-    width: 28px;
-    height: 28px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.875rem;
-  }
-
-  .greeting-close:hover { background: var(--surface2); color: var(--text); }
-
-  .greeting-dismiss {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    background: none;
-    border: none;
-    padding: 0;
-    margin-top: 0.25rem;
-    cursor: pointer;
     text-decoration: underline;
     text-underline-offset: 2px;
-    text-align: left;
+    cursor: pointer;
   }
-
-  .greeting-dismiss:hover { color: var(--text); }
+  .greeting-inline a:hover { color: var(--text); }
 
   /* Sidebar footer */
   .sidebar-footer {
@@ -910,15 +925,13 @@
     padding: 0.625rem 1.5rem;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
+    justify-content: space-between;
     min-height: 48px;
   }
 
   .sidebar-count {
     font-size: 0.8rem;
     color: var(--text-muted);
-    flex-shrink: 0;
   }
 
   .sidebar-filter-chips {
@@ -957,7 +970,8 @@
     flex-shrink: 0;
   }
 
-  .sidebar-reset-btn:hover { color: var(--text); }
+  .sidebar-reset-btn:not(:disabled):hover { color: var(--text); }
+  .sidebar-reset-btn:disabled { cursor: default; }
 
   /* Sort bar */
   .sort-bar {
@@ -1245,7 +1259,7 @@
 
     <div class="sidebar-footer">
       <span class="sidebar-count" id="resultCount"></span>
-      <button class="sidebar-reset-btn" id="sidebarReset" hidden>Reset</button>
+      <button class="sidebar-reset-btn" id="sidebarReset">Reset</button>
     </div>
 
     <button class="sheet-apply-btn" id="sheetApply">Apply filters</button>
@@ -1266,8 +1280,6 @@
     </div>
 
     <div class="main-body">
-      <div class="greeting-banner" id="greetingBanner"></div>
-
       <div class="sort-bar">
         <div class="sort-bar-left">
           <div id="filterSummary"></div>
@@ -1319,7 +1331,7 @@
   </main>
 </div>
 
-<button class="shop-fab" id="shopFab" hidden>🛒 Shopping list</button>
+<button class="shop-fab" id="shopFab" hidden>Shopping list</button>
 
 <!-- Shopping list modal -->
 <dialog id="shopModal">
@@ -1342,699 +1354,7 @@
 </dialog>
 
 <script>
-const recipes = {
-  breakfast: [
-    {
-      title: "Pea Protein Smoothie Bowl",
-      carbs: "52g carbs",
-      desc: "Thick blended base with pea protein and frozen mango, topped with granola and seeds.",
-      time: "5 min",
-      protein: "38g protein",
-      kcal: "480 kcal",
-      ingredients: [
-        { amount: "40g", item: "NZ pea protein isolate" },
-        { amount: "150g", item: "frozen mango chunks" },
-        { amount: "100g", item: "frozen banana" },
-        { amount: "150ml", item: "oat milk (lactose-free) or coconut milk" },
-        { amount: "1 tsp", item: "vanilla extract" },
-        { amount: "30g", item: "GF granola (topping)" },
-        { amount: "1 tbsp", item: "chia seeds (topping)" },
-        { amount: "1 tbsp", item: "hemp seeds (topping)" },
-      ],
-      steps: [
-        "Blend pea protein, frozen mango, banana, and milk until thick and smooth. Add less liquid for a spoonable consistency.",
-        "Pour into a bowl and smooth the surface.",
-        "Top with GF granola, chia seeds, and hemp seeds.",
-        "Serve immediately — it melts fast.",
-      ],
-      tips: "Use the NutriBullet on the thick/frozen setting. If too thick to blend, add 1–2 tbsp water at a time. Mango hides the pea protein taste well."
-    },
-    {
-      title: "Egg & Rice Congee",
-      desc: "Savory Asian-style rice porridge with a soft poached egg and ginger. Warming and high-protein.",
-      time: "25 min",
-      protein: "28g protein",
-      kcal: "390 kcal",
-      carbs: "46g carbs",
-      ingredients: [
-        { amount: "80g", item: "jasmine rice (dry)" },
-        { amount: "600ml", item: "chicken bone broth (GF certified)" },
-        { amount: "2", item: "eggs" },
-        { amount: "2 slices", item: "fresh ginger" },
-        { amount: "2", item: "spring onions, sliced" },
-        { amount: "1 tsp", item: "sesame oil" },
-        { amount: "1 tbsp", item: "tamari (GF soy sauce)" },
-        { amount: "Pinch", item: "white pepper" },
-      ],
-      steps: [
-        "Bring broth to a boil with ginger slices. Add rice and simmer 20 min, stirring occasionally, until the rice breaks down into porridge.",
-        "Remove ginger. Crack eggs directly into the congee and stir slowly — they'll poach in the hot porridge in about 2 min.",
-        "Season with tamari, sesame oil, and white pepper.",
-        "Top with spring onions and serve hot.",
-      ],
-      tips: "Make a double batch of plain congee and refrigerate. It reheats in 3 minutes with a splash of water. Add a third egg if you need more protein."
-    },
-    {
-      title: "Turkey & Spinach Omelette",
-      desc: "Quick savory omelette with lean ground turkey and wilted spinach. No cheese needed.",
-      time: "12 min",
-      protein: "42g protein",
-      kcal: "420 kcal",
-      carbs: "4g carbs",
-      ingredients: [
-        { amount: "100g", item: "lean ground turkey" },
-        { amount: "3", item: "eggs" },
-        { amount: "1 large handful", item: "baby spinach" },
-        { amount: "2", item: "garlic cloves, minced" },
-        { amount: "½ tsp", item: "smoked paprika" },
-        { amount: "½ tsp", item: "cumin" },
-        { amount: "1 tbsp", item: "olive oil" },
-        { amount: "Salt & pepper", item: "to taste" },
-      ],
-      steps: [
-        "Heat half the oil in a non-stick pan. Brown the ground turkey with garlic, paprika, and cumin for 4–5 min. Set aside.",
-        "Whisk eggs with salt and pepper. Add remaining oil to the pan on medium heat.",
-        "Pour in eggs. When edges set, add turkey mixture and spinach on one half.",
-        "Fold omelette over and cook 1 more minute. Serve immediately.",
-      ],
-      tips: "Ground turkey cooks fast and is much leaner than beef or pork. A single omelette hits your protein target for the morning easily."
-    },
-    {
-      title: "Lactose-Free Yogurt Parfait",
-      desc: "Cyclops lactose-free yogurt layered with honey, GF granola, and fresh berries.",
-      time: "5 min",
-      protein: "22g protein",
-      kcal: "360 kcal",
-      carbs: "40g carbs",
-      ingredients: [
-        { amount: "200g", item: "Cyclops lactose-free yogurt" },
-        { amount: "30g", item: "GF granola" },
-        { amount: "100g", item: "mixed berries (blueberry, strawberry)" },
-        { amount: "1 tsp", item: "honey or maple syrup" },
-        { amount: "1 tbsp", item: "almond slivers (optional)" },
-        { amount: "½ tsp", item: "cinnamon" },
-      ],
-      steps: [
-        "Spoon half the yogurt into a glass or bowl.",
-        "Layer with half the granola and half the berries.",
-        "Repeat layers. Drizzle with honey and cinnamon.",
-        "Eat immediately to keep granola crunchy.",
-      ],
-      tips: "Add a scoop of plain pea protein stirred into the yogurt to push this past 35g protein without changing the taste much."
-    },
-    {
-      title: "Smoked Salmon Rice Bowl",
-      desc: "Cold rice with smoked salmon, avocado, and cucumber. Sesame-tamari dressing. 10 minutes.",
-      time: "10 min",
-      protein: "34g protein",
-      kcal: "440 kcal",
-      carbs: "46g carbs",
-      ingredients: [
-        { amount: "150g", item: "cooked jasmine rice (leftover works great)" },
-        { amount: "80g", item: "smoked salmon" },
-        { amount: "½", item: "avocado, sliced" },
-        { amount: "½", item: "cucumber, thinly sliced" },
-        { amount: "1 tbsp", item: "tamari" },
-        { amount: "1 tsp", item: "sesame oil" },
-        { amount: "1 tsp", item: "rice vinegar" },
-        { amount: "1 tsp", item: "sesame seeds" },
-      ],
-      steps: [
-        "Warm rice or use cold from the fridge.",
-        "Arrange salmon, avocado, and cucumber over rice.",
-        "Mix tamari, sesame oil, and rice vinegar. Drizzle over the bowl.",
-        "Finish with sesame seeds.",
-      ],
-      tips: "Cold rice works well here — it holds together and the texture contrasts nicely with the salmon. Keep a stock of smoked salmon in the fridge for this."
-    },
-    {
-      title: "Protein Overnight Oats",
-      desc: "GF oats soaked overnight with pea protein and oat milk. Grab and go straight from the fridge.",
-      time: "5 min + overnight",
-      protein: "32g protein",
-      kcal: "420 kcal",
-      carbs: "50g carbs",
-      ingredients: [
-        { amount: "80g", item: "GF rolled oats" },
-        { amount: "30g", item: "pea protein isolate (vanilla)" },
-        { amount: "250ml", item: "oat milk" },
-        { amount: "1 tbsp", item: "chia seeds" },
-        { amount: "1 tsp", item: "honey or maple syrup" },
-        { amount: "100g", item: "mixed berries (to serve)" },
-      ],
-      steps: [
-        "Stir oats, protein powder, chia seeds, honey, and oat milk together in a jar.",
-        "Close lid and refrigerate overnight (or at least 4 hours).",
-        "In the morning, stir well. Add a splash of oat milk if too thick.",
-        "Top with berries and eat cold.",
-      ],
-      tips: "Make 3 jars on Sunday. Stir protein powder in thoroughly before resting or it clumps at the bottom. Vanilla flavour works best."
-    },
-    {
-      title: "Tofu & Spinach Scramble",
-      desc: "Vegan scramble with crumbled firm tofu, spinach, turmeric, and nutritional yeast. High-protein, no eggs.",
-      time: "10 min",
-      protein: "22g protein",
-      kcal: "260 kcal",
-      carbs: "6g carbs",
-      ingredients: [
-        { amount: "250g", item: "firm tofu, pressed and crumbled" },
-        { amount: "2 large handfuls", item: "baby spinach" },
-        { amount: "2 tbsp", item: "nutritional yeast" },
-        { amount: "1 tbsp", item: "tamari" },
-        { amount: "½ tsp", item: "turmeric" },
-        { amount: "½ tsp", item: "smoked paprika" },
-        { amount: "1 tbsp", item: "olive oil" },
-        { amount: "Salt & black pepper", item: "to taste" },
-      ],
-      steps: [
-        "Heat olive oil in a pan on medium-high. Add crumbled tofu.",
-        "Cook 3–4 min, stirring, until tofu dries out and colours slightly.",
-        "Add turmeric, paprika, and tamari. Stir to coat.",
-        "Add spinach and nutritional yeast. Cook until spinach wilts, about 1–2 min.",
-        "Season and serve.",
-      ],
-      tips: "Press tofu firmly with a cloth or paper towels first — moisture is the enemy of a good scramble. Nutritional yeast adds umami depth without dairy."
-    },
-  ],
-  lunch: [
-    {
-      title: "Chicken, Brown Rice & Green Beans",
-      desc: "Your go-to meal prep base — lean, filling, and endlessly riffable with different sauces.",
-      time: "30 min (preps 2 days)",
-      protein: "52g protein",
-      kcal: "540 kcal",
-      carbs: "54g carbs",
-      ingredients: [
-        { amount: "200g", item: "chicken breast" },
-        { amount: "90g", item: "brown rice (dry)" },
-        { amount: "200g", item: "green beans, trimmed" },
-        { amount: "1 tbsp", item: "olive oil" },
-        { amount: "1 tsp", item: "garlic powder" },
-        { amount: "1 tsp", item: "smoked paprika" },
-        { amount: "Salt & pepper", item: "to taste" },
-        { amount: "Chili sauce", item: "to serve (GF brand)" },
-      ],
-      steps: [
-        "Cook brown rice according to package. Fluff with a fork when done.",
-        "Season chicken with garlic powder, paprika, salt, and pepper. Pan-fry in olive oil 5–6 min per side or bake at 200°C for 18 min.",
-        "Blanch or steam green beans for 3–4 min until tender-crisp.",
-        "Slice chicken and portion into containers with rice and beans. Add chili sauce when eating.",
-      ],
-      tips: "Divide into 2 containers right away. This stores 3 days in the fridge. Switch the sauce between days — sriracha, tamari ginger, or harissa all work."
-    },
-    {
-      title: "Asian Tuna Rice Bowl",
-      desc: "Canned tuna elevated with sesame, tamari, cucumber, and edamame. Ready in 10 minutes.",
-      time: "10 min",
-      protein: "45g protein",
-      kcal: "480 kcal",
-      carbs: "50g carbs",
-      ingredients: [
-        { amount: "2 cans (160g)", item: "tuna in spring water, drained" },
-        { amount: "150g", item: "cooked rice (leftover works great)" },
-        { amount: "100g", item: "shelled edamame (frozen, thawed)" },
-        { amount: "½", item: "cucumber, sliced thin" },
-        { amount: "2 tbsp", item: "tamari (GF soy sauce)" },
-        { amount: "1 tsp", item: "sesame oil" },
-        { amount: "1 tsp", item: "rice vinegar" },
-        { amount: "1 tsp", item: "chili flakes or sambal" },
-        { amount: "1 tsp", item: "sesame seeds" },
-      ],
-      steps: [
-        "Combine tamari, sesame oil, rice vinegar, and chili flakes in a small bowl.",
-        "Warm rice in microwave or use cold if preferred.",
-        "Top rice with tuna, edamame, and cucumber slices.",
-        "Drizzle dressing over everything and finish with sesame seeds.",
-      ],
-      tips: "Keep a stock of canned tuna. This is one of the best high-protein fast lunches with almost zero cooking. Cold works perfectly as a salad bowl too."
-    },
-    {
-      title: "Lentil & Roasted Veg Soup",
-      desc: "Hearty red lentil soup with cumin-roasted vegetables. Meal-preps for 3 days.",
-      time: "40 min",
-      protein: "24g protein",
-      kcal: "420 kcal",
-      carbs: "62g carbs",
-      ingredients: [
-        { amount: "180g", item: "red lentils, rinsed" },
-        { amount: "1", item: "sweet potato, cubed" },
-        { amount: "1", item: "red bell pepper, diced" },
-        { amount: "1", item: "red onion, diced" },
-        { amount: "3 cloves", item: "garlic, minced" },
-        { amount: "1 can (400g)", item: "diced tomatoes" },
-        { amount: "700ml", item: "vegetable broth (GF)" },
-        { amount: "1 tsp", item: "cumin" },
-        { amount: "1 tsp", item: "coriander" },
-        { amount: "½ tsp", item: "turmeric" },
-        { amount: "1 tbsp", item: "olive oil" },
-      ],
-      steps: [
-        "Sauté onion and garlic in olive oil 3 min. Add spices and cook 1 min until fragrant.",
-        "Add sweet potato, pepper, lentils, tomatoes, and broth. Bring to boil.",
-        "Reduce heat and simmer 25 min until lentils are soft and sweet potato is tender.",
-        "Blend half the soup with a stick blender for a creamy-chunky texture. Season to taste.",
-      ],
-      tips: "Add a can of chickpeas for extra protein. Freezes well — make a double batch on Sunday and you have lunches sorted for the week."
-    },
-    {
-      title: "Prawn & Avocado Rice Paper Rolls",
-      desc: "Light Vietnamese-style rolls with cooked prawns, avocado, and rice vermicelli.",
-      time: "20 min",
-      protein: "32g protein",
-      kcal: "380 kcal",
-      carbs: "38g carbs",
-      ingredients: [
-        { amount: "200g", item: "cooked prawns, peeled" },
-        { amount: "1", item: "avocado, sliced" },
-        { amount: "60g", item: "rice vermicelli noodles" },
-        { amount: "8 sheets", item: "rice paper wrappers" },
-        { amount: "1", item: "carrot, julienned" },
-        { amount: "1 handful", item: "fresh mint or coriander" },
-        { amount: "2 tbsp", item: "tamari" },
-        { amount: "1 tsp", item: "sesame oil" },
-        { amount: "Juice of 1 lime", item: "" },
-      ],
-      steps: [
-        "Soak rice vermicelli in boiling water for 4 min, drain, and rinse cold.",
-        "Dip one rice paper sheet in warm water for 10 seconds until pliable.",
-        "Lay flat, add a small amount of each filling in the centre, and fold sides in then roll up tightly.",
-        "Mix tamari, sesame oil, and lime juice for dipping sauce.",
-      ],
-      tips: "These are best eaten fresh. Lay a damp cloth over finished rolls to stop them drying out while you finish the batch."
-    },
-    {
-      title: "Chicken Lettuce Wraps",
-      desc: "Ground chicken with ginger, tamari, and water chestnuts in crisp iceberg cups. Light and fast.",
-      time: "20 min",
-      protein: "38g protein",
-      kcal: "360 kcal",
-      carbs: "12g carbs",
-      ingredients: [
-        { amount: "300g", item: "ground chicken" },
-        { amount: "1 can (225g)", item: "water chestnuts, drained and chopped" },
-        { amount: "8 large", item: "iceberg lettuce leaves" },
-        { amount: "3 cloves", item: "garlic, minced" },
-        { amount: "1 tsp", item: "fresh ginger, grated" },
-        { amount: "3 tbsp", item: "tamari" },
-        { amount: "1 tsp", item: "sesame oil" },
-        { amount: "1 tsp", item: "rice vinegar" },
-        { amount: "1 tbsp", item: "neutral oil" },
-      ],
-      steps: [
-        "Heat oil in a wok or large pan. Brown ground chicken on high heat, breaking up lumps, 4–5 min.",
-        "Add garlic and ginger, cook 1 min.",
-        "Add water chestnuts, tamari, sesame oil, and rice vinegar. Toss to combine, cook 2 min.",
-        "Spoon filling into lettuce cups and serve immediately.",
-      ],
-      tips: "Water chestnuts are the texture secret here — they stay crunchy and bulk up the filling. Use the largest outer leaves of the iceberg for best wrapping."
-    },
-    {
-      title: "Egg Fried Rice",
-      desc: "Day-old rice fried with eggs, peas, and tamari. Best 15-minute lunch when you have leftover rice.",
-      time: "15 min",
-      protein: "24g protein",
-      kcal: "440 kcal",
-      carbs: "58g carbs",
-      ingredients: [
-        { amount: "300g", item: "cooked rice (day-old, cold)" },
-        { amount: "3", item: "eggs, beaten" },
-        { amount: "100g", item: "frozen peas, thawed" },
-        { amount: "3 tbsp", item: "tamari (GF soy sauce)" },
-        { amount: "1 tsp", item: "sesame oil" },
-        { amount: "2", item: "spring onions, sliced" },
-        { amount: "1 tbsp", item: "neutral oil" },
-      ],
-      steps: [
-        "Heat oil in a wok or large pan on very high heat until smoking.",
-        "Add cold rice and press into the pan. Cook undisturbed 2 min to get some char.",
-        "Push rice to the side. Scramble eggs on the clear side until just set.",
-        "Mix eggs through rice. Add peas, tamari, and sesame oil. Toss 2 min.",
-        "Top with spring onions. Serve immediately.",
-      ],
-      tips: "Cold, day-old rice is essential — fresh rice will steam and turn mushy. Keep cooked rice in the fridge overnight specifically for this."
-    },
-    {
-      title: "Tuna Poke Bowl",
-      desc: "Sashimi-grade tuna over sushi rice with edamame, cucumber, and a sesame-tamari dressing.",
-      time: "15 min",
-      protein: "38g protein",
-      kcal: "480 kcal",
-      carbs: "54g carbs",
-      ingredients: [
-        { amount: "150g", item: "sashimi-grade tuna, diced" },
-        { amount: "150g", item: "cooked sushi rice, seasoned" },
-        { amount: "80g", item: "shelled edamame, thawed" },
-        { amount: "½", item: "cucumber, thinly sliced" },
-        { amount: "½", item: "avocado, sliced" },
-        { amount: "2 tbsp", item: "tamari" },
-        { amount: "1 tsp", item: "sesame oil" },
-        { amount: "1 tsp", item: "rice vinegar" },
-        { amount: "1 tsp", item: "sesame seeds" },
-      ],
-      steps: [
-        "Cook sushi rice per packet. Season with a splash of rice vinegar while warm.",
-        "Mix tamari, sesame oil, and rice vinegar for the dressing.",
-        "Toss diced tuna gently in half the dressing.",
-        "Build bowl: rice base, then tuna, edamame, cucumber, and avocado.",
-        "Drizzle remaining dressing and sesame seeds over the top.",
-      ],
-      tips: "Buy sashimi-grade tuna from a good fishmonger or Japanese supermarket. In Auckland, Nippon Mart or Otafuku are reliable. This needs to be eaten same-day."
-    },
-  ],
-  dinner: [
-    {
-      title: "Baked Salmon with Miso-Ginger Glaze",
-      desc: "Omega-3 rich salmon fillet with a sweet miso glaze, served over steamed bok choy and rice.",
-      time: "25 min",
-      protein: "46g protein",
-      kcal: "560 kcal",
-      carbs: "44g carbs",
-      ingredients: [
-        { amount: "2 fillets (300g)", item: "salmon" },
-        { amount: "2 tbsp", item: "white miso paste (GF certified)" },
-        { amount: "1 tbsp", item: "tamari" },
-        { amount: "1 tbsp", item: "maple syrup or honey" },
-        { amount: "1 tsp", item: "fresh ginger, grated" },
-        { amount: "1 clove", item: "garlic, minced" },
-        { amount: "2", item: "bok choy, halved" },
-        { amount: "150g", item: "jasmine rice (dry)" },
-        { amount: "1 tsp", item: "sesame seeds" },
-      ],
-      steps: [
-        "Preheat oven to 200°C. Mix miso, tamari, maple syrup, ginger, and garlic into a glaze.",
-        "Place salmon skin-side down on a lined baking tray. Spoon glaze generously over the top.",
-        "Bake 12–14 min until the glaze is caramelised and fish flakes easily.",
-        "Steam bok choy halves in a pan with 2 tbsp water and a lid for 3 min.",
-        "Serve salmon over rice with bok choy. Sprinkle sesame seeds.",
-      ],
-      tips: "Check your miso paste is GF — most are, but some add barley. This glaze also works perfectly on chicken thighs."
-    },
-    {
-      title: "Beef & Broccoli Stir-Fry",
-      desc: "Classic takeaway-style stir-fry at home, cleaner and GF. Done in 15 minutes.",
-      time: "15 min",
-      protein: "48g protein",
-      kcal: "510 kcal",
-      carbs: "40g carbs",
-      ingredients: [
-        { amount: "300g", item: "beef sirloin or rump, sliced thin" },
-        { amount: "300g", item: "broccoli florets" },
-        { amount: "3 cloves", item: "garlic, minced" },
-        { amount: "1 tsp", item: "fresh ginger, grated" },
-        { amount: "3 tbsp", item: "tamari (GF soy sauce)" },
-        { amount: "1 tbsp", item: "oyster sauce (GF)" },
-        { amount: "1 tsp", item: "sesame oil" },
-        { amount: "1 tsp", item: "cornstarch + 2 tbsp water" },
-        { amount: "1 tbsp", item: "neutral oil (rice bran or sunflower)" },
-        { amount: "Steamed rice", item: "to serve" },
-      ],
-      steps: [
-        "Mix tamari, oyster sauce, sesame oil, and cornstarch slurry in a bowl.",
-        "Heat a wok or large pan very hot. Sear beef in a single layer 1–2 min, then set aside.",
-        "Add oil, garlic, and ginger. Cook 30 sec. Add broccoli and stir-fry 3 min.",
-        "Return beef to pan. Pour sauce over everything and toss on high heat 1–2 min until glossy.",
-        "Serve immediately over steamed rice.",
-      ],
-      tips: "Slice beef thin against the grain and keep it cold before cooking — it sears faster and stays tender. Don't overcrowd the pan."
-    },
-    {
-      title: "Turkish-Style Lamb Kofta",
-      desc: "Spiced ground lamb patties with a tomato-cucumber salad and tahini drizzle. No pitta needed.",
-      time: "25 min",
-      protein: "44g protein",
-      kcal: "530 kcal",
-      carbs: "12g carbs",
-      ingredients: [
-        { amount: "400g", item: "ground lamb" },
-        { amount: "3 cloves", item: "garlic, minced" },
-        { amount: "1 tsp", item: "cumin" },
-        { amount: "1 tsp", item: "coriander" },
-        { amount: "½ tsp", item: "cinnamon" },
-        { amount: "½ tsp", item: "chili flakes" },
-        { amount: "2 tbsp", item: "fresh parsley, chopped" },
-        { amount: "2 tbsp", item: "tahini" },
-        { amount: "Juice of ½ lemon", item: "" },
-        { amount: "2", item: "tomatoes, diced" },
-        { amount: "1", item: "cucumber, diced" },
-      ],
-      steps: [
-        "Combine lamb, garlic, spices, and parsley. Mix well and form into 8 oval patties or sausage shapes.",
-        "Grill or pan-fry on medium-high heat 3–4 min per side until cooked through and charred.",
-        "Mix tahini with lemon juice and 2 tbsp water to make a drizzleable sauce.",
-        "Toss tomato and cucumber with olive oil and salt for the salad.",
-        "Plate koftas over salad and drizzle tahini.",
-      ],
-      tips: "These freeze raw. Make a double batch, freeze between parchment paper, and cook from frozen (add 4 min). No pitta = naturally GF and lower carb."
-    },
-    {
-      title: "Thai Green Chicken Curry",
-      desc: "Fragrant coconut-based curry with chicken thighs, zucchini, and spinach. Rich but clean.",
-      time: "30 min",
-      protein: "46g protein",
-      kcal: "580 kcal",
-      carbs: "22g carbs",
-      ingredients: [
-        { amount: "400g", item: "chicken thighs, cut into chunks" },
-        { amount: "2 tbsp", item: "Thai green curry paste (GF)" },
-        { amount: "1 can (400ml)", item: "coconut milk (full fat)" },
-        { amount: "1", item: "zucchini, sliced into half-moons" },
-        { amount: "2 large handfuls", item: "baby spinach" },
-        { amount: "1 tbsp", item: "coconut oil or neutral oil" },
-        { amount: "1 tbsp", item: "fish sauce (GF)" },
-        { amount: "1 tsp", item: "palm sugar or brown sugar" },
-        { amount: "Fresh lime juice", item: "to taste" },
-        { amount: "Fresh basil or coriander", item: "to serve" },
-        { amount: "Steamed jasmine rice", item: "to serve" },
-      ],
-      steps: [
-        "Heat oil in a deep pan. Fry curry paste 1 min until fragrant.",
-        "Add chicken and cook 3–4 min, stirring to coat in paste.",
-        "Pour in coconut milk. Bring to a gentle simmer and cook 15 min.",
-        "Add zucchini and cook 5 more min. Stir in spinach until wilted.",
-        "Season with fish sauce, sugar, and lime juice. Serve over rice with fresh herbs.",
-      ],
-      tips: "Check your curry paste for wheat — Maesri brand is commonly GF. Use chicken thighs over breast; they stay juicy in the curry."
-    },
-    {
-      title: "Lemon Herb Baked Chicken Thighs",
-      desc: "Oven-baked chicken thighs with lemon, garlic, and herbs. Crispy skin, juicy inside. Effortless.",
-      time: "35 min",
-      protein: "44g protein",
-      kcal: "480 kcal",
-      carbs: "4g carbs",
-      ingredients: [
-        { amount: "4", item: "bone-in chicken thighs (skin-on)" },
-        { amount: "1", item: "lemon, sliced" },
-        { amount: "4 cloves", item: "garlic, smashed" },
-        { amount: "1 tsp", item: "dried thyme" },
-        { amount: "1 tsp", item: "dried rosemary" },
-        { amount: "1 tsp", item: "smoked paprika" },
-        { amount: "2 tbsp", item: "olive oil" },
-        { amount: "Salt & black pepper", item: "to taste" },
-      ],
-      steps: [
-        "Preheat oven to 210°C. Pat chicken dry with paper towels.",
-        "Rub chicken all over with olive oil, paprika, thyme, rosemary, salt, and pepper.",
-        "Place skin-side up in a roasting tray. Tuck in garlic and lemon slices.",
-        "Roast 30–35 min until skin is deep golden and juices run clear.",
-        "Rest 5 min before serving.",
-      ],
-      tips: "Dry skin = crispy skin. Pat really well. Bone-in thighs stay far juicier than breast. Serve with roasted sweet potato or a simple green salad."
-    },
-    {
-      title: "Prawn & Bok Choy Stir-Fry",
-      desc: "Fast weeknight stir-fry with prawns, bok choy, ginger, and sesame. Over rice in 20 minutes.",
-      time: "20 min",
-      protein: "32g protein",
-      kcal: "380 kcal",
-      carbs: "42g carbs",
-      ingredients: [
-        { amount: "250g", item: "raw prawns, peeled and deveined" },
-        { amount: "4", item: "baby bok choy, halved" },
-        { amount: "150g", item: "cooked jasmine rice, to serve" },
-        { amount: "3 cloves", item: "garlic, minced" },
-        { amount: "1 tsp", item: "fresh ginger, grated" },
-        { amount: "3 tbsp", item: "tamari" },
-        { amount: "1 tsp", item: "sesame oil" },
-        { amount: "1 tbsp", item: "neutral oil" },
-        { amount: "1 tsp", item: "sesame seeds" },
-      ],
-      steps: [
-        "Heat oil in a wok on very high heat. Add prawns in a single layer — cook 1 min per side until pink. Set aside.",
-        "Add garlic and ginger, cook 30 sec.",
-        "Add bok choy. Stir-fry 2–3 min until wilted but still slightly crisp.",
-        "Return prawns to wok. Add tamari and sesame oil. Toss 1 min.",
-        "Serve over rice, scatter sesame seeds.",
-      ],
-      tips: "Don't overcook the prawns — they're ready as soon as they turn pink and curl. Overcooked prawns become rubbery fast. High heat the whole time."
-    },
-    {
-      title: "Turkey & Zucchini Meatballs",
-      desc: "Gluten-free meatballs with grated zucchini for moisture, in a simple tomato sauce. Batch-cook friendly.",
-      time: "35 min",
-      protein: "42g protein",
-      kcal: "440 kcal",
-      carbs: "20g carbs",
-      ingredients: [
-        { amount: "400g", item: "ground turkey" },
-        { amount: "1 medium", item: "zucchini, grated and squeezed dry" },
-        { amount: "1", item: "egg" },
-        { amount: "3 tbsp", item: "almond flour" },
-        { amount: "2 cloves", item: "garlic, minced" },
-        { amount: "1 tsp", item: "dried oregano" },
-        { amount: "1 tsp", item: "fennel seeds (optional)" },
-        { amount: "1 can (400g)", item: "crushed tomatoes" },
-        { amount: "1 tbsp", item: "olive oil" },
-        { amount: "Salt & pepper", item: "to taste" },
-      ],
-      steps: [
-        "Grate zucchini and squeeze hard in a cloth to remove moisture.",
-        "Combine turkey, zucchini, egg, almond flour, garlic, oregano, salt, and pepper. Form into 16 balls.",
-        "Heat oil in an oven-safe pan. Brown meatballs all over, 3–4 min.",
-        "Add crushed tomatoes. Bring to a simmer, then transfer to 180°C oven for 15 min.",
-        "Serve with rice or straight from the pan.",
-      ],
-      tips: "Squeezing the zucchini dry is important — wet zucchini makes the meatballs fall apart. Almond flour keeps these GF and adds richness. Freeze half the batch raw."
-    },
-  ],
-  snack: [
-    {
-      title: "Chocolate Pea Protein Balls",
-      desc: "No-bake energy balls with oats, pea protein, and dark chocolate chips. 5 minutes, stores all week.",
-      time: "10 min + chill",
-      protein: "12g protein (per 2 balls)",
-      kcal: "180 kcal (per 2 balls)",
-      carbs: "18g carbs (per 2 balls)",
-      ingredients: [
-        { amount: "120g", item: "GF rolled oats" },
-        { amount: "40g", item: "pea protein isolate (chocolate or vanilla)" },
-        { amount: "3 tbsp", item: "nut butter (peanut or almond)" },
-        { amount: "2 tbsp", item: "honey or maple syrup" },
-        { amount: "2 tbsp", item: "dark chocolate chips (GF)" },
-        { amount: "1–2 tbsp", item: "oat milk (to bind)" },
-      ],
-      steps: [
-        "Mix oats, protein powder, nut butter, and honey in a bowl until combined.",
-        "Fold in chocolate chips. Add oat milk 1 tbsp at a time if mixture is too dry to roll.",
-        "Roll into 12–16 balls (roughly walnut-sized).",
-        "Refrigerate 30 min to firm up. Store in an airtight container up to 1 week.",
-      ],
-      tips: "Great post-workout or afternoon snack. Freeze half the batch for long-term storage. Swap chocolate chips for dried mango or coconut for variety."
-    },
-    {
-      title: "Edamame with Chili & Sea Salt",
-      desc: "Dead simple high-protein snack. Frozen edamame pods, steamed, and seasoned in 5 minutes.",
-      time: "5 min",
-      protein: "18g protein",
-      kcal: "200 kcal",
-      carbs: "10g carbs",
-      ingredients: [
-        { amount: "200g", item: "frozen edamame pods (in shell)" },
-        { amount: "½ tsp", item: "coarse sea salt" },
-        { amount: "½ tsp", item: "chili flakes or shichimi" },
-        { amount: "1 tsp", item: "sesame oil (optional)" },
-      ],
-      steps: [
-        "Microwave edamame in shell with 2 tbsp water, covered, for 4 minutes.",
-        "Drain and toss immediately with salt, chili flakes, and sesame oil.",
-        "Eat by squeezing beans out of the pod.",
-      ],
-      tips: "Keep a bag of frozen edamame in the freezer permanently. This is one of the most protein-dense whole-food snacks you can make in under 5 minutes."
-    },
-    {
-      title: "Rice Cake Stack with Tuna & Avocado",
-      desc: "Fast, crunchy, and filling. Tuna and avocado on GF rice cakes with sriracha.",
-      time: "5 min",
-      protein: "30g protein",
-      kcal: "320 kcal",
-      carbs: "26g carbs",
-      ingredients: [
-        { amount: "4", item: "plain rice cakes (GF)" },
-        { amount: "1 can (80g)", item: "tuna in spring water, drained" },
-        { amount: "½", item: "avocado, mashed" },
-        { amount: "1 tsp", item: "sriracha or hot sauce (GF)" },
-        { amount: "Squeeze of lemon", item: "" },
-        { amount: "Black pepper", item: "to taste" },
-      ],
-      steps: [
-        "Mash avocado with a pinch of salt and lemon juice.",
-        "Mix tuna with a little sriracha and pepper.",
-        "Spread avocado on rice cakes, top with tuna mixture.",
-        "Eat immediately (rice cakes go soft quickly).",
-      ],
-      tips: "This hits hard for something with zero cooking. 4 rice cakes is a solid snack — double the tuna if it's post-training."
-    },
-    {
-      title: "Hard-Boiled Eggs & Tamari Dip",
-      desc: "The simplest high-protein snack. Batch cook eggs on Sunday, eat all week.",
-      time: "12 min",
-      protein: "18g protein (3 eggs)",
-      kcal: "220 kcal",
-      carbs: "1g carbs",
-      ingredients: [
-        { amount: "3", item: "eggs" },
-        { amount: "1 tbsp", item: "tamari (GF soy sauce)" },
-        { amount: "½ tsp", item: "sesame oil" },
-        { amount: "Pinch", item: "chili flakes" },
-      ],
-      steps: [
-        "Place eggs in cold water, bring to boil, then cook exactly 9 minutes for firm yolk.",
-        "Transfer to ice water immediately and peel when cool.",
-        "Mix tamari, sesame oil, and chili flakes as dipping sauce.",
-        "Eat whole or halved, dipping into sauce.",
-      ],
-      tips: "Cook 6–8 at once on Sunday. They keep 5 days in the fridge unpeeled. The tamari dip elevates them from 'boring' to genuinely satisfying."
-    },
-    {
-      title: "Smoked Salmon Cucumber Bites",
-      desc: "No-cook bites — smoked salmon and mashed avocado on cucumber rounds. Done in 5 minutes.",
-      time: "5 min",
-      protein: "18g protein",
-      kcal: "200 kcal",
-      carbs: "4g carbs",
-      ingredients: [
-        { amount: "80g", item: "smoked salmon, sliced" },
-        { amount: "1", item: "avocado, mashed" },
-        { amount: "1", item: "cucumber, sliced into rounds" },
-        { amount: "1 tsp", item: "capers (optional)" },
-        { amount: "Squeeze of lemon", item: "" },
-        { amount: "Black pepper", item: "to taste" },
-      ],
-      steps: [
-        "Mash avocado with lemon juice, salt, and pepper.",
-        "Spread a small amount of avocado on each cucumber round.",
-        "Top with a fold of smoked salmon and a caper if using.",
-        "Serve immediately.",
-      ],
-      tips: "Keep cucumber and smoked salmon in the fridge for this. Assembly takes under 3 minutes. Works as a pre-workout snack or light appetiser."
-    },
-    {
-      title: "Crispy Tamari Tofu Bites",
-      desc: "Pan-fried firm tofu cubes glazed with tamari and sesame. Crispy outside, soft inside.",
-      time: "15 min",
-      protein: "16g protein",
-      kcal: "210 kcal",
-      carbs: "6g carbs",
-      ingredients: [
-        { amount: "200g", item: "firm tofu, pressed and cubed" },
-        { amount: "2 tbsp", item: "tamari (GF soy sauce)" },
-        { amount: "1 tsp", item: "sesame oil" },
-        { amount: "1 tbsp", item: "neutral oil" },
-        { amount: "1 tsp", item: "sesame seeds" },
-        { amount: "Pinch", item: "chili flakes" },
-      ],
-      steps: [
-        "Press tofu firmly with a cloth to remove moisture. Cut into 2cm cubes.",
-        "Heat oil in a non-stick pan on high. Add tofu in a single layer — don't touch for 3 min.",
-        "Flip and cook another 2–3 min until all sides are golden.",
-        "Add tamari and sesame oil. Toss to coat. Cook 1 more min until glazed.",
-        "Sprinkle sesame seeds and chili flakes. Serve hot.",
-      ],
-      tips: "The key is dry tofu and a very hot pan. If tofu sticks, it's not ready to flip yet. Double the batch and refrigerate for 3 days — reheat in a dry pan."
-    },
-  ],
-};
+let recipes = {};
 
 let currentSort = 'default';
 
@@ -2059,7 +1379,7 @@ function toggleShopList(title, btn) {
   btn.textContent = shoppingList.has(title) ? '✓ Added' : '+ Add';
   const fab = document.getElementById('shopFab');
   fab.hidden = shoppingList.size === 0;
-  if (!fab.hidden) fab.innerHTML = `🛒 Shopping list (${shoppingList.size})`;
+  if (!fab.hidden) fab.textContent = `Shopping list (${shoppingList.size})`;
 }
 
 function openShoppingListModal() {
@@ -2072,8 +1392,9 @@ function openShoppingListModal() {
       if (r) {
         r.ingredients.forEach(ing => {
           const key = ing.item.toLowerCase();
-          if (seen.has(key)) seen.get(key).amounts.push(ing.amount);
-          else seen.set(key, { item: ing.item, amounts: [ing.amount] });
+          const amt = [ing.amount, ing.unit].filter(Boolean).join(' ');
+          if (seen.has(key)) seen.get(key).amounts.push(amt);
+          else seen.set(key, { item: ing.item, amounts: [amt] });
         });
         break;
       }
@@ -2138,19 +1459,21 @@ function renderCards() {
       const isFav = favorites.has(r.title);
       const inList = shoppingList.has(r.title);
       card.innerHTML = `
-        <button class="card-fav ${isFav ? 'active' : ''}" aria-label="Favourite">${isFav ? '♥' : '♡'}</button>
         <div class="card-meta">
           <span class="card-time">${r.time}</span>
-          <span class="card-match"></span>
         </div>
         <div class="card-title">${r.title}</div>
         <div class="card-desc" data-desc="${r.desc.replace(/"/g, '&quot;')}">${r.desc}</div>
         <div class="card-footer">
           <div class="card-stats">
+            <span class="card-match"></span>
             <span class="card-kcal">${r.kcal}</span>
             <span class="card-protein">${r.protein}</span>
           </div>
-          <button class="card-shop-btn ${inList ? 'active' : ''}">${inList ? '✓ Added' : '+ Add'}</button>
+          <div class="card-actions">
+            <button class="card-fav ${isFav ? 'active' : ''}" aria-label="Favourite">${isFav ? '♥' : '♡'}</button>
+            <button class="card-shop-btn ${inList ? 'active' : ''}">${inList ? '✓ Added' : '+ Add'}</button>
+          </div>
         </div>
       `;
       card.querySelector('.card-fav').addEventListener('click', e => { e.stopPropagation(); toggleFavorite(r.title, e.currentTarget); });
@@ -2166,30 +1489,92 @@ function renderCards() {
 const modal = document.getElementById('recipeModal');
 let previousFocus = null;
 
-function openModal(cat, idx) {
-  const r = recipes[cat][idx];
-  const catLabels = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner', snack: 'Snack' };
-  document.getElementById('modalCat').textContent = catLabels[cat];
-  document.getElementById('modalTitle').textContent = r.title;
-  document.getElementById('modalStats').innerHTML = `
-    <span class="stat">Time <span>${r.time}</span></span>
-    <span class="stat">Protein <span>${r.protein}</span></span>
-    <span class="stat">Kcal <span>${r.kcal}</span></span>
-    ${r.carbs ? `<span class="stat">Carbs <span>${r.carbs}</span></span>` : ''}
+function fmt(val, decimals = 1) {
+  const n = Math.round(val * 10 ** decimals) / 10 ** decimals;
+  return n % 1 === 0 ? n.toFixed(0) : n.toFixed(decimals);
+}
+
+function renderNutritionPanel(n, scale) {
+  const s = v => fmt(v * scale);
+  return `
+    <div class="nutrition-panel">
+      <div class="nutrition-row energy">
+        <span class="nutrition-label">Energy</span>
+        <span class="nutrition-value">${s(n.energy_kcal)} kcal<span class="nutrition-kj">${s(n.energy_kj)} kJ</span></span>
+      </div>
+      <div class="nutrition-row">
+        <span class="nutrition-label">Protein</span>
+        <span class="nutrition-value">${s(n.protein_g)}g</span>
+      </div>
+      <div class="nutrition-row">
+        <span class="nutrition-label">Carbohydrates</span>
+        <span class="nutrition-value">${s(n.carbs_g)}g</span>
+      </div>
+      <div class="nutrition-row sub">
+        <span class="nutrition-label">of which sugars</span>
+        <span class="nutrition-value">${s(n.of_which_sugars_g)}g</span>
+      </div>
+      <div class="nutrition-row">
+        <span class="nutrition-label">Fat</span>
+        <span class="nutrition-value">${s(n.fat_g)}g</span>
+      </div>
+      <div class="nutrition-row sub">
+        <span class="nutrition-label">of which saturates</span>
+        <span class="nutrition-value">${s(n.of_which_saturated_g)}g</span>
+      </div>
+      <div class="nutrition-row">
+        <span class="nutrition-label">Fibre</span>
+        <span class="nutrition-value">${s(n.fibre_g)}g</span>
+      </div>
+      <div class="nutrition-row">
+        <span class="nutrition-label">Salt</span>
+        <span class="nutrition-value">${s(n.salt_g)}g</span>
+      </div>
+    </div>
   `;
+}
 
-  const ingHTML = r.ingredients.map(ing =>
-    `<li><span class="ing-amount">${ing.amount}</span><span>${ing.item}</span></li>`
-  ).join('');
+function renderModalBody(r, servings) {
+  const scale = servings / r.servings;
+  const ingHTML = r.ingredients.map(ing => {
+    const amt = [ing.amount, ing.unit].filter(Boolean).join(' ');
+    return `<li><span class="ing-amount">${amt}</span><span>${ing.item}</span></li>`;
+  }).join('');
   const stepsHTML = r.steps.map(s => `<li>${s}</li>`).join('');
-
   document.getElementById('modalBody').innerHTML = `
     <div class="modal-section-title">Ingredients</div>
     <ul class="ingredient-list">${ingHTML}</ul>
     <div class="modal-section-title">Method</div>
     <ol class="steps-list">${stepsHTML}</ol>
-    ${r.tips ? `<div class="modal-section-title">Tips</div><div class="modal-tips">${r.tips}</div>` : ''}
+    ${r.tips ? `<div class="modal-section-title">Benefits</div><div class="modal-tips">${r.tips}</div>` : ''}
+    <div class="modal-section-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem">
+      <span>Nutrition</span>
+      <div class="serving-selector" id="servingSelector">
+        <span class="serving-label">Servings</span>
+        <button class="serving-btn" id="servingDown" aria-label="Decrease servings">−</button>
+        <span class="serving-count" id="servingCount">${servings}</span>
+        <button class="serving-btn" id="servingUp" aria-label="Increase servings">+</button>
+      </div>
+    </div>
+    ${renderNutritionPanel(r.nutrition, scale)}
   `;
+}
+
+function openModal(cat, idx) {
+  const r = recipes[cat][idx];
+  const catLabels = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner', snack: 'Snack' };
+  document.getElementById('modalCat').textContent = catLabels[cat];
+  document.getElementById('modalTitle').textContent = r.title;
+  document.getElementById('modalStats').innerHTML = `<span class="stat">Time <span>${r.time}</span></span>`;
+
+  let servings = r.servings;
+  renderModalBody(r, servings);
+
+  document.getElementById('modalBody').addEventListener('click', function handler(e) {
+    if (e.target.id === 'servingDown' && servings > 1) { servings--; renderModalBody(r, servings); }
+    if (e.target.id === 'servingUp') { servings++; renderModalBody(r, servings); }
+  }, { signal: (modal._ac = new AbortController()).signal });
+
 
   previousFocus = document.activeElement;
   modal.showModal();
@@ -2199,6 +1584,7 @@ function openModal(cat, idx) {
 }
 
 function closeModal() {
+  modal._ac?.abort();
   modal.close();
   document.body.style.overflow = '';
   previousFocus?.focus();
@@ -2223,15 +1609,19 @@ document.addEventListener('keydown', e => {
 const themeToggle = document.getElementById('themeToggle');
 const themeIcon = themeToggle.querySelector('.theme-icon');
 
-function setTheme(theme) {
+function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem('theme', theme);
   themeIcon.textContent = theme === 'light' ? '☽' : '☀';
 }
 
+function setTheme(theme) {
+  localStorage.setItem('theme', theme);
+  applyTheme(theme);
+}
+
 const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-const savedTheme = localStorage.getItem('theme') || systemTheme;
-setTheme(savedTheme);
+const savedTheme = localStorage.getItem('theme');
+applyTheme(savedTheme || systemTheme);
 
 themeToggle.addEventListener('click', () => {
   const current = document.documentElement.getAttribute('data-theme');
@@ -2284,35 +1674,7 @@ const pantryGroups = {
   ],
 };
 
-const pantryMap = {
-  "Pea Protein Smoothie Bowl":         ['pea-protein', 'frozen-mango', 'frozen-banana', 'oat-milk', 'granola'],
-  "Egg & Rice Congee":                  ['eggs', 'rice'],
-  "Turkey & Spinach Omelette":          ['ground-turkey', 'eggs', 'spinach'],
-  "Lactose-Free Yogurt Parfait":        ['yogurt', 'granola', 'mixed-berries'],
-  "Chicken, Brown Rice & Green Beans":  ['chicken-breast', 'rice', 'green-beans'],
-  "Asian Tuna Rice Bowl":               ['canned-tuna', 'rice', 'edamame', 'cucumber'],
-  "Lentil & Roasted Veg Soup":          ['red-lentils', 'sweet-potato', 'canned-tomatoes'],
-  "Prawn & Avocado Rice Paper Rolls":   ['prawns', 'avocado'],
-  "Baked Salmon with Miso-Ginger Glaze":['salmon', 'miso-paste', 'bok-choy', 'rice'],
-  "Beef & Broccoli Stir-Fry":           ['beef', 'broccoli', 'rice'],
-  "Turkish-Style Lamb Kofta":           ['ground-lamb', 'cucumber', 'tahini'],
-  "Thai Green Chicken Curry":           ['chicken-thighs', 'coconut-milk', 'curry-paste', 'zucchini', 'spinach'],
-  "Chocolate Pea Protein Balls":        ['oats', 'pea-protein', 'nut-butter'],
-  "Edamame with Chili & Sea Salt":      ['edamame'],
-  "Rice Cake Stack with Tuna & Avocado":['rice-cakes', 'canned-tuna', 'avocado'],
-  "Hard-Boiled Eggs & Tamari Dip":      ['eggs'],
-  "Smoked Salmon Cucumber Bites":       ['salmon', 'avocado', 'cucumber'],
-  "Crispy Tamari Tofu Bites":           ['firm-tofu'],
-  "Smoked Salmon Rice Bowl":            ['salmon', 'rice', 'avocado', 'cucumber'],
-  "Protein Overnight Oats":             ['oats', 'pea-protein', 'oat-milk', 'mixed-berries'],
-  "Tofu & Spinach Scramble":            ['spinach', 'firm-tofu'],
-  "Chicken Lettuce Wraps":              ['ground-turkey'],
-  "Egg Fried Rice":                     ['eggs', 'rice'],
-  "Tuna Poke Bowl":                     ['canned-tuna', 'rice', 'edamame', 'cucumber', 'avocado'],
-  "Lemon Herb Baked Chicken Thighs":    ['chicken-thighs'],
-  "Prawn & Bok Choy Stir-Fry":          ['prawns', 'bok-choy', 'rice'],
-  "Turkey & Zucchini Meatballs":        ['ground-turkey', 'zucchini', 'canned-tomatoes'],
-};
+let pantryMap = {};
 
 const selectedIngredients = new Set();
 let pantryView = 'cat';
@@ -2455,16 +1817,17 @@ function applyFilters() {
       const matchEl = card.querySelector('.card-match');
       const descEl = card.querySelector('.card-desc');
       if (anyPantry && pantry.length > 0) {
-        matchEl.textContent = `${matched}/${pantry.length}`;
-        matchEl.className = matched === pantry.length ? 'card-match match-full' : 'card-match match-some';
+        const pct = matched / pantry.length;
+        const tier = pct >= 0.8 ? 'match-high' : pct >= 0.5 ? 'match-mid' : 'match-low';
+        matchEl.textContent = `${matched} / ${pantry.length}`;
+        matchEl.className = `card-match visible ${tier}`;
         const missing = pantry.filter(id => !selectedIngredients.has(id));
         if (missing.length === 0) {
           descEl.textContent = 'All ingredients in house.';
-          descEl.style.color = '';
         } else {
           descEl.textContent = 'Need to buy: ' + missing.map(id => pantryLabelMap[id] || id).join(', ') + '.';
-          descEl.style.color = '';
         }
+        descEl.style.color = '';
       } else {
         matchEl.textContent = '';
         matchEl.className = 'card-match';
@@ -2486,9 +1849,9 @@ function applyFilters() {
 function updateResultCount(visible, total) {
   const el = document.getElementById('resultCount');
   if (visible === total) {
-    el.textContent = `${total} recipes`;
+    el.textContent = `Showing all ${total} recipes`;
   } else {
-    el.textContent = `${visible} of ${total} recipes`;
+    el.textContent = `Showing ${visible} of ${total} recipes`;
   }
 }
 
@@ -2531,21 +1894,25 @@ function updateFilterSummary(checkedCats, q) {
     }});
   }
 
-  if (favOnly) {
+  if (document.getElementById('favFilter').checked) {
     pills.push({ label: '♥ Favourites', remove: () => {
       document.getElementById('favFilter').checked = false;
       applyFilters();
     }});
   }
 
-  resetBtn.hidden = pills.length === 0;
+  resetBtn.disabled = pills.length === 0;
+  resetBtn.style.opacity = pills.length === 0 ? '0.35' : '';
 
-  if (pills.length > 0) {
-    const label = document.createElement('span');
-    label.className = 'filter-on-label';
-    label.textContent = 'Filtered on';
-    el.appendChild(label);
+  if (pills.length === 0) {
+    el.innerHTML = greetingHTML;
+    return;
   }
+
+  const label = document.createElement('span');
+  label.className = 'filter-on-label';
+  label.textContent = 'Filtered on';
+  el.appendChild(label);
 
   pills.forEach(({ label, remove }) => {
     const pill = document.createElement('span');
@@ -2710,100 +2077,116 @@ function showFilterResumeCard(state) {
   card.querySelector('.filter-resume-dismiss').addEventListener('click', () => card.remove());
 }
 
-// Boot: restore or suggest filters
-const _lastVisit = getCookie('last-filter-visit');
-setCookie('last-filter-visit', Date.now(), 30);
-const _savedRaw = localStorage.getItem('filter-state');
-const _twoHours = 2 * 60 * 60 * 1000;
-const _elapsed = _lastVisit ? Date.now() - parseInt(_lastVisit) : 0;
-
-if (_savedRaw) {
-  const _saved = JSON.parse(_savedRaw);
-  const _hasFilters = (_saved.categories || []).length || _saved.time || _saved.search || (_saved.ingredients || []).length;
-  if (_hasFilters && _elapsed >= _twoHours) {
-    // Came back after a while — suggest
-    renderCards();
-    renderPantryItems();
-    applyFilters();
-    showFilterResumeCard(_saved);
-  } else {
-    // Same session / recent refresh — auto-restore silently
-    restoreFilterState(_saved);
-    renderCards();
-    renderPantryItems();
-    applyFilters();
-  }
-} else {
-  renderCards();
-  renderPantryItems();
-  applyFilters();
-}
-
-// Time-of-day greeting
-(function() {
-  if (localStorage.getItem('greeting-hidden') === '1') return;
-
+// Inline sort-bar greeting (shown when no filters active)
+let greetingHTML = '';
+function initGreeting() {
   const hour = new Date().getHours();
-  let greeting, suggestion, cat;
-  if (hour >= 5 && hour < 11) {
-    greeting = 'Good morning.';
-    suggestion = 'How about a high-protein breakfast?';
-    cat = 'breakfast';
-  } else if (hour >= 11 && hour < 15) {
-    greeting = 'Good afternoon.';
-    suggestion = 'Time for lunch — keep those macros up.';
-    cat = 'lunch';
-  } else if (hour >= 15 && hour < 18) {
-    greeting = 'Good afternoon.';
-    suggestion = 'Need a quick snack before dinner?';
-    cat = 'snack';
-  } else if (hour >= 18 && hour < 22) {
-    greeting = 'Good evening.';
-    suggestion = 'What\'s for dinner tonight?';
-    cat = 'dinner';
-  } else {
-    greeting = 'Late night.';
-    suggestion = 'Something quick and high-protein?';
-    cat = 'snack';
-  }
-
+  let text, cat;
+  if      (hour >= 5  && hour < 11) { text = 'Good morning.';  cat = 'breakfast'; }
+  else if (hour >= 11 && hour < 15) { text = 'Good afternoon.'; cat = 'lunch'; }
+  else if (hour >= 15 && hour < 18) { text = 'Good afternoon.'; cat = 'snack'; }
+  else if (hour >= 18 && hour < 22) { text = 'Good evening.';   cat = 'dinner'; }
+  else                               { text = 'Late night.';     cat = 'snack'; }
   const pool = recipes[cat];
   const pick = pool[Math.floor(Math.random() * pool.length)];
-  const card = document.getElementById('greetingBanner');
   const recipeIdx = pool.indexOf(pick);
+  greetingHTML = `<span class="greeting-inline">${text} Try <a onclick="openModal('${cat}',${recipeIdx})">${pick.title}</a>.</span>`;
+}
 
-  card.className = 'greeting-card';
-  card.innerHTML = `
-    <button class="greeting-close" aria-label="Close">✕</button>
-    <span class="greeting-text">${greeting}</span>
-    <span class="greeting-suggestion">${suggestion} Try <a onclick="openModal('${cat}', ${recipeIdx})">${pick.title}</a>.</span>
-    <button class="greeting-dismiss">Don't suggest again</button>
-  `;
-
-  card.querySelector('.greeting-close').addEventListener('click', () => {
-    card.remove();
-  });
-
-  card.querySelector('.greeting-dismiss').addEventListener('click', () => {
-    localStorage.setItem('greeting-hidden', '1');
-    card.remove();
-  });
-})();
-
-// URL deep-link on load
-(function() {
-  const hash = window.location.hash.slice(1);
-  if (!hash) return;
-  for (const [cat, items] of Object.entries(recipes)) {
-    const idx = items.findIndex(r =>
-      r.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') === hash
-    );
-    if (idx !== -1) {
-      openModal(cat, idx);
-      return;
+function buildPantryMap() {
+  const map = {};
+  const allItems = Object.values(pantryGroups).flat();
+  for (const [, items] of Object.entries(recipes)) {
+    for (const r of items) {
+      const ingText = r.ingredients.map(i => i.item.toLowerCase()).join(' ');
+      const matched = [];
+      for (const p of allItems) {
+        const kwds = p.keywords.toLowerCase().split(' ').filter(k => k.length > 2);
+        if (kwds.some(kw => ingText.includes(kw))) matched.push(p.id);
+      }
+      if (matched.length > 0) map[r.title] = [...new Set(matched)];
     }
   }
+  return map;
+}
+
+function boot() {
+  pantryMap = buildPantryMap();
+  initGreeting();
+
+  const _lastVisit = getCookie('last-filter-visit');
+  setCookie('last-filter-visit', Date.now(), 30);
+  const _savedRaw = localStorage.getItem('filter-state');
+  const _twoHours = 2 * 60 * 60 * 1000;
+  const _elapsed = _lastVisit ? Date.now() - parseInt(_lastVisit) : 0;
+
+  if (_savedRaw) {
+    const _saved = JSON.parse(_savedRaw);
+    const _hasFilters = (_saved.categories || []).length || _saved.time || _saved.search || (_saved.ingredients || []).length;
+    if (_hasFilters && _elapsed >= _twoHours) {
+      renderCards(); renderPantryItems(); applyFilters();
+      showFilterResumeCard(_saved);
+    } else {
+      restoreFilterState(_saved);
+      renderCards(); renderPantryItems(); applyFilters();
+    }
+  } else {
+    renderCards(); renderPantryItems(); applyFilters();
+  }
+}
+
+fetch('recipes.json')
+  .then(r => r.json())
+  .then(data => {
+    recipes = { breakfast: [], lunch: [], dinner: [], snack: [] };
+    data.recipes.forEach(r => {
+      const cat = r.category;
+      if (!recipes[cat]) return;
+      const n = r.nutrition_per_serving;
+      recipes[cat].push({
+        title:      r.title,
+        desc:       r.desc,
+        time:       r.time,
+        protein:    n.protein_g + 'g protein',
+        kcal:       n.energy_kcal + ' kcal',
+        servings:   r.servings,
+        ingredients: r.ingredients,
+        steps:      r.steps,
+        tips:       r.benefits,
+        nutrition:  n,
+      });
+    });
+    boot();
+    // URL deep-link
+    const hash = window.location.hash.slice(1);
+    if (hash) {
+      for (const [cat, items] of Object.entries(recipes)) {
+        const idx = items.findIndex(r =>
+          r.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') === hash
+        );
+        if (idx !== -1) { openModal(cat, idx); break; }
+      }
+    }
+  })
+  .catch(err => console.error('Failed to load recipes:', err));
+
+// Reorder category sections by time of day
+(function() {
+  const hour = new Date().getHours();
+  let order;
+  if      (hour >= 5  && hour < 11) order = ['breakfast', 'lunch', 'snack', 'dinner'];
+  else if (hour >= 11 && hour < 15) order = ['lunch', 'breakfast', 'snack', 'dinner'];
+  else if (hour >= 15 && hour < 18) order = ['snack', 'lunch', 'dinner', 'breakfast'];
+  else if (hour >= 18 && hour < 22) order = ['dinner', 'snack', 'lunch', 'breakfast'];
+  else                               order = ['snack', 'dinner', 'breakfast', 'lunch'];
+
+  const parent = document.querySelector('.main-body');
+  order.forEach(cat => {
+    const el = parent.querySelector(`[data-category="${cat}"]`);
+    if (el) parent.appendChild(el);
+  });
 })();
+
 </script>
 </body>
 </html>
