@@ -1,7 +1,22 @@
 
+function debounce(fn, ms) {
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+}
+
 let recipes = {};
 
 let currentSort = 'default';
+let sortDir = 'desc';
+
+const SORT_OPTIONS = {
+  default: { label: 'Recommended', field: null,           display: null },
+  kcal:    { label: 'Calories ↓',  field: 'energy_kcal', display: n => `${Math.round(n.energy_kcal)} kcal` },
+  protein: { label: 'Protein ↓',   field: 'protein_g',   display: n => `${Math.round(n.protein_g)}g protein` },
+  carbs:   { label: 'Carbs ↓',     field: 'carbs_g',     display: n => `${Math.round(n.carbs_g)}g carbs` },
+  fat:     { label: 'Fat ↓',       field: 'fat_g',       display: n => `${Math.round(n.fat_g)}g fat` },
+  fibre:   { label: 'Fibre ↓',     field: 'fibre_g',     display: n => `${Math.round(n.fibre_g)}g fibre` },
+};
 
 const favorites = new Set(JSON.parse(localStorage.getItem('favorites') || '[]'));
 const shoppingList = new Set();
@@ -65,11 +80,12 @@ document.getElementById('shopModal').addEventListener('click', e => { if (e.targ
 
 function getSortedItems(cat) {
   const indexed = recipes[cat].map((r, i) => ({ r, i }));
-  if (currentSort === 'protein') {
-    return indexed.sort((a, b) => parseFloat(b.r.protein) - parseFloat(a.r.protein));
-  }
-  if (currentSort === 'kcal') {
-    return indexed.sort((a, b) => parseFloat(a.r.kcal) - parseFloat(b.r.kcal));
+  const sortOpt = SORT_OPTIONS[currentSort];
+  if (sortOpt?.field) {
+    return indexed.sort((a, b) => {
+      const diff = b.r.nutrition[sortOpt.field] - a.r.nutrition[sortOpt.field];
+      return sortDir === 'desc' ? diff : -diff;
+    });
   }
   if (currentSort === 'best-match') {
     return indexed.sort((a, b) => {
@@ -103,23 +119,17 @@ function renderCards() {
       card.className = 'recipe-card';
       const isFav = favorites.has(r.title);
       const inList = shoppingList.has(r.title);
+      const sortOpt = SORT_OPTIONS[currentSort];
+      const metaText = sortOpt?.display ? `${sortOpt.display(r.nutrition)} · ${r.time}` : r.time;
       card.innerHTML = `
+        <button class="card-fav ${isFav ? 'active' : ''}" aria-label="Favourite">${isFav ? '♥' : '♡'}</button>
         <div class="card-meta">
-          <span class="card-time">${r.time}</span>
+          <span class="card-time">${metaText}</span>
         </div>
         <div class="card-title">${r.title}</div>
         <div class="card-desc" data-desc="${r.desc.replace(/"/g, '&quot;')}">${r.desc}</div>
-        <div class="card-footer">
-          <div class="card-stats">
-            <span class="card-match"></span>
-            <span class="card-kcal">${r.kcal}</span>
-            <span class="card-protein">${r.protein}</span>
-          </div>
-          <div class="card-actions">
-            <button class="card-fav ${isFav ? 'active' : ''}" aria-label="Favourite">${isFav ? '♥' : '♡'}</button>
-            <button class="card-shop-btn ${inList ? 'active' : ''}">${inList ? '✓ Added' : '+ Add'}</button>
-          </div>
-        </div>
+        <span class="card-match"></span>
+        <button class="card-shop-btn ${inList ? 'active' : ''}">${inList ? '✓ Added' : '+ Add'}</button>
       `;
       card.querySelector('.card-fav').addEventListener('click', e => { e.stopPropagation(); toggleFavorite(r.title, e.currentTarget); });
       card.querySelector('.card-shop-btn').addEventListener('click', e => { e.stopPropagation(); toggleShopList(r.title, e.currentTarget); });
@@ -402,8 +412,9 @@ function activateBestMatch() {
 
 function deactivateBestMatch() {
   currentSort = prePantrySort;
-  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector(`.sort-btn[data-sort="${currentSort}"]`)?.classList.add('active');
+  const sel = document.getElementById('sortSelect');
+  if (sel) sel.value = currentSort;
+  updateSortDirBtn();
   renderCards();
   applyFilters();
 }
@@ -419,8 +430,9 @@ function clearAllFilters() {
   renderPantryItems();
   if (currentSort === 'best-match') {
     currentSort = prePantrySort;
-    document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
-    document.querySelector(`.sort-btn[data-sort="${currentSort}"]`)?.classList.add('active');
+    const sel = document.getElementById('sortSelect');
+    if (sel) sel.value = currentSort;
+    updateSortDirBtn();
   }
   renderCards();
   applyFilters();
@@ -569,6 +581,11 @@ function updateFilterSummary(checkedCats, q) {
 }
 
 // Fav filter
+document.getElementById('filterSummary').addEventListener('click', e => {
+  const link = e.target.closest('.greeting-link');
+  if (link) openModal(link.dataset.cat, parseInt(link.dataset.idx));
+});
+
 document.getElementById('favFilter').addEventListener('change', applyFilters);
 
 // Category checkboxes
@@ -593,7 +610,7 @@ document.querySelectorAll('.time-btn').forEach(btn => {
 });
 
 // Search
-document.getElementById('searchInput').addEventListener('input', applyFilters);
+document.getElementById('searchInput').addEventListener('input', debounce(applyFilters, 150));
 
 // Pantry clear
 document.getElementById('pantryClear').addEventListener('click', () => {
@@ -604,14 +621,27 @@ document.getElementById('pantryClear').addEventListener('click', () => {
 });
 
 // Sort
-document.querySelectorAll('.sort-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    currentSort = btn.dataset.sort;
-    document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    renderCards();
-    applyFilters();
-  });
+function updateSortDirBtn() {
+  const btn = document.getElementById('sortDirBtn');
+  const hasField = !!SORT_OPTIONS[currentSort]?.field;
+  btn.hidden = !hasField;
+  btn.textContent = sortDir === 'desc' ? '↓' : '↑';
+  btn.setAttribute('aria-label', sortDir === 'desc' ? 'Sort ascending' : 'Sort descending');
+}
+
+document.getElementById('sortSelect').addEventListener('change', e => {
+  currentSort = e.target.value;
+  sortDir = 'desc';
+  updateSortDirBtn();
+  renderCards();
+  applyFilters();
+});
+
+document.getElementById('sortDirBtn').addEventListener('click', () => {
+  sortDir = sortDir === 'desc' ? 'asc' : 'desc';
+  updateSortDirBtn();
+  renderCards();
+  applyFilters();
 });
 
 // Mobile sheet
@@ -641,6 +671,7 @@ sheetToggleBtn.addEventListener('click', () => {
 
 sheetBackdrop.addEventListener('click', closeSheet);
 document.getElementById('sheetApply').addEventListener('click', closeSheet);
+document.getElementById('sheetClose').addEventListener('click', closeSheet);
 
 // Swipe down to close
 let touchStartY = 0;
@@ -659,7 +690,7 @@ function getCookie(name) {
   return match ? decodeURIComponent(match.split('=')[1]) : null;
 }
 
-// Save current filter state to localStorage
+// Save current filter state to localStorage (debounced to avoid writes on every keystroke)
 function saveFilterState() {
   const state = {
     categories: [...document.querySelectorAll('input[name="category"]:checked')].map(el => el.value),
@@ -667,8 +698,12 @@ function saveFilterState() {
     search: document.getElementById('searchInput').value,
     ingredients: [...selectedIngredients]
   };
-  localStorage.setItem('filter-state', JSON.stringify(state));
+  debouncedWriteFilterState(state);
 }
+
+const debouncedWriteFilterState = debounce(state => {
+  localStorage.setItem('filter-state', JSON.stringify(state));
+}, 400);
 
 // Apply a saved state object onto the UI (without re-rendering)
 function restoreFilterState(state) {
@@ -735,7 +770,7 @@ function initGreeting() {
   const pool = recipes[cat];
   const pick = pool[Math.floor(Math.random() * pool.length)];
   const recipeIdx = pool.indexOf(pick);
-  greetingHTML = `<span class="greeting-inline">${text} Try <a onclick="openModal('${cat}',${recipeIdx})">${pick.title}</a>.</span>`;
+  greetingHTML = `<span class="greeting-inline">${text} Try <a class="greeting-link" data-cat="${cat}" data-idx="${recipeIdx}">${pick.title}</a>.</span>`;
 }
 
 function buildPantryMap() {
@@ -813,7 +848,12 @@ fetch('recipes.json')
       }
     }
   })
-  .catch(err => console.error('Failed to load recipes:', err));
+  .catch(() => {
+    document.querySelectorAll('.recipe-grid').forEach(g => { g.innerHTML = ''; });
+    const el = document.getElementById('emptyState');
+    el.textContent = 'Could not load recipes. Try refreshing the page.';
+    el.style.display = 'block';
+  });
 
 // Reorder category sections by time of day
 (function() {

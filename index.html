@@ -18,9 +18,9 @@
     });
   })();
 </script>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>nogluten.club — Curated healthy recipes, gluten-free &amp; lactose-free</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <link href="styles.css" rel="stylesheet" />
 </head>
 <body>
@@ -33,20 +33,23 @@
     <div class="sheet-handle" aria-hidden="true"></div>
 
     <div class="sidebar-header">
-      <div style="position:relative;width:100%">
+      <div style="position:relative;flex:1;min-width:0">
         <input class="search-input" id="searchInput" type="search" placeholder="Search recipes…" aria-label="Search recipes" autocomplete="off">
         <kbd style="position:absolute;right:0.625rem;top:50%;transform:translateY(-50%);font-size:0.75rem;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:0.1rem 0.35rem;pointer-events:none">/</kbd>
       </div>
+      <button class="sheet-close-btn" id="sheetClose" aria-label="Close filters">✕</button>
     </div>
 
     <div class="sidebar-body">
       <div class="sidebar-section">
+        <div class="sidebar-label">Saved</div>
         <label class="sidebar-option">
           <input type="checkbox" id="favFilter"> ♥ Favourites only
         </label>
       </div>
 
       <div class="sidebar-section">
+        <div class="sidebar-label">Meal type</div>
         <label class="sidebar-option">
           <input type="checkbox" name="category" value="breakfast"> Breakfast
         </label>
@@ -62,6 +65,7 @@
       </div>
 
       <div class="sidebar-section">
+        <div class="sidebar-label">Cook time</div>
         <div class="time-chips">
           <button class="time-btn" data-time="15">≤ 15 min</button>
           <button class="time-btn" data-time="30">15–30 min</button>
@@ -109,9 +113,15 @@
           <div id="filterSummary"></div>
         </div>
         <div class="sort-control">
-          <button class="sort-btn active" data-sort="default">Default</button>
-          <button class="sort-btn" data-sort="protein">Protein ↓</button>
-          <button class="sort-btn" data-sort="kcal">Kcal ↓</button>
+          <select class="sort-select" id="sortSelect" aria-label="Sort recipes">
+            <option value="default">Recommended</option>
+            <option value="kcal">Calories</option>
+            <option value="protein">Protein</option>
+            <option value="carbs">Carbs</option>
+            <option value="fat">Fat</option>
+            <option value="fibre">Fibre</option>
+          </select>
+          <button class="sort-dir-btn" id="sortDirBtn" hidden aria-label="Sort descending">↓</button>
         </div>
       </div>
       <div class="empty-state" id="emptyState">No recipes match your filters.</div>
@@ -122,7 +132,11 @@
           <h2><span class="cat-dot"></span>Breakfast</h2>
           <span class="section-count">4 recipes</span>
         </div>
-        <div class="recipe-grid" id="breakfast-grid"></div>
+        <div class="recipe-grid" id="breakfast-grid">
+          <article class="recipe-card skeleton" aria-hidden="true"></article>
+          <article class="recipe-card skeleton" aria-hidden="true"></article>
+          <article class="recipe-card skeleton" aria-hidden="true"></article>
+        </div>
       </section>
 
       <!-- LUNCH -->
@@ -131,7 +145,11 @@
           <h2><span class="cat-dot"></span>Lunch</h2>
           <span class="section-count">4 recipes</span>
         </div>
-        <div class="recipe-grid" id="lunch-grid"></div>
+        <div class="recipe-grid" id="lunch-grid">
+          <article class="recipe-card skeleton" aria-hidden="true"></article>
+          <article class="recipe-card skeleton" aria-hidden="true"></article>
+          <article class="recipe-card skeleton" aria-hidden="true"></article>
+        </div>
       </section>
 
       <!-- DINNER -->
@@ -140,7 +158,11 @@
           <h2><span class="cat-dot"></span>Dinner</h2>
           <span class="section-count">4 recipes</span>
         </div>
-        <div class="recipe-grid" id="dinner-grid"></div>
+        <div class="recipe-grid" id="dinner-grid">
+          <article class="recipe-card skeleton" aria-hidden="true"></article>
+          <article class="recipe-card skeleton" aria-hidden="true"></article>
+          <article class="recipe-card skeleton" aria-hidden="true"></article>
+        </div>
       </section>
 
       <!-- SNACKS -->
@@ -149,7 +171,11 @@
           <h2><span class="cat-dot"></span>Snacks &amp; High-Protein</h2>
           <span class="section-count">4 recipes</span>
         </div>
-        <div class="recipe-grid" id="snack-grid"></div>
+        <div class="recipe-grid" id="snack-grid">
+          <article class="recipe-card skeleton" aria-hidden="true"></article>
+          <article class="recipe-card skeleton" aria-hidden="true"></article>
+          <article class="recipe-card skeleton" aria-hidden="true"></article>
+        </div>
       </section>
     </div>
   </main>
