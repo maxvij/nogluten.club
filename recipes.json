@@ -516,8 +516,8 @@
       "time": "10 min",
       "ingredients": [
         {
-          "amount": "2",
-          "unit": "cans (160g)",
+          "amount": "320",
+          "unit": "g",
           "item": "tuna in spring water, drained"
         },
         {
@@ -780,8 +780,8 @@
       "time": "5 min",
       "ingredients": [
         {
-          "amount": "1",
-          "unit": "can (95g)",
+          "amount": "95",
+          "unit": "g",
           "item": "sardines in olive oil"
         },
         {
@@ -832,8 +832,8 @@
       "time": "20 min",
       "ingredients": [
         {
-          "amount": "1",
-          "unit": "can (400g)",
+          "amount": "400",
+          "unit": "g",
           "item": "chickpeas, drained"
         },
         {
@@ -842,8 +842,8 @@
           "item": "baby spinach"
         },
         {
-          "amount": "1",
-          "unit": "can (400g)",
+          "amount": "400",
+          "unit": "g",
           "item": "diced tomatoes"
         },
         {
@@ -1044,8 +1044,8 @@
       "time": "25 min",
       "ingredients": [
         {
-          "amount": "2",
-          "unit": "fillets (300g)",
+          "amount": "300",
+          "unit": "g",
           "item": "salmon"
         },
         {
@@ -1257,8 +1257,8 @@
       "time": "20 min",
       "ingredients": [
         {
-          "amount": "2",
-          "unit": "fillets (300g)",
+          "amount": "300",
+          "unit": "g",
           "item": "salmon"
         },
         {
@@ -1368,8 +1368,8 @@
           "item": "raw prawns, peeled"
         },
         {
-          "amount": "1",
-          "unit": "can (400g)",
+          "amount": "400",
+          "unit": "g",
           "item": "diced tomatoes"
         },
         {
@@ -1532,8 +1532,8 @@
           "item": "harissa paste (GF)"
         },
         {
-          "amount": "1",
-          "unit": "can (400g)",
+          "amount": "400",
+          "unit": "g",
           "item": "chickpeas, drained"
         },
         {
@@ -1724,8 +1724,8 @@
           "item": "rice cakes (GF)"
         },
         {
-          "amount": "1",
-          "unit": "can (80g)",
+          "amount": "80",
+          "unit": "g",
           "item": "tuna in spring water, drained"
         },
         {
@@ -1825,8 +1825,8 @@
       "time": "30 min",
       "ingredients": [
         {
-          "amount": "1",
-          "unit": "can (400g)",
+          "amount": "400",
+          "unit": "g",
           "item": "chickpeas, drained and dried"
         },
         {
@@ -1930,8 +1930,8 @@
           "item": "eggs"
         },
         {
-          "amount": "1",
-          "unit": "can (400g)",
+          "amount": "400",
+          "unit": "g",
           "item": "diced tomatoes"
         },
         {
@@ -2137,8 +2137,8 @@
       "time": "8 min",
       "ingredients": [
         {
-          "amount": "2",
-          "unit": "cans (160g)",
+          "amount": "320",
+          "unit": "g",
           "item": "tuna in spring water, drained"
         },
         {
@@ -2195,8 +2195,8 @@
           "item": "sweet potato"
         },
         {
-          "amount": "1",
-          "unit": "can (80g)",
+          "amount": "80",
+          "unit": "g",
           "item": "tuna in spring water, drained"
         },
         {
@@ -2608,8 +2608,8 @@
           "item": "eggs"
         },
         {
-          "amount": "1",
-          "unit": "can (400g)",
+          "amount": "400",
+          "unit": "g",
           "item": "diced tomatoes"
         },
         {
@@ -2920,8 +2920,8 @@
           "item": "sweet potatoes, cubed"
         },
         {
-          "amount": "1",
-          "unit": "can (400g)",
+          "amount": "400",
+          "unit": "g",
           "item": "black beans, drained"
         },
         {
@@ -2968,8 +2968,8 @@
       "time": "8 min",
       "ingredients": [
         {
-          "amount": "1",
-          "unit": "can (95g)",
+          "amount": "95",
+          "unit": "g",
           "item": "sardines in olive oil"
         },
         {
@@ -3074,8 +3074,8 @@
       "time": "20 min",
       "ingredients": [
         {
-          "amount": "2",
-          "unit": "fillets",
+          "amount": "300",
+          "unit": "g",
           "item": "cod (or other white fish)"
         },
         {
@@ -3233,8 +3233,8 @@
       "time": "20 min",
       "ingredients": [
         {
-          "amount": "2",
-          "unit": "fillets",
+          "amount": "300",
+          "unit": "g",
           "item": "trout"
         },
         {
@@ -3392,8 +3392,8 @@
       "time": "20 min",
       "ingredients": [
         {
-          "amount": "2",
-          "unit": "fillets (300g)",
+          "amount": "300",
+          "unit": "g",
           "item": "salmon"
         },
         {
@@ -3460,8 +3460,8 @@
           "item": "cooked rice"
         },
         {
-          "amount": "1",
-          "unit": "can (400g)",
+          "amount": "400",
+          "unit": "g",
           "item": "diced tomatoes"
         },
         {
@@ -3657,8 +3657,8 @@
       "time": "25 min",
       "ingredients": [
         {
-          "amount": "2",
-          "unit": "fillets",
+          "amount": "300",
+          "unit": "g",
           "item": "mackerel"
         },
         {
@@ -3821,13 +3821,13 @@
           "item": "lean ground beef"
         },
         {
-          "amount": "1",
-          "unit": "can (400g)",
+          "amount": "400",
+          "unit": "g",
           "item": "kidney beans, drained"
         },
         {
-          "amount": "1",
-          "unit": "can (400g)",
+          "amount": "400",
+          "unit": "g",
           "item": "diced tomatoes"
         },
         {
@@ -3922,8 +3922,8 @@
       "time": "15 min",
       "ingredients": [
         {
-          "amount": "2",
-          "unit": "steaks (300g)",
+          "amount": "300",
+          "unit": "g",
           "item": "fresh tuna"
         },
         {
@@ -4542,8 +4542,8 @@
       "time": "10 min",
       "ingredients": [
         {
-          "amount": "1",
-          "unit": "can (400g)",
+          "amount": "400",
+          "unit": "g",
           "item": "black beans, drained"
         },
         {
@@ -4600,8 +4600,8 @@
           "item": "red bell peppers"
         },
         {
-          "amount": "2",
-          "unit": "cans (160g)",
+          "amount": "320",
+          "unit": "g",
           "item": "tuna in spring water, drained"
         },
         {
@@ -4860,8 +4860,8 @@
       "time": "20 min",
       "ingredients": [
         {
-          "amount": "2",
-          "unit": "fillets",
+          "amount": "300",
+          "unit": "g",
           "item": "cod"
         },
         {
@@ -5019,8 +5019,8 @@
       "time": "30 min",
       "ingredients": [
         {
-          "amount": "1",
-          "unit": "can (400g)",
+          "amount": "400",
+          "unit": "g",
           "item": "chickpeas, drained"
         },
         {
@@ -5029,8 +5029,8 @@
           "item": "eggs"
         },
         {
-          "amount": "1",
-          "unit": "can (400g)",
+          "amount": "400",
+          "unit": "g",
           "item": "diced tomatoes"
         },
         {
