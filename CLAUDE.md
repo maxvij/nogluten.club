@@ -34,3 +34,4 @@ Section counts are dynamic — no need to update them manually.
 - No emojis in UI copy
 - No frameworks, no build tools, no external JS
 - All interactive elements (buttons, inputs, checkboxes, links) must have a minimum height/touch target of 40px
+- No CSS transition durations on hover/focus states — only use transitions where the animation has a clear UX purpose (e.g. the mobile sheet slide-in)
