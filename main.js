@@ -1,4 +1,110 @@
 
+// Emoji lookup by recipe title keywords
+const EMOJI_MAP = [
+  [/\b(egg|eggs|omelette|omelet|frittata|scrambled|poached)\b/i, '🥚'],
+  [/\b(avocado|avo)\b/i, '🥑'],
+  [/\b(salmon|tuna|sardine|mackerel|cod|halibut|sea bass|trout)\b/i, '🐟'],
+  [/\b(chicken|poultry|hen)\b/i, '🍗'],
+  [/\b(steak|beef|brisket|mince|meatball|burger)\b/i, '🥩'],
+  [/\b(shrimp|prawn|lobster|crab)\b/i, '🦐'],
+  [/\b(turkey)\b/i, '🦃'],
+  [/\b(pork|bacon|ham|sausage|chorizo)\b/i, '🥓'],
+  [/\b(lamb|mutton)\b/i, '🐑'],
+  [/\b(rice|risotto|pilaf|fried rice)\b/i, '🍚'],
+  [/\b(pasta|noodle|spaghetti|penne|fettuccine|linguine|tagliatelle|pad thai)\b/i, '🍝'],
+  [/\b(soup|stew|broth|chowder|bisque)\b/i, '🍲'],
+  [/\b(salad|slaw|greens)\b/i, '🥗'],
+  [/\b(wrap|burrito|taco)\b/i, '🌯'],
+  [/\b(bowl)\b/i, '🥣'],
+  [/\b(smoothie|shake|blend)\b/i, '🥤'],
+  [/\b(pancake|waffle|crepe)\b/i, '🥞'],
+  [/\b(toast|bread|bruschetta)\b/i, '🍞'],
+  [/\b(banana|plantain)\b/i, '🍌'],
+  [/\b(berry|berries|blueberry|strawberry|raspberry)\b/i, '🫐'],
+  [/\b(mango)\b/i, '🥭'],
+  [/\b(apple)\b/i, '🍎'],
+  [/\b(lemon|lime|citrus)\b/i, '🍋'],
+  [/\b(orange)\b/i, '🍊'],
+  [/\b(pineapple)\b/i, '🍍'],
+  [/\b(watermelon|melon)\b/i, '🍉'],
+  [/\b(tomato)\b/i, '🍅'],
+  [/\b(sweet potato|yam)\b/i, '🍠'],
+  [/\b(potato)\b/i, '🥔'],
+  [/\b(broccoli)\b/i, '🥦'],
+  [/\b(mushroom)\b/i, '🍄'],
+  [/\b(carrot)\b/i, '🥕'],
+  [/\b(corn)\b/i, '🌽'],
+  [/\b(pepper|capsicum)\b/i, '🌶'],
+  [/\b(edamame|soy|tofu|tempeh)\b/i, '🫘'],
+  [/\b(lentil|chickpea|hummus|legume|bean)\b/i, '🫘'],
+  [/\b(nut|almond|cashew|walnut|pecan|pistachio)\b/i, '🥜'],
+  [/\b(yogurt|yoghurt)\b/i, '🫙'],
+  [/\b(cheese)\b/i, '🧀'],
+  [/\b(oat|granola|porridge|muesli)\b/i, '🥣'],
+  [/\b(chocolate|cocoa|cacao)\b/i, '🍫'],
+  [/\b(cake|muffin|cupcake|brownie)\b/i, '🧁'],
+  [/\b(cookie|biscuit)\b/i, '🍪'],
+  [/\b(curry|masala|tikka|dhal|dal)\b/i, '🍛'],
+  [/\b(sushi|maki|roll)\b/i, '🍱'],
+  [/\b(falafel)\b/i, '🧆'],
+  [/\b(hummus)\b/i, '🫙'],
+  [/\b(zucchini|courgette)\b/i, '🥒'],
+  [/\b(asparagus)\b/i, '🌿'],
+  [/\b(spinach|kale|chard|arugula|rocket)\b/i, '🥬'],
+  [/\b(kebab|skewer)\b/i, '🍢'],
+  [/\b(pizza)\b/i, '🍕'],
+  [/\b(coffee|espresso|latte)\b/i, '☕'],
+  [/\b(tea|matcha)\b/i, '🍵'],
+];
+
+// Returns up to 3 distinct emojis for a title (for pattern tiling)
+function titleEmojis(title) {
+  const found = [];
+  for (const [pattern, emoji] of EMOJI_MAP) {
+    if (pattern.test(title) && !found.includes(emoji)) {
+      found.push(emoji);
+      if (found.length === 3) break;
+    }
+  }
+  return found.length ? found : ['🍽'];
+}
+
+// Build a staggered emoji tile grid as HTML for the card image
+function cardEmojiPattern(title) {
+  const emojis = titleEmojis(title);
+  const cols = 20;
+  const rows = 10;
+  let html = '<div class="card-emoji-grid" aria-hidden="true">';
+  for (let r = 0; r < rows; r++) {
+    html += `<div class="card-emoji-row${r % 2 === 1 ? ' offset' : ''}">`;
+    for (let c = 0; c < cols; c++) {
+      html += `<span>${emojis[(r * cols + c) % emojis.length]}</span>`;
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+// FNV-1a hash → deterministic gradient per recipe title
+function hashTitle(str) {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return h;
+}
+
+function cardGradientVars(title) {
+  const h = hashTitle(title);
+  return {
+    hue:    h % 360,
+    angle:  110 + ((h >>> 8)  % 80),  // 110–189 deg
+    spread:  20 + ((h >>> 16) % 35),  // 20–54 deg hue offset
+  };
+}
+
 function debounce(fn, ms) {
   let t;
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
@@ -28,8 +134,17 @@ function saveFavorites() {
 function toggleFavorite(title, btn) {
   favorites.has(title) ? favorites.delete(title) : favorites.add(title);
   saveFavorites();
-  btn.classList.toggle('active', favorites.has(title));
-  btn.textContent = favorites.has(title) ? '♥' : '♡';
+  const active = favorites.has(title);
+  btn.classList.toggle('active', active);
+  btn.textContent = active ? '♥' : '♡';
+  // Sync all card fav buttons for this recipe
+  document.querySelectorAll('.card-fav').forEach(cardBtn => {
+    const card = cardBtn.closest('.recipe-card');
+    if (card && card.dataset.title === title) {
+      cardBtn.classList.toggle('active', active);
+      cardBtn.textContent = active ? '♥' : '♡';
+    }
+  });
   if (document.getElementById('favFilter').checked) applyFilters();
 }
 
@@ -70,6 +185,15 @@ function openShoppingListModal() {
       </label>
     </div>
   `).join('');
+  const copyBtn = document.getElementById('shopCopyBtn');
+  copyBtn.onclick = () => {
+    const text = sorted.map(ing => `${ing.amounts.join(' + ')} ${ing.item}`).join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+      copyBtn.textContent = 'Copied!';
+      setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+    });
+  };
+
   const m = document.getElementById('shopModal');
   m.showModal(); m.focus();
 }
@@ -121,7 +245,12 @@ function renderCards() {
       const inList = shoppingList.has(r.title);
       const sortOpt = SORT_OPTIONS[currentSort];
       const metaText = sortOpt?.display ? `${sortOpt.display(r.nutrition)} · ${r.time}` : r.time;
+      const { hue, angle, spread } = cardGradientVars(r.title);
+      card.style.setProperty('--card-hue', hue);
+      card.style.setProperty('--card-angle', angle + 'deg');
+      card.style.setProperty('--card-spread', spread);
       card.innerHTML = `
+        <div class="card-image">${cardEmojiPattern(r.title)}</div>
         <button class="card-fav ${isFav ? 'active' : ''}" aria-label="Favourite">${isFav ? '♥' : '♡'}</button>
         <div class="card-meta">
           <span class="card-time">${metaText}</span>
@@ -134,6 +263,7 @@ function renderCards() {
       card.querySelector('.card-fav').addEventListener('click', e => { e.stopPropagation(); toggleFavorite(r.title, e.currentTarget); });
       card.querySelector('.card-shop-btn').addEventListener('click', e => { e.stopPropagation(); toggleShopList(r.title, e.currentTarget); });
       card.dataset.idx = i;
+      card.dataset.title = r.title;
       card.addEventListener('click', () => openModal(cat, i));
       grid.appendChild(card);
     });
@@ -191,38 +321,75 @@ function renderNutritionPanel(n, scale) {
 
 function renderModalBody(r, servings) {
   const scale = servings / r.servings;
-  const ingHTML = r.ingredients.map(ing => {
+  const ingHTML = r.ingredients.map((ing, i) => {
     const amt = [ing.amount, ing.unit].filter(Boolean).join(' ');
-    return `<li><span class="ing-amount">${amt}</span><span>${ing.item}</span></li>`;
+    const id = `ing-${i}`;
+    return `<li><label class="ing-row"><input type="checkbox" id="${id}"><span class="ing-amount">${amt}</span><span class="ing-item">${ing.item}</span></label></li>`;
   }).join('');
-  const stepsHTML = r.steps.map(s => `<li>${s}</li>`).join('');
-  document.getElementById('modalBody').innerHTML = `
-    <div class="modal-section-title">Ingredients</div>
-    <ul class="ingredient-list">${ingHTML}</ul>
+  const stepsHTML = r.steps.map((s, i) => {
+    const id = `step-${i}`;
+    return `<li><label class="ing-row"><input type="checkbox" id="${id}"><span class="step-num">${i + 1}</span><span>${s}</span></label></li>`;
+  }).join('');
+  const modalBody = document.getElementById('modalBody');
+  const existingImage = modalBody.querySelector('.modal-image');
+  modalBody.innerHTML = `
     <div class="modal-section-title">Method</div>
     <ol class="steps-list">${stepsHTML}</ol>
     ${r.tips ? `<div class="modal-section-title">Benefits</div><div class="modal-tips">${r.tips}</div>` : ''}
-    <div class="modal-section-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem">
-      <span>Nutrition</span>
-      <div class="serving-selector" id="servingSelector">
-        <span class="serving-label">Servings</span>
-        <button class="serving-btn" id="servingDown" aria-label="Decrease servings">−</button>
-        <span class="serving-count" id="servingCount">${servings}</span>
-        <button class="serving-btn" id="servingUp" aria-label="Increase servings">+</button>
+    <div class="modal-section-title">Ingredients</div>
+    <ul class="ingredient-list">${ingHTML}</ul>
+    <div class="nutrition-block">
+      <div class="modal-section-title" style="display:flex;align-items:center;gap:0.75rem;">
+        <span>Nutrition</span>
+        <div class="serving-selector" id="servingSelector">
+          <span class="serving-label">Servings</span>
+          <button class="serving-btn" id="servingDown" aria-label="Decrease servings">−</button>
+          <span class="serving-count" id="servingCount">${servings}</span>
+          <button class="serving-btn" id="servingUp" aria-label="Increase servings">+</button>
+        </div>
       </div>
+      ${renderNutritionPanel(r.nutrition, scale)}
     </div>
-    ${renderNutritionPanel(r.nutrition, scale)}
   `;
+  if (existingImage) modalBody.insertBefore(existingImage, modalBody.firstChild);
 }
 
 function openModal(cat, idx) {
   const r = recipes[cat][idx];
   const catLabels = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner', snack: 'Snack' };
-  document.getElementById('modalCat').textContent = catLabels[cat];
   document.getElementById('modalTitle').textContent = r.title;
-  document.getElementById('modalStats').innerHTML = `<span class="stat">Time <span>${r.time}</span></span>`;
+  document.getElementById('modalStats').innerHTML = `${catLabels[cat]} recipe · ${r.time}`;
 
-  let servings = r.servings;
+  const { hue, angle, spread } = cardGradientVars(r.title);
+  const modalImg = document.getElementById('modalImage');
+  if (modalImg) {
+    modalImg.style.setProperty('--card-hue', hue);
+    modalImg.style.setProperty('--card-angle', angle + 'deg');
+    modalImg.style.setProperty('--card-spread', spread);
+    modalImg.innerHTML = cardEmojiPattern(r.title);
+  }
+
+  const modalFav = document.getElementById('modalFav');
+  const modalShopBtn = document.getElementById('modalShopBtn');
+
+  const updateModalFav = () => {
+    const active = favorites.has(r.title);
+    modalFav.textContent = active ? '♥' : '♡';
+    modalFav.classList.toggle('active', active);
+  };
+  const updateModalShop = () => {
+    const inList = shoppingList.has(r.title);
+    modalShopBtn.textContent = inList ? '✓ Added to shopping list' : '+ Add to shopping list';
+    modalShopBtn.classList.toggle('active', inList);
+  };
+
+  updateModalFav();
+  updateModalShop();
+
+  modalFav.onclick = () => { toggleFavorite(r.title, modalFav); updateModalFav(); };
+  modalShopBtn.onclick = () => { toggleShopList(r.title, modalShopBtn); updateModalShop(); };
+
+  let servings = 1;
   renderModalBody(r, servings);
 
   document.getElementById('modalBody').addEventListener('click', function handler(e) {
@@ -231,6 +398,7 @@ function openModal(cat, idx) {
   }, { signal: (modal._ac = new AbortController()).signal });
 
 
+  document.getElementById('modalBody').scrollTop = 0;
   previousFocus = document.activeElement;
   modal.showModal();
   modal.focus();
@@ -266,7 +434,7 @@ const themeIcon = themeToggle.querySelector('.theme-icon');
 
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
-  themeIcon.textContent = theme === 'light' ? '☽' : '☀';
+  themeIcon.textContent = theme === 'light' ? 'I like darkness' : 'Let there be light';
 }
 
 function setTheme(theme) {
@@ -498,18 +666,34 @@ function applyFilters() {
     section.classList.toggle('hidden', !catMatch || visible === 0);
   });
 
+  const emptyEl = document.getElementById('emptyState');
+  if (emptyEl) {
+    const isEmpty = totalVisible === 0;
+    emptyEl.style.display = isEmpty ? 'block' : 'none';
+    if (isEmpty) emptyEl.textContent = EMPTY_STATES[Math.floor(Math.random() * EMPTY_STATES.length)];
+  }
   updateResultCount(totalVisible, totalRecipes);
   updateFilterSummary(checkedCats, q);
   saveFilterState();
 }
 
+const EMPTY_STATES = [
+  'Nothing. You\'ve out-filtered yourself.',
+  'Zero results. Even we\'re impressed by that.',
+  'No recipes found. Maybe ease up on the filters.',
+  'That combination doesn\'t exist. Try being less specific.',
+  'Nothing here. The kitchen is judging you.',
+  'Completely empty. A bold choice.',
+  'No matches. The filters have spoken.',
+  'You\'ve filtered your way into a corner.',
+  'Not a single recipe. Remarkable, honestly.',
+  'Nothing. Go touch grass and come back.',
+];
+
 function updateResultCount(visible, total) {
   const el = document.getElementById('resultCount');
-  if (visible === total) {
-    el.textContent = `Showing all ${total} recipes`;
-  } else {
-    el.textContent = `Showing ${visible} of ${total} recipes`;
-  }
+  if (!el) return;
+  el.textContent = `${visible} of ${total} results`;
 }
 
 function updateFilterSummary(checkedCats, q) {
@@ -562,7 +746,10 @@ function updateFilterSummary(checkedCats, q) {
   resetBtn.style.opacity = pills.length === 0 ? '0.35' : '';
 
   if (pills.length === 0) {
-    el.innerHTML = greetingHTML;
+    const msg = document.createElement('span');
+    msg.className = 'filter-all-label';
+    msg.textContent = 'Showing all gluten-free and lactose-free recipes';
+    el.appendChild(msg);
     return;
   }
 
@@ -581,7 +768,7 @@ function updateFilterSummary(checkedCats, q) {
 }
 
 // Fav filter
-document.getElementById('filterSummary').addEventListener('click', e => {
+document.getElementById('greetingSuggestion').addEventListener('click', e => {
   const link = e.target.closest('.greeting-link');
   if (link) openModal(link.dataset.cat, parseInt(link.dataset.idx));
 });
@@ -696,7 +883,9 @@ function saveFilterState() {
     categories: [...document.querySelectorAll('input[name="category"]:checked')].map(el => el.value),
     time: activeTime,
     search: document.getElementById('searchInput').value,
-    ingredients: [...selectedIngredients]
+    ingredients: [...selectedIngredients],
+    sort: currentSort !== 'best-match' ? currentSort : prePantrySort,
+    sortDir,
   };
   debouncedWriteFilterState(state);
 }
@@ -716,12 +905,19 @@ function restoreFilterState(state) {
     document.querySelector(`.time-btn[data-time="${state.time}"]`)?.classList.add('active');
   }
   if (state.search) document.getElementById('searchInput').value = state.search;
+  if (state.sort) {
+    currentSort = state.sort;
+    const sel = document.getElementById('sortSelect');
+    if (sel) sel.value = currentSort;
+  }
+  if (state.sortDir) sortDir = state.sortDir;
   (state.ingredients || []).forEach(id => selectedIngredients.add(id));
   if (selectedIngredients.size > 0) {
     document.getElementById('pantryClear').hidden = false;
     prePantrySort = currentSort;
     currentSort = 'best-match';
   }
+  updateSortDirBtn();
 }
 
 // Show resume card when returning after 2+ hours
@@ -758,19 +954,155 @@ function showFilterResumeCard(state) {
 }
 
 // Inline sort-bar greeting (shown when no filters active)
+const isNZ = Intl.DateTimeFormat().resolvedOptions().timeZone.includes('Auckland');
+
+const GREETINGS = {
+  morning: [
+    'Good morning.',
+    'Rise and shine.',
+    'Morning, champion.',
+    'Wakey wakey.',
+    'Up already? Impressive.',
+    'Morning has broken. You haven\'t.',
+    'The early bird gets the protein.',
+    'Coffee first, questions later.',
+    'Pre-workout fuel incoming.',
+    'Morning. Let\'s make it count.',
+    'Your future self thanks you for eating well.',
+    'Breakfast is non-negotiable.',
+    'Good morning, overachiever.',
+    'The fridge is calling.',
+    'Another lap around the sun begins.',
+    ...(isNZ ? [
+      'Kia ora.',
+      'Morning, mate!',
+      'Long white sorted. Now eat.',
+      'Sweet as. Morning.',
+      'It\'s probably raining. Eat well anyway.',
+    ] : []),
+  ],
+  lunch: [
+    'Good afternoon.',
+    'Lunch o\'clock.',
+    'Hunger: incoming.',
+    'Midday fuel stop.',
+    'The morning survived. Now eat.',
+    'Lunchtime, finally.',
+    'Peak hunger detected.',
+    'Your stomach has opinions.',
+    'Afternoon, legend.',
+    'Halfway through. Refuel.',
+    'The afternoon won\'t feed itself.',
+    'It\'s giving lunch vibes.',
+    'Lunch break. Make it count.',
+    'Stomach says yes. Brain agrees.',
+    ...(isNZ ? [
+      'Good arvo.',
+      'Arvo fuel. Non-negotiable.',
+      'Kia ora. Hungry?',
+    ] : []),
+  ],
+  snack: [
+    'Good afternoon.',
+    'The 3pm slump is real.',
+    'Snack o\'clock.',
+    'Afternoon. You\'re doing great.',
+    'Almost home time.',
+    'The afternoon demands fuel.',
+    'Your body is asking. Politely.',
+    'Energy dip? We\'ve got you.',
+    'Carry on. Eat something.',
+    'The finish line is in sight.',
+    'Small snack. Big comeback.',
+    'Late afternoon. Early dinner. You decide.',
+    ...(isNZ ? [
+      'Nearly home time. Sweet as.',
+      'Auckland traffic can wait. Eat first.',
+    ] : []),
+  ],
+  evening: [
+    'Good evening.',
+    'Evening, champion.',
+    'The day is done. Eat well.',
+    'Stove on. Stress off.',
+    'Dinner doesn\'t cook itself. Unfortunately.',
+    'You\'ve earned a proper meal.',
+    'Golden hour, golden plate.',
+    'Evening. The kitchen awaits.',
+    'The hardest decision of the day: what to eat.',
+    'Protein doesn\'t sleep. Neither should your ambition.',
+    'Evening mode activated.',
+    'Night is young. Dinner first.',
+    'Well done today. Eat accordingly.',
+    'Dinner time.',
+    'End-of-day fuel.',
+    ...(isNZ ? [
+      'Good evening, Auckland.',
+      'Kia ora.',
+      'The All Blacks would eat well tonight.',
+    ] : []),
+  ],
+  late: [
+    'Still up?',
+    'Night owl energy.',
+    'Midnight snack? We don\'t judge.',
+    'The night shift deserves good food.',
+    'Technically tomorrow already.',
+    'Sleep soon. Eat first.',
+    'Nobody needs to know.',
+    'The dark hours demand snacks.',
+    'Late night, high standards.',
+    'You and every chef in Auckland right now.',
+    'Burning the midnight oil. Might as well eat.',
+  ],
+};
+
+function pickGreeting(pool) {
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
 let greetingHTML = '';
 function initGreeting() {
   const hour = new Date().getHours();
-  let text, cat;
-  if      (hour >= 5  && hour < 11) { text = 'Good morning.';  cat = 'breakfast'; }
-  else if (hour >= 11 && hour < 15) { text = 'Good afternoon.'; cat = 'lunch'; }
-  else if (hour >= 15 && hour < 18) { text = 'Good afternoon.'; cat = 'snack'; }
-  else if (hour >= 18 && hour < 22) { text = 'Good evening.';   cat = 'dinner'; }
-  else                               { text = 'Late night.';     cat = 'snack'; }
-  const pool = recipes[cat];
-  const pick = pool[Math.floor(Math.random() * pool.length)];
-  const recipeIdx = pool.indexOf(pick);
-  greetingHTML = `<span class="greeting-inline">${text} Try <a class="greeting-link" data-cat="${cat}" data-idx="${recipeIdx}">${pick.title}</a>.</span>`;
+  let text, cat, pool;
+  if      (hour >= 5  && hour < 11) { pool = GREETINGS.morning; cat = 'breakfast'; }
+  else if (hour >= 11 && hour < 15) { pool = GREETINGS.lunch;   cat = 'lunch'; }
+  else if (hour >= 15 && hour < 18) { pool = GREETINGS.snack;   cat = 'snack'; }
+  else if (hour >= 18 && hour < 22) { pool = GREETINGS.evening; cat = 'dinner'; }
+  else                               { pool = GREETINGS.late;    cat = 'snack'; }
+  text = pickGreeting(pool);
+  const recipes_pool = recipes[cat];
+  const pick = recipes_pool[Math.floor(Math.random() * recipes_pool.length)];
+  const recipeIdx = recipes_pool.indexOf(pick);
+  const headingEl = document.getElementById('greetingHeading');
+  if (headingEl) headingEl.textContent = text;
+  const RECIPE_INTROS = [
+    t => `Try ${t}.`,
+    t => `Time to make ${t}.`,
+    t => `I heard ${t} is nice.`,
+    t => `${t} is pretty good.`,
+    t => `${t} might be the one.`,
+    t => `Have you tried ${t}?`,
+    t => `${t} hits different.`,
+    t => `Not to be pushy, but ${t}.`,
+    t => `${t} has been getting good reviews.`,
+    t => `Today feels like a ${t} day.`,
+    t => `You look like someone who could eat ${t}.`,
+    t => `${t}. Just saying.`,
+    t => `Can confirm ${t} slaps.`,
+    t => `Rumour has it ${t} is excellent.`,
+    t => `${t} — a classic for a reason.`,
+    t => `In the mood for ${t}?`,
+    t => `${t} is calling your name.`,
+    t => `Strongly suggest ${t}.`,
+    t => `Word on the street: ${t}.`,
+    t => `${t} won't make itself, but it should.`,
+  ];
+  const intro = RECIPE_INTROS[Math.floor(Math.random() * RECIPE_INTROS.length)];
+  const linkHTML = `<a class="greeting-link" data-cat="${cat}" data-idx="${recipeIdx}">${pick.title}</a>`;
+  greetingHTML = '';
+  const suggEl = document.getElementById('greetingSuggestion');
+  if (suggEl) suggEl.innerHTML = `<span class="greeting-inline">${intro(linkHTML)}</span>`;
 }
 
 function buildPantryMap() {
@@ -814,6 +1146,13 @@ function boot() {
     renderCards(); renderPantryItems(); applyFilters();
   }
 }
+
+// Slogan crossfade
+(function() {
+  const slogan = document.querySelector('.header-slogan');
+  if (!slogan) return;
+  setInterval(() => slogan.classList.toggle('show-b'), 10000);
+})();
 
 fetch('recipes.json')
   .then(r => r.json())

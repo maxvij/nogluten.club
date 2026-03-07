@@ -13,7 +13,7 @@
         var t = e.matches ? 'dark' : 'light';
         document.documentElement.setAttribute('data-theme', t);
         var icon = document.querySelector('.theme-icon');
-        if (icon) icon.textContent = t === 'light' ? '☽' : '☀';
+        if (icon) icon.textContent = t === 'light' ? 'I like darkness' : 'Let there be light';
       }
     });
   })();
@@ -98,21 +98,31 @@
       <div class="logo-block">
         <h1>nogluten<em>.club</em></h1>
       </div>
-      <p class="header-slogan">Curated healthy recipes — gluten-free &amp; lactose-free</p>
       <div class="main-header-right">
         <button class="mobile-filter-toggle" id="mobileFilterToggle" aria-expanded="false">Filters</button>
-        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
-          <span class="theme-icon">☽</span>
-        </button>
+        <p class="header-slogan">
+          <span class="slogan-text">
+            <span class="slogan-a">Curated healthy recipes</span>
+            <span class="slogan-b">Gluten-free &amp; lactose-free</span>
+          </span>
+          <span class="slogan-sep" aria-hidden="true">·</span>
+          <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="theme-icon"></span></button>
+        </p>
       </div>
     </div>
 
     <div class="main-body">
+      <div class="greeting-block">
+        <div class="greeting-heading" id="greetingHeading"></div>
+        <div class="greeting-suggestion" id="greetingSuggestion"></div>
+      </div>
+
       <div class="sort-bar">
         <div class="sort-bar-left">
           <div id="filterSummary"></div>
         </div>
         <div class="sort-control">
+          <span class="sort-label">Sort by</span>
           <select class="sort-select" id="sortSelect" aria-label="Sort recipes">
             <option value="default">Recommended</option>
             <option value="kcal">Calories</option>
@@ -124,7 +134,7 @@
           <button class="sort-dir-btn" id="sortDirBtn" hidden aria-label="Sort descending">↓</button>
         </div>
       </div>
-      <div class="empty-state" id="emptyState">No recipes match your filters.</div>
+      <div class="empty-state" id="emptyState"></div>
 
       <!-- BREAKFAST -->
       <section class="category-section cat-breakfast" data-category="breakfast">
@@ -188,6 +198,7 @@
   <div class="shop-modal-header">
     <button class="modal-close" id="shopModalClose" aria-label="Close">✕</button>
     <h2 class="modal-title">Shopping list</h2>
+    <button class="shop-copy-btn" id="shopCopyBtn" aria-label="Copy to clipboard">Copy</button>
   </div>
   <div class="modal-body" id="shopModalBody"></div>
 </dialog>
@@ -195,12 +206,19 @@
 <!-- Recipe modal -->
 <dialog id="recipeModal" aria-labelledby="modalTitle">
   <div class="modal-header">
-    <button class="modal-close" id="modalClose" aria-label="Close recipe">✕</button>
-    <div class="modal-cat-label" id="modalCat"></div>
+    <div class="modal-header-actions">
+      <button class="modal-fav" id="modalFav" aria-label="Favourite">♡</button>
+      <button class="modal-close" id="modalClose" aria-label="Close recipe">✕</button>
+    </div>
     <h2 class="modal-title" id="modalTitle"></h2>
     <div class="modal-stats" id="modalStats"></div>
   </div>
-  <div class="modal-body" id="modalBody"></div>
+  <div class="modal-body" id="modalBody">
+    <div class="modal-image" id="modalImage"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="modal-shop-btn" id="modalShopBtn">+ Add to shopping list</button>
+  </div>
 </dialog>
 
 <script src="main.js" type="text/javascript"></script>
