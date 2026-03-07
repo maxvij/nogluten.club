@@ -339,7 +339,7 @@ function renderModalBody(r, servings) {
     <div class="modal-section-title">Ingredients</div>
     <ul class="ingredient-list">${ingHTML}</ul>
     <div class="nutrition-block">
-      <div class="modal-section-title" style="display:flex;align-items:center;gap:0.75rem;">
+      <div class="modal-section-title nutrition-header">
         <span>Nutrition</span>
         <div class="serving-selector" id="servingSelector">
           <span class="serving-label">Servings</span>
