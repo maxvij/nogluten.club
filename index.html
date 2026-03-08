@@ -76,15 +76,17 @@
         </div>
       </div>
 
-      <div class="sidebar-section">
-        <div class="sidebar-label" style="margin-bottom:0.75rem">In my fridge</div>
-        <input class="search-input" id="pantrySearch" type="search" placeholder="Search ingredients…" aria-label="Search ingredients" autocomplete="off" style="margin-bottom:0.75rem">
-        <div class="pantry-view-toggle">
-          <button class="pvt-btn active" data-view="cat">Categorized</button>
-          <button class="pvt-btn" data-view="az">A–Z</button>
+      <div class="sidebar-section sidebar-section--collapsible" id="pantrySection">
+        <button class="sidebar-label sidebar-collapsible-toggle" id="pantryToggle" aria-expanded="false" style="margin-bottom:0">In my fridge</button>
+        <div class="sidebar-collapsible-body" id="pantryBody" hidden>
+          <input class="search-input" id="pantrySearch" type="search" placeholder="Search ingredients…" aria-label="Search ingredients" autocomplete="off" style="margin-bottom:0.75rem;margin-top:0.75rem">
+          <div class="pantry-view-toggle">
+            <button class="pvt-btn active" data-view="cat">Categorized</button>
+            <button class="pvt-btn" data-view="az">A–Z</button>
+          </div>
+          <div id="pantry-items"></div>
+          <button class="pantry-clear" id="pantryClear" hidden>Clear all</button>
         </div>
-        <div id="pantry-items"></div>
-        <button class="pantry-clear" id="pantryClear" hidden>Clear all</button>
       </div>
     </div>
 
@@ -127,7 +129,7 @@
         <div class="sort-control">
           <span class="sort-label">Sort by</span>
           <select class="sort-select" id="sortSelect" aria-label="Sort recipes">
-            <option value="default">Recommended</option>
+            <option value="default">Smart</option>
             <option value="kcal">Calories</option>
             <option value="protein">Protein</option>
             <option value="carbs">Carbs</option>
@@ -204,28 +206,35 @@
   </div>
   <div class="modal-body" id="shopModalBody"></div>
   <div class="modal-footer">
-    <button class="shop-copy-btn" id="shopCopyBtn" aria-label="Copy to clipboard">Copy to clipboard</button>
+    <div class="shop-footer-row">
+      <button class="shop-copy-btn" id="shopCopyBtn" aria-label="Copy to clipboard">Copy to clipboard</button>
+      <button class="shop-clear-btn" id="shopClearBtn">Clear all</button>
+    </div>
   </div>
 </dialog>
 
 <!-- Recipe modal -->
 <dialog id="recipeModal" aria-labelledby="modalTitle">
-  <div class="modal-header">
-    <div class="modal-header-actions">
+  <div class="modal-bar" id="modalBar">
+    <span class="modal-bar-title" id="modalTitleCompact"></span>
+    <div class="modal-bar-actions">
       <button class="modal-share" id="modalShare" aria-label="Share recipe">Share</button>
       <button class="modal-fav" id="modalFav" aria-label="Favourite">♡</button>
       <button class="modal-close" id="modalClose" aria-label="Close recipe">✕</button>
     </div>
-    <h2 class="modal-title" id="modalTitle"></h2>
-    <div class="modal-stats" id="modalStats"></div>
   </div>
   <div class="modal-body" id="modalBody">
-    <div class="modal-image" id="modalImage"></div>
+    <div class="modal-artwork" id="modalImageBg"></div>
+    <div class="modal-header-bottom" id="modalHeaderBottom">
+      <h2 class="modal-title" id="modalTitle"></h2>
+      <div class="modal-stats" id="modalStats"></div>
+    </div>
+    <div id="modalContent" class="modal-content"></div>
   </div>
   <div class="modal-footer">
     <div class="modal-footer-row">
-      <button class="modal-cook-btn" id="modalCookBtn">Cook this</button>
-      <button class="modal-shop-btn" id="modalShopBtn">+ Add to shopping list</button>
+      <button class="modal-cook-btn" id="modalCookBtn">Start cooking</button>
+      <button class="modal-shop-btn" id="modalShopBtn">Add to list</button>
     </div>
   </div>
 </dialog>
@@ -234,10 +243,20 @@
 <dialog id="cookModal" aria-label="Cooking mode">
   <div class="cook-header">
     <span class="cook-step-label" id="cookStepLabel">Step 1 of 1</span>
-    <button class="cook-close" id="cookClose" aria-label="Exit cooking mode">✕</button>
+    <span class="cook-recipe-title" id="cookRecipeTitle"></span>
+    <div class="cook-header-right">
+      <button class="cook-ingredients-toggle" id="cookIngredientsToggle" aria-expanded="false">Ingredients</button>
+      <button class="cook-close" id="cookClose" aria-label="Exit cooking mode">✕</button>
+    </div>
+  </div>
+  <div class="cook-ingredients-panel" id="cookIngredientsPanel" hidden>
+    <ul class="cook-ingredients-list" id="cookIngredientsList"></ul>
   </div>
   <div class="cook-body">
-    <p class="cook-step-text" id="cookStepText"></p>
+    <div class="cook-step-card">
+      <p class="cook-step-text" id="cookStepText"></p>
+      <span class="cook-hint" id="cookHint">Press Enter to continue</span>
+    </div>
   </div>
   <div class="cook-nav">
     <button class="cook-nav-btn" id="cookPrev" aria-label="Previous step">←</button>
@@ -246,12 +265,6 @@
   </div>
 </dialog>
 
-<!-- Onboarding tip -->
-<div class="onboarding-tip" id="onboardingTip" hidden>
-  <span class="onboard-text">Try the pantry filter — find recipes using what's already in your fridge</span>
-  <button class="onboard-try" id="onboardTry">Try it</button>
-  <button class="onboard-dismiss" id="onboardDismiss" aria-label="Dismiss">✕</button>
-</div>
 
 <!-- Recipe submission modal -->
 <dialog id="submitModal" aria-label="Add a recipe">
