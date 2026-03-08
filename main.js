@@ -1,4 +1,32 @@
 
+// Last cooked helpers
+function formatLastCooked(ts) {
+  const days = Math.floor((Date.now() - parseInt(ts)) / 86400000);
+  if (days === 0) return 'cooked today';
+  if (days === 1) return 'cooked yesterday';
+  return `cooked ${days}d ago`;
+}
+
+// iOS-safe scroll lock
+let _scrollY = 0;
+function lockScroll() {
+  _scrollY = window.scrollY;
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${_scrollY}px`;
+  document.body.style.left = '0';
+  document.body.style.right = '0';
+  document.body.style.overflow = 'hidden';
+}
+function unlockScroll() {
+  if (document.body.style.position !== 'fixed') return;
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.left = '';
+  document.body.style.right = '';
+  document.body.style.overflow = '';
+  window.scrollTo(0, _scrollY);
+}
+
 // Emoji lookup by recipe title keywords
 const EMOJI_MAP = [
   [/\b(egg|eggs|omelette|omelet|frittata|scrambled|poached)\b/i, '🥚'],
@@ -116,7 +144,7 @@ let currentSort = 'default';
 let sortDir = 'desc';
 
 const SORT_OPTIONS = {
-  default: { label: 'Recommended', field: null,           display: null },
+  default: { label: 'Smart', field: null,           display: null },
   kcal:    { label: 'Calories ↓',  field: 'energy_kcal', display: n => `${Math.round(n.energy_kcal)} kcal` },
   protein: { label: 'Protein ↓',   field: 'protein_g',   display: n => `${Math.round(n.protein_g)}g protein` },
   carbs:   { label: 'Carbs ↓',     field: 'carbs_g',     display: n => `${Math.round(n.carbs_g)}g carbs` },
@@ -196,11 +224,27 @@ function openShoppingListModal() {
 
   const m = document.getElementById('shopModal');
   m.showModal(); m.focus();
+  lockScroll();
 }
 
+function closeShopModal() {
+  document.getElementById('shopModal').close(); // triggers 'close' event
+}
+document.getElementById('shopModal').addEventListener('close', () => unlockScroll());
+
 document.getElementById('shopFab').addEventListener('click', openShoppingListModal);
-document.getElementById('shopModalClose').addEventListener('click', () => document.getElementById('shopModal').close());
-document.getElementById('shopModal').addEventListener('click', e => { if (e.target === document.getElementById('shopModal')) document.getElementById('shopModal').close(); });
+document.getElementById('shopModalClose').addEventListener('click', closeShopModal);
+document.getElementById('shopModal').addEventListener('click', e => { if (e.target === document.getElementById('shopModal')) closeShopModal(); });
+document.getElementById('shopClearBtn').addEventListener('click', () => {
+  shoppingList.clear();
+  document.querySelectorAll('.modal-shop-btn, .card-shop-btn').forEach(btn => {
+    btn.classList.remove('active');
+    btn.textContent = btn.classList.contains('modal-shop-btn') ? 'Add to list' : '+ Add';
+  });
+  const fab = document.getElementById('shopFab');
+  fab.hidden = true;
+  closeShopModal();
+});
 
 function getSortedItems(cat) {
   const indexed = recipes[cat].map((r, i) => ({ r, i }));
@@ -249,22 +293,32 @@ function renderCards() {
       card.style.setProperty('--card-hue', hue);
       card.style.setProperty('--card-angle', angle + 'deg');
       card.style.setProperty('--card-spread', spread);
+      const lastCooked = localStorage.getItem(`cooked:${r.title}`);
+      const lastCookedLabel = lastCooked ? formatLastCooked(lastCooked) : '';
       card.innerHTML = `
         <div class="card-image">${cardEmojiPattern(r.title)}</div>
         <button class="card-fav ${isFav ? 'active' : ''}" aria-label="Favourite">${isFav ? '♥' : '♡'}</button>
         <div class="card-meta">
           <span class="card-time">${metaText}</span>
+          ${lastCookedLabel ? `<span class="card-last-cooked">${lastCookedLabel}</span>` : ''}
         </div>
         <div class="card-title">${r.title}</div>
         <div class="card-desc" data-desc="${r.desc.replace(/"/g, '&quot;')}">${r.desc}</div>
         <span class="card-match"></span>
-        <button class="card-shop-btn ${inList ? 'active' : ''}">${inList ? '✓ Added' : '+ Add'}</button>
+        <div class="card-actions">
+          <button class="card-cook-btn">Start cooking</button>
+          <button class="card-shop-btn ${inList ? 'active' : ''}">${inList ? '✓ Added' : '+ Add'}</button>
+        </div>
       `;
+      card.tabIndex = 0;
+      card.setAttribute('role', 'button');
       card.querySelector('.card-fav').addEventListener('click', e => { e.stopPropagation(); toggleFavorite(r.title, e.currentTarget); });
+      card.querySelector('.card-cook-btn').addEventListener('click', e => { e.stopPropagation(); openCookingMode(r.steps, r.ingredients, r.title); });
       card.querySelector('.card-shop-btn').addEventListener('click', e => { e.stopPropagation(); toggleShopList(r.title, e.currentTarget); });
       card.dataset.idx = i;
       card.dataset.title = r.title;
       card.addEventListener('click', () => openModal(cat, i));
+      card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(cat, i); } });
       grid.appendChild(card);
     });
   });
@@ -330,9 +384,8 @@ function renderModalBody(r, servings) {
     const id = `step-${i}`;
     return `<li><label class="ing-row"><input type="checkbox" id="${id}"><span class="step-num">${i + 1}</span><span>${s}</span></label></li>`;
   }).join('');
-  const modalBody = document.getElementById('modalBody');
-  const existingImage = modalBody.querySelector('.modal-image');
-  modalBody.innerHTML = `
+  const modalContent = document.getElementById('modalContent');
+  modalContent.innerHTML = `
     <div class="modal-section-title">Method</div>
     <ol class="steps-list">${stepsHTML}</ol>
     ${r.tips ? `<div class="modal-section-title">Benefits</div><div class="modal-tips">${r.tips}</div>` : ''}
@@ -351,23 +404,25 @@ function renderModalBody(r, servings) {
       ${renderNutritionPanel(r.nutrition, scale)}
     </div>
   `;
-  if (existingImage) modalBody.insertBefore(existingImage, modalBody.firstChild);
 }
 
 function openModal(cat, idx) {
   const r = recipes[cat][idx];
+  modal._ac?.abort();
+  modal._ac = new AbortController();
   const catLabels = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner', snack: 'Snack' };
   document.getElementById('modalTitle').textContent = r.title;
   document.getElementById('modalStats').innerHTML = `${catLabels[cat]} recipe · ${r.time}`;
+  document.getElementById('modalTitleCompact').textContent = r.title;
+  const modalBar = document.getElementById('modalBar');
+  modalBar.classList.remove('modal-bar--scrolled');
 
   const { hue, angle, spread } = cardGradientVars(r.title);
-  const modalImg = document.getElementById('modalImage');
-  if (modalImg) {
-    modalImg.style.setProperty('--card-hue', hue);
-    modalImg.style.setProperty('--card-angle', angle + 'deg');
-    modalImg.style.setProperty('--card-spread', spread);
-    modalImg.innerHTML = cardEmojiPattern(r.title);
-  }
+  const modalArtwork = document.getElementById('modalImageBg');
+  modalArtwork.style.setProperty('--card-hue', hue);
+  modalArtwork.style.setProperty('--card-angle', angle + 'deg');
+  modalArtwork.style.setProperty('--card-spread', spread);
+  modalArtwork.innerHTML = cardEmojiPattern(r.title);
 
   const modalFav = document.getElementById('modalFav');
   const modalShopBtn = document.getElementById('modalShopBtn');
@@ -379,7 +434,7 @@ function openModal(cat, idx) {
   };
   const updateModalShop = () => {
     const inList = shoppingList.has(r.title);
-    modalShopBtn.textContent = inList ? '✓ Added to shopping list' : '+ Add to shopping list';
+    modalShopBtn.textContent = inList ? '✓ Added' : 'Add to list';
     modalShopBtn.classList.toggle('active', inList);
   };
 
@@ -388,42 +443,68 @@ function openModal(cat, idx) {
 
   modalFav.onclick = () => { toggleFavorite(r.title, modalFav); updateModalFav(); };
   modalShopBtn.onclick = () => { toggleShopList(r.title, modalShopBtn); updateModalShop(); };
+  document.getElementById('modalCookBtn').onclick = () => { closeModal(); openCookingMode(r.steps, r.ingredients, r.title); };
+  document.getElementById('modalShare').onclick = () => shareRecipe(r);
 
   let servings = 1;
   renderModalBody(r, servings);
 
+  // Compact title: fade in once title block scrolls fully out of view
+  const titleObserver = new IntersectionObserver(
+    ([entry]) => modalBar.classList.toggle('modal-bar--scrolled', !entry.isIntersecting),
+    { root: document.getElementById('modalBody'), threshold: 0 }
+  );
+  titleObserver.observe(document.getElementById('modalTitle'));
+  modal._ac.signal.addEventListener('abort', () => titleObserver.disconnect());
+
   document.getElementById('modalBody').addEventListener('click', function handler(e) {
     if (e.target.id === 'servingDown' && servings > 1) { servings--; renderModalBody(r, servings); }
     if (e.target.id === 'servingUp') { servings++; renderModalBody(r, servings); }
-  }, { signal: (modal._ac = new AbortController()).signal });
+  }, { signal: modal._ac.signal });
 
 
   document.getElementById('modalBody').scrollTop = 0;
   previousFocus = document.activeElement;
   modal.showModal();
   modal.focus();
-  document.body.style.overflow = 'hidden';
+  lockScroll();
   history.replaceState(null, '', '#' + r.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
 }
 
 function closeModal() {
   modal._ac?.abort();
-  modal.close();
-  document.body.style.overflow = '';
-  previousFocus?.focus();
+  document.getElementById('modalBar')?.classList.remove('modal-bar--scrolled');
   history.replaceState(null, '', window.location.pathname);
+  modal.close(); // triggers 'close' event which handles scroll + focus
 }
 
 document.getElementById('modalClose').addEventListener('click', closeModal);
 modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+modal.addEventListener('close', () => { unlockScroll(); previousFocus?.focus(); });
 
-// Keyboard shortcut: / to focus search
+// Keyboard shortcuts
 document.addEventListener('keydown', e => {
   if (e.key === '/' && !modal.open && document.activeElement.tagName !== 'INPUT') {
     e.preventDefault();
     document.getElementById('searchInput').focus();
   }
   if (e.key === 'Escape' && modal.open) closeModal();
+
+  // Arrow key navigation between cards
+  if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'ArrowDown') && !modal.open) {
+    const cards = [...document.querySelectorAll('.recipe-card:not([hidden])')];
+    if (!cards.length) return;
+    const current = document.activeElement;
+    const idx = cards.indexOf(current);
+    if (idx === -1) {
+      // No card focused yet — focus first on any arrow press
+      if (['ArrowRight', 'ArrowDown'].includes(e.key)) { e.preventDefault(); cards[0].focus(); }
+      return;
+    }
+    e.preventDefault();
+    const next = (e.key === 'ArrowRight' || e.key === 'ArrowDown') ? cards[idx + 1] : cards[idx - 1];
+    if (next) next.focus();
+  }
 });
 
 
@@ -556,6 +637,15 @@ function renderPantryItems() {
 
 document.getElementById('pantrySearch').addEventListener('input', renderPantryItems);
 
+// Collapsible pantry section
+document.getElementById('pantryToggle').addEventListener('click', () => {
+  const body = document.getElementById('pantryBody');
+  const btn = document.getElementById('pantryToggle');
+  const expanded = btn.getAttribute('aria-expanded') === 'true';
+  body.hidden = expanded;
+  btn.setAttribute('aria-expanded', String(!expanded));
+});
+
 document.querySelectorAll('.pvt-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     pantryView = btn.dataset.view;
@@ -641,10 +731,19 @@ function applyFilters() {
       const pantryMatch = !anyPantry || matched > 0;
       const matchEl = card.querySelector('.card-match');
       const descEl = card.querySelector('.card-desc');
+      // Search highlight
+      const titleEl = card.querySelector('.card-title');
+      if (q && searchMatch && titleEl) {
+        const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        titleEl.innerHTML = r.title.replace(re, '<mark>$1</mark>');
+        if (!anyPantry) descEl.innerHTML = descEl.dataset.desc.replace(re, '<mark>$1</mark>');
+      } else if (titleEl) {
+        titleEl.textContent = r.title;
+      }
       if (anyPantry && pantry.length > 0) {
         const pct = matched / pantry.length;
         const tier = pct >= 0.8 ? 'match-high' : pct >= 0.5 ? 'match-mid' : 'match-low';
-        matchEl.textContent = `${matched} / ${pantry.length}`;
+        matchEl.textContent = `${matched}/${pantry.length} ingredients`;
         matchEl.className = `card-match visible ${tier}`;
         const missing = pantry.filter(id => !selectedIngredients.has(id));
         if (missing.length === 0) {
@@ -860,11 +959,12 @@ sheetBackdrop.addEventListener('click', closeSheet);
 document.getElementById('sheetApply').addEventListener('click', closeSheet);
 document.getElementById('sheetClose').addEventListener('click', closeSheet);
 
-// Swipe down to close
+// Swipe down on handle only to close
+const sheetHandle = sheetSidebar.querySelector('.sheet-handle');
 let touchStartY = 0;
-sheetSidebar.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
-sheetSidebar.addEventListener('touchend', e => {
-  if (e.changedTouches[0].clientY - touchStartY > 60) closeSheet();
+sheetHandle.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
+sheetHandle.addEventListener('touchend', e => {
+  if (e.changedTouches[0].clientY - touchStartY > 40) closeSheet();
 }, { passive: true });
 
 // Cookie helpers
@@ -1176,14 +1276,25 @@ fetch('recipes.json')
       });
     });
     boot();
-    // URL deep-link
-    const hash = window.location.hash.slice(1);
-    if (hash) {
-      for (const [cat, items] of Object.entries(recipes)) {
-        const idx = items.findIndex(r =>
-          r.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') === hash
+    // Restore cook mode if session was active
+    const savedCook = JSON.parse(sessionStorage.getItem('cookState') || 'null');
+    if (savedCook) {
+      for (const [, items] of Object.entries(recipes)) {
+        const r = items.find(r =>
+          r.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') === savedCook.slug
         );
-        if (idx !== -1) { openModal(cat, idx); break; }
+        if (r) { openCookingMode(r.steps, r.ingredients, r.title, savedCook.step); break; }
+      }
+    } else {
+      // URL deep-link
+      const hash = window.location.hash.slice(1);
+      if (hash) {
+        for (const [cat, items] of Object.entries(recipes)) {
+          const idx = items.findIndex(r =>
+            r.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') === hash
+          );
+          if (idx !== -1) { openModal(cat, idx); break; }
+        }
       }
     }
   })
@@ -1210,3 +1321,312 @@ fetch('recipes.json')
     if (el) parent.appendChild(el);
   });
 })();
+
+// ─── Share recipe ────────────────────────────────────────────────────────────
+
+function shareRecipe(r) {
+  const shareBtn = document.getElementById('modalShare');
+  const url = window.location.href;
+  if (navigator.share) {
+    navigator.share({ title: r.title, text: r.desc, url }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(url).then(() => {
+      const orig = shareBtn.textContent;
+      shareBtn.textContent = 'Copied!';
+      setTimeout(() => { shareBtn.textContent = orig; }, 2000);
+    });
+  }
+}
+
+// ─── Cooking mode ─────────────────────────────────────────────────────────────
+
+let cookSteps = [];
+let cookIdx = 0;
+let wakeLock = null;
+let cookAc = null;
+
+function openCookingMode(steps, ingredients, recipeTitle, startAtStep = 0) {
+  cookSteps = [...steps, null]; // null = done screen
+  cookIdx = Math.min(startAtStep, cookSteps.length - 1);
+
+  // Render ingredients list
+  const list = document.getElementById('cookIngredientsList');
+  list.innerHTML = (ingredients || []).map(ing => {
+    const amt = [ing.amount, ing.unit].filter(Boolean).join(' ');
+    return `<li class="cook-ing-row"><span class="cook-ing-amount">${amt}</span><span>${ing.item}</span></li>`;
+  }).join('');
+
+  document.getElementById('cookRecipeTitle').textContent = recipeTitle || '';
+
+  // Reset ingredients panel
+  const panel = document.getElementById('cookIngredientsPanel');
+  const toggle = document.getElementById('cookIngredientsToggle');
+  panel.hidden = true;
+  toggle.setAttribute('aria-expanded', 'false');
+
+  renderCookStep();
+  document.getElementById('cookModal').showModal();
+  lockScroll();
+
+  if (navigator.wakeLock) {
+    navigator.wakeLock.request('screen').then(wl => { wakeLock = wl; }).catch(() => {});
+  }
+  if (recipeTitle) {
+    localStorage.setItem(`cooked:${recipeTitle}`, Date.now());
+    const slug = recipeTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    history.replaceState(null, '', '#' + slug);
+    sessionStorage.setItem('cookState', JSON.stringify({ slug, step: cookIdx }));
+  }
+
+  // Any key advances steps
+  cookAc = new AbortController();
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === 'ArrowRight') { e.preventDefault(); advanceCookStep(); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); if (cookIdx > 0) { cookIdx--; renderCookStep(); } }
+  }, { signal: cookAc.signal });
+
+  // Ingredients toggle
+  toggle.addEventListener('click', () => {
+    const expanded = toggle.getAttribute('aria-expanded') === 'true';
+    panel.hidden = expanded;
+    toggle.setAttribute('aria-expanded', String(!expanded));
+  }, { signal: cookAc.signal });
+}
+
+const DONE_MESSAGES = [
+  'All done. Enjoy your healthy meal.',
+  'That\'s it. Time to eat well.',
+  'Well cooked. Fuel your body right.',
+  'Done. Clean food, good energy.',
+  'Ready to serve. Eat well today.',
+];
+
+function renderCookStep() {
+  const isDone = cookSteps[cookIdx] === null;
+  const realTotal = cookSteps.length - 1;
+  document.getElementById('cookStepLabel').textContent = isDone ? '' : `Step ${cookIdx + 1} of ${realTotal}`;
+  document.getElementById('cookStepText').textContent = isDone
+    ? DONE_MESSAGES[Math.floor(Math.random() * DONE_MESSAGES.length)]
+    : cookSteps[cookIdx];
+  document.getElementById('cookHint').hidden = false;
+  const dots = document.getElementById('cookDots');
+  dots.innerHTML = Array.from({ length: realTotal }, (_, i) =>
+    `<div class="cook-dot${i === cookIdx ? ' active' : ''}"></div>`
+  ).join('');
+  document.getElementById('cookPrev').disabled = cookIdx === 0;
+  document.getElementById('cookNext').textContent = isDone ? '✓' : '→';
+  const cs = sessionStorage.getItem('cookState');
+  if (cs) sessionStorage.setItem('cookState', JSON.stringify({ ...JSON.parse(cs), step: cookIdx }));
+}
+
+function advanceCookStep() {
+  if (cookSteps[cookIdx] === null) { closeCookingMode(); return; }
+  cookIdx++;
+  renderCookStep();
+}
+
+function closeCookingMode() {
+  cookAc?.abort();
+  cookAc = null;
+  sessionStorage.removeItem('cookState');
+  document.getElementById('cookModal').close();
+}
+
+document.getElementById('cookClose').addEventListener('click', closeCookingMode);
+document.getElementById('cookPrev').addEventListener('click', () => {
+  if (cookIdx > 0) { cookIdx--; renderCookStep(); }
+});
+document.getElementById('cookNext').addEventListener('click', advanceCookStep);
+
+// Escape key cleanup for cook and submit modals
+document.getElementById('cookModal').addEventListener('close', () => {
+  unlockScroll();
+  if (wakeLock) { wakeLock.release(); wakeLock = null; }
+});
+document.getElementById('submitModal').addEventListener('close', () => unlockScroll());
+
+// Swipe left/right in cook body to navigate steps
+(function() {
+  const body = document.getElementById('cookModal');
+  let swipeStartX = 0;
+  body.addEventListener('touchstart', e => { swipeStartX = e.touches[0].clientX; }, { passive: true });
+  body.addEventListener('touchend', e => {
+    const dx = swipeStartX - e.changedTouches[0].clientX;
+    if (Math.abs(dx) < 50) return;
+    if (dx > 0) { advanceCookStep(); }
+    else if (dx < 0 && cookIdx > 0) { cookIdx--; renderCookStep(); }
+  }, { passive: true });
+})();
+
+
+
+// ─── Recipe submission form ───────────────────────────────────────────────────
+
+function buildSubmitForm() {
+  const body = document.getElementById('submitBody');
+  if (body.dataset.built) return;
+  body.dataset.built = '1';
+  body.innerHTML = `
+    <form id="submitForm" autocomplete="off">
+      <div class="submit-section">
+        <div class="submit-field"><label class="submit-label">Title</label><input class="submit-input" id="sf-title" type="text" placeholder="e.g. Salmon Rice Bowl" required></div>
+        <div class="submit-field"><label class="submit-label">Category</label><select class="submit-input" id="sf-cat"><option value="breakfast">Breakfast</option><option value="lunch">Lunch</option><option value="dinner" selected>Dinner</option><option value="snack">Snack</option></select></div>
+        <div class="submit-field"><label class="submit-label">Cook time</label><input class="submit-input" id="sf-time" type="text" placeholder="e.g. 25 min"></div>
+        <div class="submit-field"><label class="submit-label">Description</label><textarea class="submit-input" id="sf-desc" rows="2" placeholder="Short description"></textarea></div>
+        <div class="submit-field"><label class="submit-label">Benefits / tips</label><textarea class="submit-input" id="sf-tips" rows="2" placeholder="Health benefits or cooking tips"></textarea></div>
+      </div>
+      <div class="submit-section">
+        <div class="submit-section-label">Ingredients <button type="button" class="submit-add-btn" id="sf-add-ing">+ Add</button></div>
+        <div id="sf-ings">
+          <div class="submit-ing-row">
+            <input class="submit-input sf-ing-amount" type="text" placeholder="200">
+            <input class="submit-input sf-ing-unit" type="text" placeholder="g">
+            <input class="submit-input sf-ing-item" type="text" placeholder="chicken breast">
+            <button type="button" class="submit-rm-btn">−</button>
+          </div>
+        </div>
+      </div>
+      <div class="submit-section">
+        <div class="submit-section-label">Method <button type="button" class="submit-add-btn" id="sf-add-step">+ Add step</button></div>
+        <div id="sf-steps">
+          <div class="submit-step-row">
+            <span class="submit-step-num">1</span>
+            <textarea class="submit-input sf-step-text" rows="2" placeholder="First step..."></textarea>
+            <button type="button" class="submit-rm-btn">−</button>
+          </div>
+        </div>
+      </div>
+      <div class="submit-section">
+        <div class="submit-section-label">Nutrition <span style="font-size:0.75rem;color:var(--text-muted);font-weight:400">(per serving)</span></div>
+        <div class="submit-nutrition-grid">
+          <div class="submit-field"><label class="submit-label">Energy (kcal)</label><input class="submit-input" id="sf-kcal" type="number" placeholder="450"></div>
+          <div class="submit-field"><label class="submit-label">Energy (kJ)</label><input class="submit-input" id="sf-kj" type="number" placeholder="1880"></div>
+          <div class="submit-field"><label class="submit-label">Protein (g)</label><input class="submit-input" id="sf-protein" type="number" placeholder="35"></div>
+          <div class="submit-field"><label class="submit-label">Carbs (g)</label><input class="submit-input" id="sf-carbs" type="number" placeholder="45"></div>
+          <div class="submit-field"><label class="submit-label">of which sugars (g)</label><input class="submit-input" id="sf-sugars" type="number" placeholder="8"></div>
+          <div class="submit-field"><label class="submit-label">Fat (g)</label><input class="submit-input" id="sf-fat" type="number" placeholder="12"></div>
+          <div class="submit-field"><label class="submit-label">of which saturates (g)</label><input class="submit-input" id="sf-sat" type="number" placeholder="3"></div>
+          <div class="submit-field"><label class="submit-label">Fibre (g)</label><input class="submit-input" id="sf-fibre" type="number" placeholder="5"></div>
+          <div class="submit-field"><label class="submit-label">Sodium (mg)</label><input class="submit-input" id="sf-sodium" type="number" placeholder="320"></div>
+        </div>
+      </div>
+    </form>
+    <div class="submit-section" id="submitOutput" hidden>
+      <div class="submit-section-label" style="justify-content:space-between">
+        <span>Generated JSON — paste into recipes.json</span>
+        <button type="button" class="submit-add-btn" id="sf-copy-json">Copy</button>
+      </div>
+      <textarea class="submit-input submit-json" id="submitJson" rows="20" readonly></textarea>
+    </div>
+  `;
+
+  document.getElementById('sf-add-ing').addEventListener('click', () => {
+    const row = document.createElement('div');
+    row.className = 'submit-ing-row';
+    row.innerHTML = `
+      <input class="submit-input sf-ing-amount" type="text" placeholder="200">
+      <input class="submit-input sf-ing-unit" type="text" placeholder="g">
+      <input class="submit-input sf-ing-item" type="text" placeholder="ingredient">
+      <button type="button" class="submit-rm-btn">−</button>
+    `;
+    document.getElementById('sf-ings').appendChild(row);
+  });
+
+  document.getElementById('sf-add-step').addEventListener('click', () => {
+    const steps = document.getElementById('sf-steps');
+    const num = steps.children.length + 1;
+    const row = document.createElement('div');
+    row.className = 'submit-step-row';
+    row.innerHTML = `
+      <span class="submit-step-num">${num}</span>
+      <textarea class="submit-input sf-step-text" rows="2" placeholder="Step ${num}..."></textarea>
+      <button type="button" class="submit-rm-btn">−</button>
+    `;
+    steps.appendChild(row);
+  });
+
+  body.addEventListener('click', e => {
+    if (e.target.classList.contains('submit-rm-btn')) {
+      e.target.closest('.submit-ing-row, .submit-step-row')?.remove();
+    }
+    if (e.target.id === 'sf-copy-json') {
+      const ta = document.getElementById('submitJson');
+      navigator.clipboard.writeText(ta.value).then(() => {
+        const orig = e.target.textContent;
+        e.target.textContent = 'Copied!';
+        setTimeout(() => { e.target.textContent = orig; }, 2000);
+      });
+    }
+  });
+}
+
+function generateRecipeJson() {
+  const title = document.getElementById('sf-title').value.trim();
+  if (!title) { alert('Please enter a title.'); return; }
+
+  const ingredients = [...document.querySelectorAll('#sf-ings .submit-ing-row')].map(row => ({
+    amount: row.querySelector('.sf-ing-amount').value.trim(),
+    unit: row.querySelector('.sf-ing-unit').value.trim(),
+    item: row.querySelector('.sf-ing-item').value.trim(),
+  })).filter(i => i.item);
+
+  const steps = [...document.querySelectorAll('.sf-step-text')].map(t => t.value.trim()).filter(Boolean);
+  const benefits = document.getElementById('sf-tips').value.trim();
+  const sodium_mg = parseFloat(document.getElementById('sf-sodium').value) || 0;
+  const nextId = Object.values(recipes).flat().length + 1;
+
+  const recipe = {
+    id: nextId,
+    title,
+    category: document.getElementById('sf-cat').value,
+    desc: document.getElementById('sf-desc').value.trim(),
+    servings: 1,
+    time: document.getElementById('sf-time').value.trim(),
+    ingredients,
+    steps,
+    nutrition_per_serving: {
+      energy_kcal:          parseFloat(document.getElementById('sf-kcal').value)    || 0,
+      energy_kj:            parseFloat(document.getElementById('sf-kj').value)      || 0,
+      protein_g:            parseFloat(document.getElementById('sf-protein').value)  || 0,
+      carbs_g:              parseFloat(document.getElementById('sf-carbs').value)    || 0,
+      of_which_sugars_g:    parseFloat(document.getElementById('sf-sugars').value)   || 0,
+      fat_g:                parseFloat(document.getElementById('sf-fat').value)      || 0,
+      of_which_saturated_g: parseFloat(document.getElementById('sf-sat').value)      || 0,
+      fibre_g:              parseFloat(document.getElementById('sf-fibre').value)    || 0,
+      sodium_mg,
+      salt_g: Math.round(sodium_mg * 0.00254 * 100) / 100,
+    },
+    ...(benefits && { benefits }),
+  };
+
+  const output = document.getElementById('submitOutput');
+  document.getElementById('submitJson').value = JSON.stringify(recipe, null, 2);
+  output.hidden = false;
+  // Scroll the modal body to show the output
+  const modalBody = document.getElementById('submitBody');
+  setTimeout(() => { output.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
+}
+
+function openSubmitModal() {
+  buildSubmitForm();
+  document.getElementById('submitModal').showModal();
+  lockScroll();
+}
+
+document.getElementById('submitClose').addEventListener('click', () => {
+  document.getElementById('submitModal').close(); // triggers 'close' event
+});
+document.getElementById('submitModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('submitModal')) {
+    document.getElementById('submitModal').close();
+  }
+});
+document.getElementById('submitGenBtn').addEventListener('click', generateRecipeJson);
+
+// Cmd/Ctrl+Shift+N opens recipe submission form
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'N') {
+    e.preventDefault();
+    openSubmitModal();
+  }
+});

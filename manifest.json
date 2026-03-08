@@ -1,0 +1,17 @@
+{
+  "name": "nogluten.club",
+  "short_name": "nogluten.club",
+  "description": "Curated healthy gluten-free and lactose-free recipes",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FCFFF7",
+  "theme_color": "#046865",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
