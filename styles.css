@@ -703,9 +703,9 @@
     pointer-events: none;
   }
 
-  .card-time-chip .ph-clock {
-    font-size: 0.75rem;
+  .card-time-chip svg {
     opacity: 0.7;
+    flex-shrink: 0;
   }
 
   .card-emoji-grid {
@@ -1242,15 +1242,15 @@
     50%       { opacity: 0.3; }
   }
 
-  .star-row--loading .ph-star {
+  .star-row--loading svg {
     color: var(--border);
     animation: star-pulse 1.2s ease-in-out infinite;
   }
 
-  .star-row--loading .star-btn:nth-child(2) .ph-star { animation-delay: 0.12s; }
-  .star-row--loading .star-btn:nth-child(3) .ph-star { animation-delay: 0.24s; }
-  .star-row--loading .star-btn:nth-child(4) .ph-star { animation-delay: 0.36s; }
-  .star-row--loading .star-btn:nth-child(5) .ph-star { animation-delay: 0.48s; }
+  .star-row--loading .star-btn:nth-child(2) svg { animation-delay: 0.12s; }
+  .star-row--loading .star-btn:nth-child(3) svg { animation-delay: 0.24s; }
+  .star-row--loading .star-btn:nth-child(4) svg { animation-delay: 0.36s; }
+  .star-row--loading .star-btn:nth-child(5) svg { animation-delay: 0.48s; }
 
   /* ── Card stars ── */
   .card-stars {
@@ -1265,11 +1265,11 @@
     color: var(--border);
   }
 
-  .ph-fill.card-star {
+  .card-star.filled {
     color: #C8960C;
   }
 
-  [data-theme="dark"] .ph-fill.card-star {
+  [data-theme="dark"] .card-star.filled {
     color: #D4A843;
   }
 

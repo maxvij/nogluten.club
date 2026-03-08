@@ -152,6 +152,26 @@ function debounce(fn, ms) {
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
 }
 
+// ─── SVG icon helper (uses sprite in HTML) ────────────────────────────────────
+function icon(name, size = 16) {
+  return `<svg width="${size}" height="${size}" fill="currentColor" aria-hidden="true"><use href="#icon-${name}"/></svg>`;
+}
+
+// ─── Lazy script loader ───────────────────────────────────────────────────────
+const _scriptCache = {};
+function loadScript(src) {
+  if (!_scriptCache[src]) {
+    _scriptCache[src] = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = resolve;
+      s.onerror = () => reject(new Error(`Failed to load ${src}`));
+      document.head.appendChild(s);
+    });
+  }
+  return _scriptCache[src];
+}
+
 let recipes = {};
 let recipeRatings = {}; // recipeId → { avg, count }
 
@@ -195,7 +215,7 @@ function toggleShopList(title, btn) {
   shoppingList.has(title) ? shoppingList.delete(title) : shoppingList.add(title);
   const added = shoppingList.has(title);
   btn.classList.toggle('active', added);
-  btn.innerHTML = `<i class="ph ${added ? 'ph-check' : 'ph-plus'}"></i>${added ? 'Added' : 'Add'}`;
+  btn.innerHTML = icon(added ? 'check' : 'plus') + (added ? 'Added' : 'Add');
   const fab = document.getElementById('shopFab');
   fab.hidden = shoppingList.size === 0;
   if (!fab.hidden) fab.textContent = `Shopping list (${shoppingList.size})`;
@@ -314,7 +334,7 @@ function renderCards() {
       card.innerHTML = `
         <div class="card-image">
           ${cardEmojiPattern(r.title)}
-          <span class="card-time-chip"><i class="ph ph-clock"></i>${formatTime(r.time_seconds)}</span>
+          <span class="card-time-chip">${icon('clock', 14)}${formatTime(r.time_seconds)}</span>
         </div>
         <button class="card-fav ${isFav ? 'active' : ''}" aria-label="Favourite">${isFav ? '♥' : '♡'}</button>
         <div class="card-meta">
@@ -327,13 +347,13 @@ function renderCards() {
         <span class="card-match"></span>
         <div class="card-actions">
           <button class="card-cook-btn">Start cooking</button>
-          <button class="card-shop-btn ${inList ? 'active' : ''}"><i class="ph ${inList ? 'ph-check' : 'ph-plus'}"></i>${inList ? 'Added' : 'Add'}</button>
+          <button class="card-shop-btn ${inList ? 'active' : ''}">${icon(inList ? 'check' : 'plus')} ${inList ? 'Added' : 'Add'}</button>
         </div>
       `;
       card.tabIndex = 0;
       card.setAttribute('role', 'button');
       card.querySelector('.card-fav').addEventListener('click', e => { e.stopPropagation(); toggleFavorite(r.title, e.currentTarget); });
-      card.querySelector('.card-cook-btn').addEventListener('click', e => { e.stopPropagation(); openCookingMode(r.steps, r.ingredients, r.title, 0, r.slug); });
+      card.querySelector('.card-cook-btn').addEventListener('click', e => { e.stopPropagation(); loadScript('cooking.js').then(() => window.APP.openCookingMode(r.steps, r.ingredients, r.title, 0, r.slug)); });
       card.querySelector('.card-shop-btn').addEventListener('click', e => { e.stopPropagation(); toggleShopList(r.title, e.currentTarget); });
       card.dataset.idx = i;
       card.dataset.title = r.title;
@@ -352,7 +372,7 @@ function renderStars(container, { avg, count, userStars }, onRate) {
   let starsHTML = '';
   for (let i = 1; i <= 5; i++) {
     const filled = userStars !== null ? i <= userStars : false;
-    starsHTML += `<button class="star-btn${filled ? ' filled' : ''}" data-star="${i}" aria-label="${i} star${i !== 1 ? 's' : ''}" type="button"><i class="ph${filled ? '-fill' : ''} ph-star"></i></button>`;
+    starsHTML += `<button class="star-btn${filled ? ' filled' : ''}" data-star="${i}" aria-label="${i} star${i !== 1 ? 's' : ''}" type="button">${icon(filled ? 'star-fill' : 'star', 14)}</button>`;
   }
 
   const metaText = displayAvg !== null
@@ -398,7 +418,7 @@ function cardStarsHTML(rating) {
   const rounded = hasRatings ? Math.round(rating.avg) : 0;
   let stars = '';
   for (let i = 1; i <= 5; i++) {
-    stars += `<i class="ph${i <= rounded ? '-fill' : ''} ph-star card-star"></i>`;
+    stars += `<svg class="card-star${i <= rounded ? ' filled' : ''}" width="12" height="12" fill="currentColor" aria-hidden="true"><use href="#icon-${i <= rounded ? 'star-fill' : 'star'}"/></svg>`;
   }
   const meta = hasRatings
     ? `<span class="card-star-count">${(Math.round(rating.avg * 10) / 10).toFixed(1)} <span class="card-star-total">(${rating.count})</span></span>`
@@ -533,7 +553,7 @@ function openModal(cat, idx) {
   };
   const updateModalShop = () => {
     const inList = shoppingList.has(r.title);
-    modalShopBtn.innerHTML = inList ? '<i class="ph ph-check"></i>Added to list' : 'Add to list';
+    modalShopBtn.innerHTML = inList ? icon('check') + 'Added to list' : 'Add to list';
     modalShopBtn.classList.toggle('active', inList);
   };
 
@@ -542,11 +562,11 @@ function openModal(cat, idx) {
 
   modalFav.onclick = () => { toggleFavorite(r.title, modalFav); updateModalFav(); };
   modalShopBtn.onclick = () => { toggleShopList(r.title, modalShopBtn); updateModalShop(); };
-  document.getElementById('modalCookBtn').onclick = () => { closeModal(); openCookingMode(r.steps, r.ingredients, r.title, 0, r.slug); };
+  document.getElementById('modalCookBtn').onclick = () => { closeModal(); loadScript('cooking.js').then(() => window.APP.openCookingMode(r.steps, r.ingredients, r.title, 0, r.slug)); };
   document.getElementById('modalShare').onclick = () => shareRecipe(r);
   const adminEditBtn = document.getElementById('modalAdminEdit');
   adminEditBtn.hidden = !_isAdmin;
-  adminEditBtn.onclick = () => { closeModal(); openAdminModal(r); };
+  adminEditBtn.onclick = () => { closeModal(); loadScript('admin.js').then(() => window.APP.openAdminModal(r)); };
 
   let servings = 1;
   renderModalBody(r, servings);
@@ -587,7 +607,7 @@ function openModal(cat, idx) {
       if (fresh.userStars !== null) renderStars(ratingContainer, fresh, onRate);
     }).catch(() => {});
   } else {
-    ratingContainer.innerHTML = `<div class="star-rating"><div class="star-row star-row--loading">${Array.from({length: 5}, () => '<button class="star-btn" disabled aria-hidden="true"><i class="ph ph-star"></i></button>').join('')}</div><span class="star-meta">&nbsp;</span></div>`;
+    ratingContainer.innerHTML = `<div class="star-rating"><div class="star-row star-row--loading">${Array.from({length: 5}, () => '<button class="star-btn" disabled aria-hidden="true">' + icon('star', 14) + '</button>').join('')}</div><span class="star-meta">&nbsp;</span></div>`;
     window.SB.fetchRating(r.id).then(fresh => {
       renderStars(ratingContainer, fresh, onRate);
     }).catch(() => { ratingContainer.innerHTML = ''; });
@@ -1543,7 +1563,7 @@ window.SB.fetchRecipes()
     if (savedCook) {
       for (const [, items] of Object.entries(recipes)) {
         const r = items.find(r => r.slug === savedCook.slug);
-        if (r) { openCookingMode(r.steps, r.ingredients, r.title, savedCook.step); break; }
+        if (r) { loadScript('cooking.js').then(() => window.APP.openCookingMode(r.steps, r.ingredients, r.title, savedCook.step)); break; }
       }
     } else {
       // URL deep-link
@@ -1606,6 +1626,17 @@ window.SB.initSupabase(onUserChange).then(() => {
   // If already signed in from a previous session, check admin status
   if (window.SB.getCurrentUser()) checkAdminAndRender();
 }).catch(() => {});
+
+// ─── Shared app context for lazy-loaded modules ───────────────────────────────
+window.APP = {
+  get recipes() { return recipes; },
+  lockScroll,
+  unlockScroll,
+  formatTimerDisplay,
+  renderCards,
+  applyFilters,
+  closeModal,
+};
 
 // ─── Login modal ──────────────────────────────────────────────────────────────
 const loginModal = document.getElementById('loginModal');
@@ -1681,221 +1712,12 @@ function shareRecipe(r) {
   }
 }
 
-// ─── Cooking mode ─────────────────────────────────────────────────────────────
-
-let cookSteps = [];
-let cookIdx = 0;
-let wakeLock = null;
-let cookAc = null;
-let cookTimerState = null; // { remaining, total, intervalId, running }
-
-function openCookingMode(steps, ingredients, recipeTitle, startAtStep = 0, recipeSlug = null) {
-  cookSteps = [...steps, null]; // null = done screen
-  cookIdx = Math.min(startAtStep, cookSteps.length - 1);
-
-  // Render ingredients list
-  const list = document.getElementById('cookIngredientsList');
-  list.innerHTML = (ingredients || []).map(ing => {
-    const amt = [ing.amount, ing.unit].filter(Boolean).join(' ');
-    return `<li class="cook-ing-row"><span class="cook-ing-amount">${amt}</span><span>${ing.item}</span></li>`;
-  }).join('');
-
-  document.getElementById('cookRecipeTitle').textContent = recipeTitle || '';
-
-  // Reset ingredients panel
-  const panel = document.getElementById('cookIngredientsPanel');
-  const toggle = document.getElementById('cookIngredientsToggle');
-  panel.hidden = true;
-  toggle.setAttribute('aria-expanded', 'false');
-
-  // Reset timer when opening
-  resetCookTimer();
-
-  renderCookStep();
-  document.getElementById('cookModal').showModal();
-  lockScroll();
-
-  if (navigator.wakeLock) {
-    navigator.wakeLock.request('screen').then(wl => { wakeLock = wl; }).catch(() => {});
-  }
-  if (recipeTitle) {
-    localStorage.setItem(`cooked:${recipeTitle}`, Date.now());
-    const slug = recipeSlug || recipeTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    history.replaceState(null, '', '#' + slug);
-    sessionStorage.setItem('cookState', JSON.stringify({ slug, step: cookIdx }));
-    // Cloud cook record — find recipe ID from title
-    const recipeObj = Object.values(recipes).flat().find(r => r.title === recipeTitle);
-    if (recipeObj) window.SB.recordCook(recipeObj.id).catch(() => {});
-  }
-
-  // Any key advances steps
-  cookAc = new AbortController();
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Enter' || e.key === 'ArrowRight') { e.preventDefault(); advanceCookStep(); }
-    else if (e.key === 'ArrowLeft') { e.preventDefault(); if (cookIdx > 0) { cookIdx--; resetCookTimer(); renderCookStep(); } }
-  }, { signal: cookAc.signal });
-
-  // Ingredients toggle
-  toggle.addEventListener('click', () => {
-    const expanded = toggle.getAttribute('aria-expanded') === 'true';
-    panel.hidden = expanded;
-    toggle.setAttribute('aria-expanded', String(!expanded));
-  }, { signal: cookAc.signal });
-
-  // Timer button
-  document.getElementById('cookTimerBtn').addEventListener('click', () => {
-    if (!cookTimerState) return;
-    const dur = stepDuration(cookSteps[cookIdx]);
-    if (!dur) return;
-    if (cookTimerState.running) {
-      pauseCookTimer();
-    } else {
-      startCookTimer(dur);
-    }
-  }, { signal: cookAc.signal });
-}
-
-const DONE_MESSAGES = [
-  'All done. Enjoy your healthy meal.',
-  'That\'s it. Time to eat well.',
-  'Well cooked. Fuel your body right.',
-  'Done. Clean food, good energy.',
-  'Ready to serve. Eat well today.',
-];
-
-function stepText(step) {
-  if (step === null) return DONE_MESSAGES[Math.floor(Math.random() * DONE_MESSAGES.length)];
-  return typeof step === 'object' ? step.text : step;
-}
-
-function stepDuration(step) {
-  return typeof step === 'object' ? (step.duration_seconds || null) : null;
-}
-
-function renderCookStep() {
-  const isDone = cookSteps[cookIdx] === null;
-  const realTotal = cookSteps.length - 1;
-  document.getElementById('cookStepLabel').textContent = isDone ? '' : `Step ${cookIdx + 1} of ${realTotal}`;
-  document.getElementById('cookStepText').textContent = stepText(cookSteps[cookIdx]);
-  document.getElementById('cookHint').hidden = false;
-  const dots = document.getElementById('cookDots');
-  dots.innerHTML = Array.from({ length: realTotal }, (_, i) =>
-    `<div class="cook-dot${i === cookIdx ? ' active' : ''}"></div>`
-  ).join('');
-  document.getElementById('cookPrev').disabled = cookIdx === 0;
-  document.getElementById('cookNext').textContent = isDone ? '✓' : '→';
-  const cs = sessionStorage.getItem('cookState');
-  if (cs) sessionStorage.setItem('cookState', JSON.stringify({ ...JSON.parse(cs), step: cookIdx }));
-
-  // Timer
-  const dur = isDone ? null : stepDuration(cookSteps[cookIdx]);
-  renderCookTimer(dur);
-}
-
-function renderCookTimer(durationSeconds) {
-  const timerEl = document.getElementById('cookTimer');
-  const displayEl = document.getElementById('cookTimerDisplay');
-  const btnEl = document.getElementById('cookTimerBtn');
-
-  if (!durationSeconds) {
-    timerEl.hidden = true;
-    return;
-  }
-
-  timerEl.hidden = false;
-
-  // If no timer running (or it's a fresh step), initialise with the step duration
-  if (!cookTimerState) {
-    cookTimerState = { remaining: durationSeconds, total: durationSeconds, intervalId: null, running: false };
-  }
-
-  displayEl.textContent = formatTimerDisplay(cookTimerState.remaining);
-  btnEl.textContent = cookTimerState.running ? 'Pause' : (cookTimerState.remaining < cookTimerState.total ? 'Resume' : 'Start timer');
-}
-
-function startCookTimer(durationSeconds) {
-  if (!cookTimerState) cookTimerState = { remaining: durationSeconds, total: durationSeconds, intervalId: null, running: false };
-  if (cookTimerState.running) return;
-  cookTimerState.running = true;
-  cookTimerState.intervalId = setInterval(() => {
-    cookTimerState.remaining = Math.max(0, cookTimerState.remaining - 1);
-    const displayEl = document.getElementById('cookTimerDisplay');
-    const btnEl = document.getElementById('cookTimerBtn');
-    if (displayEl) displayEl.textContent = formatTimerDisplay(cookTimerState.remaining);
-    if (cookTimerState.remaining === 0) {
-      clearInterval(cookTimerState.intervalId);
-      cookTimerState.running = false;
-      cookTimerState.intervalId = null;
-      if (btnEl) btnEl.textContent = 'Done';
-    } else {
-      if (btnEl) btnEl.textContent = 'Pause';
-    }
-  }, 1000);
-}
-
-function pauseCookTimer() {
-  if (!cookTimerState || !cookTimerState.running) return;
-  clearInterval(cookTimerState.intervalId);
-  cookTimerState.intervalId = null;
-  cookTimerState.running = false;
-  const btnEl = document.getElementById('cookTimerBtn');
-  if (btnEl) btnEl.textContent = 'Resume';
-}
-
-function resetCookTimer() {
-  if (cookTimerState) {
-    clearInterval(cookTimerState.intervalId);
-    cookTimerState = null;
-  }
-}
-
-function advanceCookStep() {
-  if (cookSteps[cookIdx] === null) { closeCookingMode(); return; }
-  cookIdx++;
-  resetCookTimer();
-  renderCookStep();
-}
-
-function closeCookingMode() {
-  cookAc?.abort();
-  cookAc = null;
-  resetCookTimer();
-  sessionStorage.removeItem('cookState');
-  document.getElementById('cookModal').close();
-}
-
-document.getElementById('cookClose').addEventListener('click', closeCookingMode);
-document.getElementById('cookPrev').addEventListener('click', () => {
-  if (cookIdx > 0) { cookIdx--; resetCookTimer(); renderCookStep(); }
-});
-document.getElementById('cookNext').addEventListener('click', advanceCookStep);
-
-// Escape key cleanup for cook and submit modals
-document.getElementById('cookModal').addEventListener('close', () => {
-  unlockScroll();
-  if (wakeLock) { wakeLock.release(); wakeLock = null; }
-});
-document.getElementById('adminModal').addEventListener('close', () => unlockScroll());
-
-// Swipe left/right in cook body to navigate steps
-(function() {
-  const body = document.getElementById('cookModal');
-  let swipeStartX = 0;
-  body.addEventListener('touchstart', e => { swipeStartX = e.touches[0].clientX; }, { passive: true });
-  body.addEventListener('touchend', e => {
-    const dx = swipeStartX - e.changedTouches[0].clientX;
-    if (Math.abs(dx) < 50) return;
-    if (dx > 0) { advanceCookStep(); }
-    else if (dx < 0 && cookIdx > 0) { cookIdx--; resetCookTimer(); renderCookStep(); }
-  }, { passive: true });
-})();
-
+// ─── Cooking mode: extracted to cooking.js (lazy-loaded) ─────────────────────
 
 
 // ─── Admin panel ──────────────────────────────────────────────────────────────
 
 let _isAdmin = false;
-let _adminEditingId = null; // recipe ID being edited, null = new recipe
 
 async function checkAdminAndRender() {
   _isAdmin = await window.SB.isAdmin().catch(() => false);
@@ -1903,235 +1725,4 @@ async function checkAdminAndRender() {
   if (_isAdmin) renderCards(); // re-render to show edit buttons
 }
 
-document.getElementById('adminNewBtn').addEventListener('click', () => openAdminModal(null));
-
-function adminIngRow(ing = {}) {
-  const row = document.createElement('div');
-  row.className = 'submit-ing-row';
-  row.innerHTML = `
-    <input class="submit-input sf-ing-amount" type="text" placeholder="200" value="${ing.amount || ''}">
-    <input class="submit-input sf-ing-unit" type="text" placeholder="g" value="${ing.unit || ''}">
-    <input class="submit-input sf-ing-item" type="text" placeholder="chicken breast" value="${ing.item || ''}">
-    <button type="button" class="submit-rm-btn" aria-label="Remove">−</button>
-  `;
-  return row;
-}
-
-function adminStepRow(step = {}, num = 1) {
-  const text = typeof step === 'object' ? (step.text || '') : (step || '');
-  const dur = typeof step === 'object' ? (step.duration_seconds || '') : '';
-  const row = document.createElement('div');
-  row.className = 'submit-step-row';
-  row.innerHTML = `
-    <span class="submit-step-num">${num}</span>
-    <textarea class="submit-input sf-step-text" rows="2" placeholder="Step ${num}...">${text}</textarea>
-    <input class="submit-input sf-step-dur" type="number" placeholder="sec (optional)" value="${dur}" style="width:7rem;font-size:0.8rem">
-    <button type="button" class="submit-rm-btn" aria-label="Remove">−</button>
-  `;
-  return row;
-}
-
-function buildAdminForm(r = null) {
-  const n = r?.nutrition || {};
-  const body = document.getElementById('adminModalBody');
-  body.innerHTML = `
-    <form id="adminForm" autocomplete="off">
-      <div class="submit-section">
-        <div class="submit-field"><label class="submit-label">Title</label><input class="submit-input" id="af-title" type="text" value="${r?.title || ''}" required></div>
-        <div class="submit-field"><label class="submit-label">Category</label>
-          <select class="submit-input" id="af-cat">
-            <option value="breakfast" ${r?.category === 'breakfast' ? 'selected' : ''}>Breakfast</option>
-            <option value="lunch"     ${r?.category === 'lunch'     ? 'selected' : ''}>Lunch</option>
-            <option value="dinner"    ${!r || r.category === 'dinner' ? 'selected' : ''}>Dinner</option>
-            <option value="snack"     ${r?.category === 'snack'     ? 'selected' : ''}>Snack</option>
-          </select>
-        </div>
-        <div class="submit-field"><label class="submit-label">Cook time (seconds)</label><input class="submit-input" id="af-time" type="number" value="${r?.time_seconds || ''}" placeholder="e.g. 1800"></div>
-        <div class="submit-field"><label class="submit-label">Servings</label><input class="submit-input" id="af-servings" type="number" min="1" value="${r?.servings || 1}"></div>
-        <div class="submit-field"><label class="submit-label">Description</label><textarea class="submit-input" id="af-desc" rows="2">${r?.desc || ''}</textarea></div>
-        <div class="submit-field"><label class="submit-label">Notes / benefits</label><textarea class="submit-input" id="af-notes" rows="2">${r?.tips || ''}</textarea></div>
-      </div>
-      <div class="submit-section">
-        <div class="submit-section-label">Ingredients <button type="button" class="submit-add-btn" id="af-add-ing">+ Add</button></div>
-        <div id="af-ings"></div>
-      </div>
-      <div class="submit-section">
-        <div class="submit-section-label">Method <button type="button" class="submit-add-btn" id="af-add-step">+ Add step</button></div>
-        <div id="af-steps"></div>
-      </div>
-      <div class="submit-section">
-        <div class="submit-section-label">Nutrition <span class="admin-sub-label">(per serving)</span></div>
-        <div class="submit-nutrition-grid">
-          <div class="submit-field"><label class="submit-label">Energy (kcal)</label><input class="submit-input" id="af-kcal"    type="number" value="${n.energy_kcal || ''}"></div>
-          <div class="submit-field"><label class="submit-label">Energy (kJ)</label>  <input class="submit-input" id="af-kj"      type="number" value="${n.energy_kj || ''}"></div>
-          <div class="submit-field"><label class="submit-label">Protein (g)</label>  <input class="submit-input" id="af-protein" type="number" value="${n.protein_g || ''}"></div>
-          <div class="submit-field"><label class="submit-label">Carbs (g)</label>    <input class="submit-input" id="af-carbs"   type="number" value="${n.carbs_g || ''}"></div>
-          <div class="submit-field"><label class="submit-label">Sugars (g)</label>   <input class="submit-input" id="af-sugars"  type="number" value="${n.of_which_sugars_g || ''}"></div>
-          <div class="submit-field"><label class="submit-label">Fat (g)</label>       <input class="submit-input" id="af-fat"     type="number" value="${n.fat_g || ''}"></div>
-          <div class="submit-field"><label class="submit-label">Saturates (g)</label><input class="submit-input" id="af-sat"     type="number" value="${n.of_which_saturated_g || ''}"></div>
-          <div class="submit-field"><label class="submit-label">Fibre (g)</label>    <input class="submit-input" id="af-fibre"   type="number" value="${n.fibre_g || ''}"></div>
-          <div class="submit-field"><label class="submit-label">Salt (g)</label>     <input class="submit-input" id="af-salt"    type="number" value="${n.salt_g || ''}"></div>
-        </div>
-      </div>
-      <div class="admin-form-error" id="adminFormError" hidden></div>
-    </form>
-  `;
-
-  const ingsEl = body.querySelector('#af-ings');
-  const stepsEl = body.querySelector('#af-steps');
-
-  (r?.ingredients || [{}]).forEach(ing => ingsEl.appendChild(adminIngRow(ing)));
-  (r?.steps || [{}]).forEach((s, i) => stepsEl.appendChild(adminStepRow(s, i + 1)));
-
-  body.querySelector('#af-add-ing').addEventListener('click', () => {
-    ingsEl.appendChild(adminIngRow());
-  });
-  body.querySelector('#af-add-step').addEventListener('click', () => {
-    const num = stepsEl.children.length + 1;
-    stepsEl.appendChild(adminStepRow({}, num));
-  });
-  body.addEventListener('click', e => {
-    if (e.target.classList.contains('submit-rm-btn')) {
-      e.target.closest('.submit-ing-row, .submit-step-row')?.remove();
-    }
-  });
-}
-
-function readAdminForm() {
-  const ingredients = [...document.querySelectorAll('#af-ings .submit-ing-row')].map(row => ({
-    amount: row.querySelector('.sf-ing-amount').value.trim(),
-    unit:   row.querySelector('.sf-ing-unit').value.trim(),
-    item:   row.querySelector('.sf-ing-item').value.trim(),
-  })).filter(i => i.item);
-
-  const steps = [...document.querySelectorAll('#af-steps .submit-step-row')].map(row => {
-    const text = row.querySelector('.sf-step-text').value.trim();
-    const dur  = parseInt(row.querySelector('.sf-step-dur').value) || null;
-    if (!text) return null;
-    return dur ? { text, duration_seconds: dur } : { text, duration_seconds: null };
-  }).filter(Boolean);
-
-  const sodium_mg = parseFloat(document.getElementById('af-salt').value) * 400 || 0;
-
-  return {
-    title:       document.getElementById('af-title').value.trim(),
-    category:    document.getElementById('af-cat').value,
-    time_seconds: parseInt(document.getElementById('af-time').value) || null,
-    servings:    parseInt(document.getElementById('af-servings').value) || 1,
-    description: document.getElementById('af-desc').value.trim(),
-    notes:       document.getElementById('af-notes').value.trim(),
-    ingredients,
-    steps,
-    nutrition: {
-      energy_kcal:          parseFloat(document.getElementById('af-kcal').value)    || 0,
-      energy_kj:            parseFloat(document.getElementById('af-kj').value)      || 0,
-      protein_g:            parseFloat(document.getElementById('af-protein').value)  || 0,
-      carbs_g:              parseFloat(document.getElementById('af-carbs').value)    || 0,
-      of_which_sugars_g:    parseFloat(document.getElementById('af-sugars').value)   || 0,
-      fat_g:                parseFloat(document.getElementById('af-fat').value)      || 0,
-      of_which_saturated_g: parseFloat(document.getElementById('af-sat').value)      || 0,
-      fibre_g:              parseFloat(document.getElementById('af-fibre').value)    || 0,
-      salt_g:               parseFloat(document.getElementById('af-salt').value)     || 0,
-    },
-  };
-}
-
-function showAdminError(msg) {
-  const el = document.getElementById('adminFormError');
-  el.textContent = msg;
-  el.hidden = false;
-}
-
-function openAdminModal(r = null) {
-  _adminEditingId = r?.id || null;
-  document.getElementById('adminModalTitle').textContent = r ? 'Edit recipe' : 'New recipe';
-  document.getElementById('adminDeleteBtn').hidden = !r;
-  buildAdminForm(r);
-  document.getElementById('adminModal').showModal();
-  lockScroll();
-}
-
-function closeAdminModal() {
-  document.getElementById('adminModal').close();
-}
-
-document.getElementById('adminModalClose').addEventListener('click', closeAdminModal);
-document.getElementById('adminModal').addEventListener('click', e => {
-  if (e.target === document.getElementById('adminModal')) closeAdminModal();
-});
-
-document.getElementById('adminSaveBtn').addEventListener('click', async () => {
-  const fields = readAdminForm();
-  if (!fields.title) { showAdminError('Title is required.'); return; }
-  if (!fields.category) { showAdminError('Category is required.'); return; }
-
-  const btn = document.getElementById('adminSaveBtn');
-  btn.disabled = true;
-  btn.textContent = 'Saving…';
-
-  try {
-    if (_adminEditingId) {
-      await window.SB.updateRecipe(_adminEditingId, fields);
-      // Update local recipe object
-      for (const [cat, items] of Object.entries(recipes)) {
-        const idx = items.findIndex(r => r.id === _adminEditingId);
-        if (idx !== -1) {
-          const updated = { ...items[idx], ...fields, desc: fields.description, tips: fields.notes };
-          recipes[cat][idx] = updated;
-          // If category changed, move it
-          if (cat !== fields.category) {
-            recipes[cat].splice(idx, 1);
-            recipes[fields.category] = recipes[fields.category] || [];
-            recipes[fields.category].push(updated);
-          }
-          break;
-        }
-      }
-    } else {
-      fields.slug = fields.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-      const created = await window.SB.createRecipe(fields);
-      recipes[fields.category] = recipes[fields.category] || [];
-      recipes[fields.category].push({
-        id: created.id, slug: created.slug, title: created.title,
-        desc: created.description, time_seconds: created.time_seconds,
-        servings: created.servings, ingredients: created.ingredients,
-        steps: created.steps, tips: created.notes, nutrition: created.nutrition,
-        category: created.category,
-      });
-    }
-    renderCards();
-    applyFilters();
-    closeAdminModal();
-  } catch (err) {
-    showAdminError(err.message || 'Save failed. Check the console.');
-    console.error(err);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Save changes';
-  }
-});
-
-document.getElementById('adminDeleteBtn').addEventListener('click', async () => {
-  if (!_adminEditingId) return;
-  const r = Object.values(recipes).flat().find(r => r.id === _adminEditingId);
-  if (!confirm(`Delete "${r?.title}"? This cannot be undone.`)) return;
-
-  const btn = document.getElementById('adminDeleteBtn');
-  btn.disabled = true;
-  btn.textContent = 'Deleting…';
-
-  try {
-    await window.SB.deleteRecipe(_adminEditingId);
-    for (const [cat, items] of Object.entries(recipes)) {
-      const idx = items.findIndex(r => r.id === _adminEditingId);
-      if (idx !== -1) { recipes[cat].splice(idx, 1); break; }
-    }
-    renderCards();
-    applyFilters();
-    closeAdminModal();
-  } catch (err) {
-    showAdminError(err.message || 'Delete failed.');
-    btn.disabled = false;
-    btn.textContent = 'Delete recipe';
-  }
-});
+document.getElementById('adminNewBtn').addEventListener('click', () => loadScript('admin.js').then(() => window.APP.openAdminModal(null)));
