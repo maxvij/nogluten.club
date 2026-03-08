@@ -373,6 +373,19 @@ function renderNutritionPanel(n, scale) {
   `;
 }
 
+function saveCheckState(title) {
+  const ings = [...document.querySelectorAll('#modalContent .ingredient-list input[type="checkbox"]')].map(cb => cb.checked);
+  const steps = [...document.querySelectorAll('#modalContent .steps-list input[type="checkbox"]')].map(cb => cb.checked);
+  sessionStorage.setItem(`checkState:${title}`, JSON.stringify({ ings, steps }));
+}
+
+function restoreCheckState(title) {
+  const saved = JSON.parse(sessionStorage.getItem(`checkState:${title}`) || 'null');
+  if (!saved) return;
+  document.querySelectorAll('#modalContent .ingredient-list input[type="checkbox"]').forEach((cb, i) => { cb.checked = saved.ings[i] ?? false; });
+  document.querySelectorAll('#modalContent .steps-list input[type="checkbox"]').forEach((cb, i) => { cb.checked = saved.steps[i] ?? false; });
+}
+
 function renderModalBody(r, servings) {
   const scale = servings / r.servings;
   const ingHTML = r.ingredients.map((ing, i) => {
@@ -404,6 +417,7 @@ function renderModalBody(r, servings) {
       ${renderNutritionPanel(r.nutrition, scale)}
     </div>
   `;
+  restoreCheckState(r.title);
 }
 
 function openModal(cat, idx) {
@@ -460,6 +474,10 @@ function openModal(cat, idx) {
   document.getElementById('modalBody').addEventListener('click', function handler(e) {
     if (e.target.id === 'servingDown' && servings > 1) { servings--; renderModalBody(r, servings); }
     if (e.target.id === 'servingUp') { servings++; renderModalBody(r, servings); }
+  }, { signal: modal._ac.signal });
+
+  document.getElementById('modalContent').addEventListener('change', e => {
+    if (e.target.type === 'checkbox') saveCheckState(r.title);
   }, { signal: modal._ac.signal });
 
 
@@ -533,50 +551,160 @@ themeToggle.addEventListener('click', () => {
 });
 
 // Pantry data
-const pantryGroups = {
-  protein: [
-    { id: 'eggs',           label: 'Eggs',           keywords: 'egg boiled fried scramble omelette' },
-    { id: 'chicken-breast', label: 'Chicken breast', keywords: 'chicken poultry meat white lean' },
-    { id: 'chicken-thighs', label: 'Chicken thighs', keywords: 'chicken poultry meat thigh juicy' },
-    { id: 'ground-turkey',  label: 'Ground turkey',  keywords: 'turkey mince minced ground poultry lean' },
-    { id: 'canned-tuna',    label: 'Canned tuna',    keywords: 'tuna fish seafood tinned can tin' },
-    { id: 'prawns',         label: 'Prawns',         keywords: 'prawn shrimp seafood shellfish' },
-    { id: 'salmon',         label: 'Salmon',         keywords: 'salmon fish seafood smoked fillet' },
-    { id: 'beef',           label: 'Beef',           keywords: 'beef steak mince red meat sirloin rump' },
-    { id: 'ground-lamb',    label: 'Ground lamb',    keywords: 'lamb mince ground red meat kofta' },
-    { id: 'pea-protein',    label: 'Pea protein',    keywords: 'protein powder supplement shake pea vegan' },
-  ],
-  produce: [
-    { id: 'spinach',        label: 'Spinach',        keywords: 'spinach greens leafy salad vegetable' },
-    { id: 'broccoli',       label: 'Broccoli',       keywords: 'broccoli greens vegetable cruciferous' },
-    { id: 'avocado',        label: 'Avocado',        keywords: 'avocado avo fat creamy guacamole' },
-    { id: 'zucchini',       label: 'Zucchini',       keywords: 'zucchini courgette vegetable marrow' },
-    { id: 'sweet-potato',   label: 'Sweet potato',   keywords: 'sweet potato kumara potato carb orange' },
-    { id: 'green-beans',    label: 'Green beans',    keywords: 'green beans beans vegetable snap' },
-    { id: 'bok-choy',       label: 'Bok choy',       keywords: 'bok choy pak choi asian greens chinese cabbage' },
-    { id: 'cucumber',       label: 'Cucumber',       keywords: 'cucumber salad fresh cool' },
-    { id: 'mixed-berries',  label: 'Mixed berries',  keywords: 'berries strawberry blueberry raspberry frozen fruit' },
-    { id: 'frozen-mango',   label: 'Frozen mango',   keywords: 'mango tropical frozen fruit smoothie' },
-    { id: 'frozen-banana',  label: 'Frozen banana',  keywords: 'banana frozen fruit smoothie' },
-    { id: 'edamame',        label: 'Edamame',        keywords: 'edamame soy soybean beans japanese' },
-  ],
-  pantry: [
-    { id: 'rice',            label: 'Rice',            keywords: 'rice carbs grain jasmine basmati sushi white brown' },
-    { id: 'firm-tofu',       label: 'Firm tofu',       keywords: 'tofu soy vegan vegetarian bean curd protein' },
-    { id: 'coconut-milk',    label: 'Coconut milk',    keywords: 'coconut milk dairy free cream thai curry' },
-    { id: 'oat-milk',        label: 'Oat milk',        keywords: 'oat milk dairy free milk alternative drink' },
-    { id: 'yogurt',          label: 'LF yogurt',       keywords: 'yogurt yoghurt dairy lactose free probiotic' },
-    { id: 'red-lentils',     label: 'Red lentils',     keywords: 'lentils legume pulse dal dhal soup' },
-    { id: 'canned-tomatoes', label: 'Canned tomatoes', keywords: 'tomatoes tomato tinned can passata crushed' },
-    { id: 'miso-paste',      label: 'Miso paste',      keywords: 'miso fermented japanese paste umami soy' },
-    { id: 'curry-paste',     label: 'Curry paste',     keywords: 'curry paste thai green red indian spice' },
-    { id: 'tahini',          label: 'Tahini',          keywords: 'tahini sesame paste middle eastern dip' },
-    { id: 'nut-butter',      label: 'Nut butter',      keywords: 'nut butter peanut butter almond peanut spread' },
-    { id: 'oats',            label: 'Rolled oats',     keywords: 'oats rolled oats porridge breakfast gluten free' },
-    { id: 'granola',         label: 'GF granola',      keywords: 'granola breakfast oats cereal gluten free' },
-    { id: 'rice-cakes',      label: 'Rice cakes',      keywords: 'rice cakes crackers snack gluten free light' },
-  ],
+// Pantry staples assumed to always be on hand — excluded from the fridge filter
+const PANTRY_STAPLES = new Set([
+  'salt', 'black pepper', 'sea salt', 'coarse sea salt', 'salt & pepper',
+  'olive oil', 'sesame oil', 'water', 'vanilla extract', 'ice',
+  'garlic cloves', 'garlic powder', 'lemon juice', 'lime juice',
+  'rice vinegar', 'balsamic vinegar', 'dijon mustard',
+  'chili flakes', 'chili powder', 'smoked paprika', 'turmeric',
+  'garam masala', 'dried oregano', 'italian herbs', 'ground coriander',
+  'ground cumin', 'sriracha', 'fish sauce', 'cornstarch',
+  'fresh thyme', 'fresh basil', 'fresh parsley', 'fresh coriander',
+  'fresh dill', 'fresh mint leaves', 'fresh chives', 'fresh ginger',
+  'spring onions', 'lemon', 'lime', 'honey', 'maple syrup',
+  'capers', 'sesame seeds', 'coconut flakes', 'water or oat milk',
+]);
+
+const CATEGORY_KEYWORDS = {
+  protein: ['chicken', 'turkey', 'beef', 'lamb', 'pork', 'salmon', 'tuna', 'prawn', 'cod', 'mackerel', 'sardine', 'trout', 'egg', 'tofu', 'protein', 'sirloin', 'steak', 'loin', 'thigh', 'breast', 'leg', 'chop', 'mince'],
+  produce: ['spinach', 'broccoli', 'avocado', 'zucchini', 'sweet potato', 'green bean', 'bok choy', 'cucumber', 'berr', 'mango', 'banana', 'edamame', 'kale', 'asparagus', 'pepper', 'mushroom', 'onion', 'carrot', 'cauliflower', 'pumpkin', 'rocket', 'arugula', 'lettuce', 'apple', 'watermelon', 'tomato', 'celery', 'cabbage', 'beetroot', 'pineapple', 'greens'],
 };
+
+// Collapse ingredient variants into a single canonical term
+const INGREDIENT_ALIASES = {
+  'chicken breast': 'chicken',
+  'chicken breasts': 'chicken',
+  'chicken thighs': 'chicken',
+  'chicken thigh': 'chicken',
+  'chicken legs': 'chicken',
+  'chicken leg': 'chicken',
+  'bone-in chicken thighs': 'chicken',
+  'beef chuck': 'beef',
+  'beef sirloin': 'beef',
+  'lean ground beef': 'beef',
+  'sirloin steak': 'beef',
+  'sliced roast beef': 'beef',
+  'lean ground turkey': 'turkey',
+  'ground lamb': 'lamb',
+  'pork loin': 'pork',
+  'pork tenderloin': 'pork',
+  'raw prawns': 'prawns',
+  'firm tofu': 'tofu',
+  'silken tofu': 'tofu',
+  'pea protein isolate': 'pea protein',
+  'tuna in spring water': 'tuna',
+  'fresh tuna': 'tuna',
+  'baby spinach': 'spinach',
+  'broccoli florets': 'broccoli',
+  'mixed mushrooms': 'mushrooms',
+  'red bell pepper': 'bell pepper',
+  'bell peppers': 'bell pepper',
+  'cherry tomatoes': 'tomatoes',
+  'diced tomatoes': 'tomatoes',
+  'jasmine rice': 'rice',
+  'brown rice': 'rice',
+  'cooked rice': 'rice',
+  'rice noodles': 'rice noodles',
+  'rice vermicelli noodles': 'rice noodles',
+  'lactose-free yoghurt': 'lactose-free yoghurt',
+  'oat milk': 'oat milk',
+  'mixed berries': 'berries',
+  'frozen blueberries': 'berries',
+  'edamame pods': 'edamame',
+  'shelled edamame': 'edamame',
+  'mixed nuts': 'nuts',
+  'nut butter': 'plant-based butter',
+  'peanut butter': 'plant-based butter',
+  'almond butter': 'plant-based butter',
+  'plant-based butter': 'plant-based butter',
+  'white miso paste': 'miso paste',
+  'green curry paste': 'curry paste',
+  'sweet potato': 'sweet potato',
+  'sweet potatoes': 'sweet potato',
+  'carrots': 'carrot',
+  'gf rolled oats': 'rolled oats',
+  'gf granola': 'granola',
+  'rice cakes': 'rice cakes',
+  'dark chocolate chips': 'dark chocolate',
+  'beef bone broth': 'beef broth',
+  'chicken bone broth': 'chicken broth',
+  'vegetable broth': 'vegetable broth',
+};
+
+function normalizeIngItem(raw) {
+  const base = raw
+    .replace(/\s*\([^)]*\)/g, '')
+    .replace(/,.*$/, '')
+    .replace(/^(gf|gluten[- ]free)\s+/i, '')
+    .replace(/^(cooked|frozen|raw|smoked|canned|grilled)\s+/i, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+  return INGREDIENT_ALIASES[base] ?? base;
+}
+
+function categorizePantryItem(id) {
+  for (const [cat, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
+    if (keywords.some(kw => id.includes(kw))) return cat;
+  }
+  return 'pantry';
+}
+
+function buildPantryGroupsFromRecipes(recipes) {
+  const seen = new Map();
+  for (const items of Object.values(recipes)) {
+    for (const r of items) {
+      for (const ing of r.ingredients) {
+        const norm = normalizeIngItem(ing.item);
+        if (!PANTRY_STAPLES.has(norm) && norm.length > 1 && !seen.has(norm)) {
+          seen.set(norm, norm.charAt(0).toUpperCase() + norm.slice(1));
+        }
+      }
+    }
+  }
+  // Prefer singular: if both "egg" and "eggs" exist, drop the plural
+  const toDelete = new Set();
+  for (const key of seen.keys()) {
+    if (key.endsWith('s') && seen.has(key.slice(0, -1))) toDelete.add(key);
+  }
+  toDelete.forEach(k => seen.delete(k));
+
+  const groups = { protein: [], produce: [], pantry: [] };
+  [...seen.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .forEach(([id, label]) => groups[categorizePantryItem(id)].push({ id, label }));
+  return groups;
+}
+
+const INGREDIENT_EMOJIS = {
+  // Protein
+  'chicken': '🍗', 'turkey': '🦃', 'beef': '🥩', 'lamb': '🫀', 'pork': '🥓',
+  'salmon': '🐟', 'tuna': '🐟', 'prawns': '🦐', 'cod': '🐠', 'mackerel': '🐟',
+  'sardines': '🐟', 'trout': '🐟', 'egg': '🥚', 'tofu': '🫙', 'pea protein': '💪',
+  // Produce
+  'spinach': '🥬', 'broccoli': '🥦', 'avocado': '🥑', 'zucchini': '🥒',
+  'sweet potato': '🍠', 'green beans': '🫘', 'bok choy': '🥬', 'cucumber': '🥒',
+  'berries': '🫐', 'mango': '🥭', 'banana': '🍌', 'edamame': '🫘',
+  'kale': '🥬', 'asparagus': '🌿', 'bell pepper': '🫑', 'mushrooms': '🍄',
+  'onion': '🧅', 'carrot': '🥕', 'cauliflower': '🥦', 'pumpkin': '🎃',
+  'rocket': '🌿', 'lettuce': '🥬', 'apple': '🍎', 'watermelon': '🍉',
+  'tomatoes': '🍅', 'celery': '🌿', 'red cabbage': '🥬', 'pineapple': '🍍',
+  'mixed salad greens': '🥗', 'beetroot': '🫀',
+  // Pantry
+  'rice': '🍚', 'quinoa': '🌾', 'rice noodles': '🍜', 'coconut milk': '🥥',
+  'oat milk': '🥛', 'lactose-free yoghurt': '🫙', 'red lentils': '🫘',
+  'chickpeas': '🫘', 'black beans': '🫘', 'kidney beans': '🫘',
+  'soy sauce': '🍶', 'plant-based butter': '🥜', 'rolled oats': '🌾',
+  'granola': '🌾', 'rice cakes': '🍘', 'dark chocolate': '🍫',
+  'chia seeds': '🌱', 'miso paste': '🫙', 'curry paste': '🫙',
+  'nuts': '🥜', 'almonds': '🥜', 'walnuts': '🥜', 'mixed nuts': '🥜',
+  'medjool dates': '🍬', 'coconut flakes': '🥥', 'harissa paste': '🌶️',
+  'black beans': '🫘', 'beef broth': '🍲', 'chicken broth': '🍲',
+  'vegetable broth': '🍲',
+};
+
+let pantryGroups = {};
 
 let pantryMap = {};
 
@@ -597,8 +725,9 @@ function makePantryItem(id, label) {
     if (selectedIngredients.size > 0) activateBestMatch();
     else deactivateBestMatch();
   });
+  const emoji = INGREDIENT_EMOJIS[id] || '';
   const span = document.createElement('span');
-  span.textContent = label;
+  span.textContent = (emoji ? emoji + ' ' : '') + label;
   el.appendChild(cb);
   el.appendChild(span);
   return el;
@@ -698,9 +827,8 @@ function clearAllFilters() {
 
 document.getElementById('sidebarReset').addEventListener('click', clearAllFilters);
 
-// Flat id → label lookup for pantry
-const pantryLabelMap = {};
-Object.values(pantryGroups).flat().forEach(({ id, label }) => { pantryLabelMap[id] = label; });
+// Flat id → label lookup for pantry (populated in boot after recipes load)
+let pantryLabelMap = {};
 
 // Unified filter state
 let activeTime = null;
@@ -743,7 +871,7 @@ function applyFilters() {
       if (anyPantry && pantry.length > 0) {
         const pct = matched / pantry.length;
         const tier = pct >= 0.8 ? 'match-high' : pct >= 0.5 ? 'match-mid' : 'match-low';
-        matchEl.textContent = `${matched}/${pantry.length} ingredients`;
+        matchEl.textContent = `${matched}/${pantry.length} main ingredients`;
         matchEl.className = `card-match visible ${tier}`;
         const missing = pantry.filter(id => !selectedIngredients.has(id));
         if (missing.length === 0) {
@@ -1206,23 +1334,29 @@ function initGreeting() {
 }
 
 function buildPantryMap() {
+  const validIds = new Set(Object.values(pantryGroups).flat().map(p => p.id));
   const map = {};
-  const allItems = Object.values(pantryGroups).flat();
-  for (const [, items] of Object.entries(recipes)) {
+  for (const items of Object.values(recipes)) {
     for (const r of items) {
-      const ingText = r.ingredients.map(i => i.item.toLowerCase()).join(' ');
-      const matched = [];
-      for (const p of allItems) {
-        const kwds = p.keywords.toLowerCase().split(' ').filter(k => k.length > 2);
-        if (kwds.some(kw => ingText.includes(kw))) matched.push(p.id);
-      }
-      if (matched.length > 0) map[r.title] = [...new Set(matched)];
+      const matched = [...new Set(
+        r.ingredients.map(ing => {
+          const norm = normalizeIngItem(ing.item);
+          if (validIds.has(norm)) return norm;
+          // fall back to singular (e.g. recipe has "eggs", pantry has "egg")
+          const singular = norm.endsWith('s') ? norm.slice(0, -1) : null;
+          return singular && validIds.has(singular) ? singular : null;
+        }).filter(Boolean)
+      )];
+      if (matched.length > 0) map[r.title] = matched;
     }
   }
   return map;
 }
 
 function boot() {
+  pantryGroups = buildPantryGroupsFromRecipes(recipes);
+  pantryLabelMap = {};
+  Object.values(pantryGroups).flat().forEach(({ id, label }) => { pantryLabelMap[id] = label; });
   pantryMap = buildPantryMap();
   initGreeting();
 

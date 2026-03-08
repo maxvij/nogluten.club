@@ -1178,7 +1178,7 @@
   .card-match.visible    { display: inline-flex; }
   .card-match.match-low  { background: var(--surface2); color: var(--text-muted); }
   .card-match.match-mid  { background: #c97820; color: #fff; }
-  .card-match.match-high { background: var(--cat-accent, var(--accent)); color: #fff; }
+  .card-match.match-high { background: #3a9e5f; color: #fff; }
 
   /* Greeting block */
   .greeting-block {
@@ -1631,6 +1631,7 @@
     text-align: left;
     color: var(--text);
     margin: 0;
+    white-space: pre-line;
   }
   .cook-nav {
     display: flex;
