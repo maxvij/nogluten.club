@@ -115,6 +115,8 @@
           <span class="slogan-sep" aria-hidden="true">·</span>
           <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="theme-icon"></span></button>
         </p>
+        <button class="admin-new-btn" id="adminNewBtn" hidden aria-label="Add new recipe">+ Recipe</button>
+        <button class="auth-btn" id="authBtn" aria-label="Sign in with Google">Sign in</button>
       </div>
     </div>
 
@@ -273,15 +275,18 @@
 </dialog>
 
 
-<!-- Recipe submission modal -->
-<dialog id="submitModal" aria-label="Add a recipe">
+<!-- Admin recipe editor modal -->
+<dialog id="adminModal" aria-label="Edit recipe">
   <div class="shop-modal-header">
-    <h2 class="modal-title">New recipe</h2>
-    <button class="modal-close" id="submitClose" aria-label="Close">✕</button>
+    <h2 class="modal-title" id="adminModalTitle">Edit recipe</h2>
+    <button class="modal-close" id="adminModalClose" aria-label="Close">✕</button>
   </div>
-  <div class="modal-body" id="submitBody"></div>
+  <div class="modal-body admin-modal-body" id="adminModalBody"></div>
   <div class="modal-footer">
-    <button class="shop-copy-btn" id="submitGenBtn">Generate JSON</button>
+    <div class="admin-footer-row">
+      <button class="admin-save-btn" id="adminSaveBtn">Save changes</button>
+      <button class="admin-delete-btn" id="adminDeleteBtn">Delete recipe</button>
+    </div>
   </div>
 </dialog>
 

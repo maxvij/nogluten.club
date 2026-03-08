@@ -328,6 +328,7 @@ function renderCards() {
         <div class="card-actions">
           <button class="card-cook-btn">Start cooking</button>
           <button class="card-shop-btn ${inList ? 'active' : ''}"><i class="ph ${inList ? 'ph-check' : 'ph-plus'}"></i>${inList ? 'Added' : 'Add'}</button>
+          ${_isAdmin ? `<button class="card-admin-btn" aria-label="Edit recipe">Edit</button>` : ''}
         </div>
       `;
       card.tabIndex = 0;
@@ -335,6 +336,7 @@ function renderCards() {
       card.querySelector('.card-fav').addEventListener('click', e => { e.stopPropagation(); toggleFavorite(r.title, e.currentTarget); });
       card.querySelector('.card-cook-btn').addEventListener('click', e => { e.stopPropagation(); openCookingMode(r.steps, r.ingredients, r.title, 0, r.slug); });
       card.querySelector('.card-shop-btn').addEventListener('click', e => { e.stopPropagation(); toggleShopList(r.title, e.currentTarget); });
+      card.querySelector('.card-admin-btn')?.addEventListener('click', e => { e.stopPropagation(); openAdminModal(r); });
       card.dataset.idx = i;
       card.dataset.title = r.title;
       card.addEventListener('click', () => openModal(cat, i));
@@ -1521,6 +1523,11 @@ window.SB.fetchRecipes()
         nutrition:   r.nutrition,
       });
     });
+    // Keep recipe ID map up to date for cloud favourites sync
+    const titleToId = {};
+    Object.values(recipes).flat().forEach(r => { titleToId[r.title] = r.id; });
+    window.SB.setRecipeIdMap(titleToId);
+
     boot();
     // Restore cook mode if session was active
     const savedCook = JSON.parse(sessionStorage.getItem('cookState') || 'null');
@@ -1546,6 +1553,50 @@ window.SB.fetchRecipes()
     el.textContent = 'Could not load recipes. Try refreshing the page.';
     el.style.display = 'block';
   });
+
+// ─── Auth + favourites sync ───────────────────────────────────────────────────
+
+async function onUserChange(event, user, prev) {
+  if (user && !prev) {
+    // Just signed in — pull cloud favs, merge with local, push merged set
+    await syncFavouritesOnSignIn();
+    await checkAdminAndRender();
+  }
+  if (!user && prev) {
+    // Signed out — reset admin state
+    _isAdmin = false;
+    document.getElementById('adminNewBtn').hidden = true;
+    renderCards();
+  }
+}
+
+async function syncFavouritesOnSignIn() {
+  try {
+    const cloudIds = await window.SB.pullFavouriteIds();
+    // Build reverse map: recipeId → title
+    const idToTitle = {};
+    Object.values(recipes).flat().forEach(r => { idToTitle[r.id] = r.title; });
+    // Merge cloud IDs into local favourites set
+    cloudIds.forEach(id => {
+      const title = idToTitle[id];
+      if (title) favorites.add(title);
+    });
+    saveFavorites();
+    renderCards();
+    // Push the merged local set back to cloud
+    const titleToId = {};
+    Object.values(recipes).flat().forEach(r => { titleToId[r.title] = r.id; });
+    window.SB.setRecipeIdMap(titleToId);
+    await window.SB.pushFavourites(favorites);
+  } catch (e) {
+    console.error('Favourites sync failed', e);
+  }
+}
+
+window.SB.initSupabase(onUserChange).then(() => {
+  // If already signed in from a previous session, check admin status
+  if (window.SB.getCurrentUser()) checkAdminAndRender();
+}).catch(() => {});
 
 // Reorder category sections by time of day
 (function() {
@@ -1622,6 +1673,9 @@ function openCookingMode(steps, ingredients, recipeTitle, startAtStep = 0, recip
     const slug = recipeSlug || recipeTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     history.replaceState(null, '', '#' + slug);
     sessionStorage.setItem('cookState', JSON.stringify({ slug, step: cookIdx }));
+    // Cloud cook record — find recipe ID from title
+    const recipeObj = Object.values(recipes).flat().find(r => r.title === recipeTitle);
+    if (recipeObj) window.SB.recordCook(recipeObj.id).catch(() => {});
   }
 
   // Any key advances steps
@@ -1771,7 +1825,7 @@ document.getElementById('cookModal').addEventListener('close', () => {
   unlockScroll();
   if (wakeLock) { wakeLock.release(); wakeLock = null; }
 });
-document.getElementById('submitModal').addEventListener('close', () => unlockScroll());
+document.getElementById('adminModal').addEventListener('close', () => unlockScroll());
 
 // Swipe left/right in cook body to navigate steps
 (function() {
@@ -1788,173 +1842,246 @@ document.getElementById('submitModal').addEventListener('close', () => unlockScr
 
 
 
-// ─── Recipe submission form ───────────────────────────────────────────────────
+// ─── Admin panel ──────────────────────────────────────────────────────────────
 
-function buildSubmitForm() {
-  const body = document.getElementById('submitBody');
-  if (body.dataset.built) return;
-  body.dataset.built = '1';
+let _isAdmin = false;
+let _adminEditingId = null; // recipe ID being edited, null = new recipe
+
+async function checkAdminAndRender() {
+  _isAdmin = await window.SB.isAdmin().catch(() => false);
+  document.getElementById('adminNewBtn').hidden = !_isAdmin;
+  if (_isAdmin) renderCards(); // re-render to show edit buttons
+}
+
+document.getElementById('adminNewBtn').addEventListener('click', () => openAdminModal(null));
+
+function adminIngRow(ing = {}) {
+  const row = document.createElement('div');
+  row.className = 'submit-ing-row';
+  row.innerHTML = `
+    <input class="submit-input sf-ing-amount" type="text" placeholder="200" value="${ing.amount || ''}">
+    <input class="submit-input sf-ing-unit" type="text" placeholder="g" value="${ing.unit || ''}">
+    <input class="submit-input sf-ing-item" type="text" placeholder="chicken breast" value="${ing.item || ''}">
+    <button type="button" class="submit-rm-btn" aria-label="Remove">−</button>
+  `;
+  return row;
+}
+
+function adminStepRow(step = {}, num = 1) {
+  const text = typeof step === 'object' ? (step.text || '') : (step || '');
+  const dur = typeof step === 'object' ? (step.duration_seconds || '') : '';
+  const row = document.createElement('div');
+  row.className = 'submit-step-row';
+  row.innerHTML = `
+    <span class="submit-step-num">${num}</span>
+    <textarea class="submit-input sf-step-text" rows="2" placeholder="Step ${num}...">${text}</textarea>
+    <input class="submit-input sf-step-dur" type="number" placeholder="sec (optional)" value="${dur}" style="width:7rem;font-size:0.8rem">
+    <button type="button" class="submit-rm-btn" aria-label="Remove">−</button>
+  `;
+  return row;
+}
+
+function buildAdminForm(r = null) {
+  const n = r?.nutrition || {};
+  const body = document.getElementById('adminModalBody');
   body.innerHTML = `
-    <form id="submitForm" autocomplete="off">
+    <form id="adminForm" autocomplete="off">
       <div class="submit-section">
-        <div class="submit-field"><label class="submit-label">Title</label><input class="submit-input" id="sf-title" type="text" placeholder="e.g. Salmon Rice Bowl" required></div>
-        <div class="submit-field"><label class="submit-label">Category</label><select class="submit-input" id="sf-cat"><option value="breakfast">Breakfast</option><option value="lunch">Lunch</option><option value="dinner" selected>Dinner</option><option value="snack">Snack</option></select></div>
-        <div class="submit-field"><label class="submit-label">Cook time</label><input class="submit-input" id="sf-time" type="text" placeholder="e.g. 25 min"></div>
-        <div class="submit-field"><label class="submit-label">Description</label><textarea class="submit-input" id="sf-desc" rows="2" placeholder="Short description"></textarea></div>
-        <div class="submit-field"><label class="submit-label">Benefits / tips</label><textarea class="submit-input" id="sf-tips" rows="2" placeholder="Health benefits or cooking tips"></textarea></div>
-      </div>
-      <div class="submit-section">
-        <div class="submit-section-label">Ingredients <button type="button" class="submit-add-btn" id="sf-add-ing">+ Add</button></div>
-        <div id="sf-ings">
-          <div class="submit-ing-row">
-            <input class="submit-input sf-ing-amount" type="text" placeholder="200">
-            <input class="submit-input sf-ing-unit" type="text" placeholder="g">
-            <input class="submit-input sf-ing-item" type="text" placeholder="chicken breast">
-            <button type="button" class="submit-rm-btn">−</button>
-          </div>
+        <div class="submit-field"><label class="submit-label">Title</label><input class="submit-input" id="af-title" type="text" value="${r?.title || ''}" required></div>
+        <div class="submit-field"><label class="submit-label">Category</label>
+          <select class="submit-input" id="af-cat">
+            <option value="breakfast" ${r?.category === 'breakfast' ? 'selected' : ''}>Breakfast</option>
+            <option value="lunch"     ${r?.category === 'lunch'     ? 'selected' : ''}>Lunch</option>
+            <option value="dinner"    ${!r || r.category === 'dinner' ? 'selected' : ''}>Dinner</option>
+            <option value="snack"     ${r?.category === 'snack'     ? 'selected' : ''}>Snack</option>
+          </select>
         </div>
+        <div class="submit-field"><label class="submit-label">Cook time (seconds)</label><input class="submit-input" id="af-time" type="number" value="${r?.time_seconds || ''}" placeholder="e.g. 1800"></div>
+        <div class="submit-field"><label class="submit-label">Servings</label><input class="submit-input" id="af-servings" type="number" min="1" value="${r?.servings || 1}"></div>
+        <div class="submit-field"><label class="submit-label">Description</label><textarea class="submit-input" id="af-desc" rows="2">${r?.desc || ''}</textarea></div>
+        <div class="submit-field"><label class="submit-label">Notes / benefits</label><textarea class="submit-input" id="af-notes" rows="2">${r?.tips || ''}</textarea></div>
       </div>
       <div class="submit-section">
-        <div class="submit-section-label">Method <button type="button" class="submit-add-btn" id="sf-add-step">+ Add step</button></div>
-        <div id="sf-steps">
-          <div class="submit-step-row">
-            <span class="submit-step-num">1</span>
-            <textarea class="submit-input sf-step-text" rows="2" placeholder="First step..."></textarea>
-            <button type="button" class="submit-rm-btn">−</button>
-          </div>
-        </div>
+        <div class="submit-section-label">Ingredients <button type="button" class="submit-add-btn" id="af-add-ing">+ Add</button></div>
+        <div id="af-ings"></div>
       </div>
       <div class="submit-section">
-        <div class="submit-section-label">Nutrition <span style="font-size:0.75rem;color:var(--text-muted);font-weight:400">(per serving)</span></div>
+        <div class="submit-section-label">Method <button type="button" class="submit-add-btn" id="af-add-step">+ Add step</button></div>
+        <div id="af-steps"></div>
+      </div>
+      <div class="submit-section">
+        <div class="submit-section-label">Nutrition <span class="admin-sub-label">(per serving)</span></div>
         <div class="submit-nutrition-grid">
-          <div class="submit-field"><label class="submit-label">Energy (kcal)</label><input class="submit-input" id="sf-kcal" type="number" placeholder="450"></div>
-          <div class="submit-field"><label class="submit-label">Energy (kJ)</label><input class="submit-input" id="sf-kj" type="number" placeholder="1880"></div>
-          <div class="submit-field"><label class="submit-label">Protein (g)</label><input class="submit-input" id="sf-protein" type="number" placeholder="35"></div>
-          <div class="submit-field"><label class="submit-label">Carbs (g)</label><input class="submit-input" id="sf-carbs" type="number" placeholder="45"></div>
-          <div class="submit-field"><label class="submit-label">of which sugars (g)</label><input class="submit-input" id="sf-sugars" type="number" placeholder="8"></div>
-          <div class="submit-field"><label class="submit-label">Fat (g)</label><input class="submit-input" id="sf-fat" type="number" placeholder="12"></div>
-          <div class="submit-field"><label class="submit-label">of which saturates (g)</label><input class="submit-input" id="sf-sat" type="number" placeholder="3"></div>
-          <div class="submit-field"><label class="submit-label">Fibre (g)</label><input class="submit-input" id="sf-fibre" type="number" placeholder="5"></div>
-          <div class="submit-field"><label class="submit-label">Sodium (mg)</label><input class="submit-input" id="sf-sodium" type="number" placeholder="320"></div>
+          <div class="submit-field"><label class="submit-label">Energy (kcal)</label><input class="submit-input" id="af-kcal"    type="number" value="${n.energy_kcal || ''}"></div>
+          <div class="submit-field"><label class="submit-label">Energy (kJ)</label>  <input class="submit-input" id="af-kj"      type="number" value="${n.energy_kj || ''}"></div>
+          <div class="submit-field"><label class="submit-label">Protein (g)</label>  <input class="submit-input" id="af-protein" type="number" value="${n.protein_g || ''}"></div>
+          <div class="submit-field"><label class="submit-label">Carbs (g)</label>    <input class="submit-input" id="af-carbs"   type="number" value="${n.carbs_g || ''}"></div>
+          <div class="submit-field"><label class="submit-label">Sugars (g)</label>   <input class="submit-input" id="af-sugars"  type="number" value="${n.of_which_sugars_g || ''}"></div>
+          <div class="submit-field"><label class="submit-label">Fat (g)</label>       <input class="submit-input" id="af-fat"     type="number" value="${n.fat_g || ''}"></div>
+          <div class="submit-field"><label class="submit-label">Saturates (g)</label><input class="submit-input" id="af-sat"     type="number" value="${n.of_which_saturated_g || ''}"></div>
+          <div class="submit-field"><label class="submit-label">Fibre (g)</label>    <input class="submit-input" id="af-fibre"   type="number" value="${n.fibre_g || ''}"></div>
+          <div class="submit-field"><label class="submit-label">Salt (g)</label>     <input class="submit-input" id="af-salt"    type="number" value="${n.salt_g || ''}"></div>
         </div>
       </div>
+      <div class="admin-form-error" id="adminFormError" hidden></div>
     </form>
-    <div class="submit-section" id="submitOutput" hidden>
-      <div class="submit-section-label" style="justify-content:space-between">
-        <span>Generated JSON — paste into recipes.json</span>
-        <button type="button" class="submit-add-btn" id="sf-copy-json">Copy</button>
-      </div>
-      <textarea class="submit-input submit-json" id="submitJson" rows="20" readonly></textarea>
-    </div>
   `;
 
-  document.getElementById('sf-add-ing').addEventListener('click', () => {
-    const row = document.createElement('div');
-    row.className = 'submit-ing-row';
-    row.innerHTML = `
-      <input class="submit-input sf-ing-amount" type="text" placeholder="200">
-      <input class="submit-input sf-ing-unit" type="text" placeholder="g">
-      <input class="submit-input sf-ing-item" type="text" placeholder="ingredient">
-      <button type="button" class="submit-rm-btn">−</button>
-    `;
-    document.getElementById('sf-ings').appendChild(row);
-  });
+  const ingsEl = body.querySelector('#af-ings');
+  const stepsEl = body.querySelector('#af-steps');
 
-  document.getElementById('sf-add-step').addEventListener('click', () => {
-    const steps = document.getElementById('sf-steps');
-    const num = steps.children.length + 1;
-    const row = document.createElement('div');
-    row.className = 'submit-step-row';
-    row.innerHTML = `
-      <span class="submit-step-num">${num}</span>
-      <textarea class="submit-input sf-step-text" rows="2" placeholder="Step ${num}..."></textarea>
-      <button type="button" class="submit-rm-btn">−</button>
-    `;
-    steps.appendChild(row);
-  });
+  (r?.ingredients || [{}]).forEach(ing => ingsEl.appendChild(adminIngRow(ing)));
+  (r?.steps || [{}]).forEach((s, i) => stepsEl.appendChild(adminStepRow(s, i + 1)));
 
+  body.querySelector('#af-add-ing').addEventListener('click', () => {
+    ingsEl.appendChild(adminIngRow());
+  });
+  body.querySelector('#af-add-step').addEventListener('click', () => {
+    const num = stepsEl.children.length + 1;
+    stepsEl.appendChild(adminStepRow({}, num));
+  });
   body.addEventListener('click', e => {
     if (e.target.classList.contains('submit-rm-btn')) {
       e.target.closest('.submit-ing-row, .submit-step-row')?.remove();
     }
-    if (e.target.id === 'sf-copy-json') {
-      const ta = document.getElementById('submitJson');
-      navigator.clipboard.writeText(ta.value).then(() => {
-        const orig = e.target.textContent;
-        e.target.textContent = 'Copied!';
-        setTimeout(() => { e.target.textContent = orig; }, 2000);
-      });
-    }
   });
 }
 
-function generateRecipeJson() {
-  const title = document.getElementById('sf-title').value.trim();
-  if (!title) { alert('Please enter a title.'); return; }
-
-  const ingredients = [...document.querySelectorAll('#sf-ings .submit-ing-row')].map(row => ({
+function readAdminForm() {
+  const ingredients = [...document.querySelectorAll('#af-ings .submit-ing-row')].map(row => ({
     amount: row.querySelector('.sf-ing-amount').value.trim(),
-    unit: row.querySelector('.sf-ing-unit').value.trim(),
-    item: row.querySelector('.sf-ing-item').value.trim(),
+    unit:   row.querySelector('.sf-ing-unit').value.trim(),
+    item:   row.querySelector('.sf-ing-item').value.trim(),
   })).filter(i => i.item);
 
-  const steps = [...document.querySelectorAll('.sf-step-text')].map(t => t.value.trim()).filter(Boolean);
-  const benefits = document.getElementById('sf-tips').value.trim();
-  const sodium_mg = parseFloat(document.getElementById('sf-sodium').value) || 0;
-  const nextId = Object.values(recipes).flat().length + 1;
+  const steps = [...document.querySelectorAll('#af-steps .submit-step-row')].map(row => {
+    const text = row.querySelector('.sf-step-text').value.trim();
+    const dur  = parseInt(row.querySelector('.sf-step-dur').value) || null;
+    if (!text) return null;
+    return dur ? { text, duration_seconds: dur } : { text, duration_seconds: null };
+  }).filter(Boolean);
 
-  const recipe = {
-    id: nextId,
-    title,
-    category: document.getElementById('sf-cat').value,
-    desc: document.getElementById('sf-desc').value.trim(),
-    servings: 1,
-    time: document.getElementById('sf-time').value.trim(),
+  const sodium_mg = parseFloat(document.getElementById('af-salt').value) * 400 || 0;
+
+  return {
+    title:       document.getElementById('af-title').value.trim(),
+    category:    document.getElementById('af-cat').value,
+    time_seconds: parseInt(document.getElementById('af-time').value) || null,
+    servings:    parseInt(document.getElementById('af-servings').value) || 1,
+    description: document.getElementById('af-desc').value.trim(),
+    notes:       document.getElementById('af-notes').value.trim(),
     ingredients,
     steps,
-    nutrition_per_serving: {
-      energy_kcal:          parseFloat(document.getElementById('sf-kcal').value)    || 0,
-      energy_kj:            parseFloat(document.getElementById('sf-kj').value)      || 0,
-      protein_g:            parseFloat(document.getElementById('sf-protein').value)  || 0,
-      carbs_g:              parseFloat(document.getElementById('sf-carbs').value)    || 0,
-      of_which_sugars_g:    parseFloat(document.getElementById('sf-sugars').value)   || 0,
-      fat_g:                parseFloat(document.getElementById('sf-fat').value)      || 0,
-      of_which_saturated_g: parseFloat(document.getElementById('sf-sat').value)      || 0,
-      fibre_g:              parseFloat(document.getElementById('sf-fibre').value)    || 0,
-      sodium_mg,
-      salt_g: Math.round(sodium_mg * 0.00254 * 100) / 100,
+    nutrition: {
+      energy_kcal:          parseFloat(document.getElementById('af-kcal').value)    || 0,
+      energy_kj:            parseFloat(document.getElementById('af-kj').value)      || 0,
+      protein_g:            parseFloat(document.getElementById('af-protein').value)  || 0,
+      carbs_g:              parseFloat(document.getElementById('af-carbs').value)    || 0,
+      of_which_sugars_g:    parseFloat(document.getElementById('af-sugars').value)   || 0,
+      fat_g:                parseFloat(document.getElementById('af-fat').value)      || 0,
+      of_which_saturated_g: parseFloat(document.getElementById('af-sat').value)      || 0,
+      fibre_g:              parseFloat(document.getElementById('af-fibre').value)    || 0,
+      salt_g:               parseFloat(document.getElementById('af-salt').value)     || 0,
     },
-    ...(benefits && { benefits }),
   };
-
-  const output = document.getElementById('submitOutput');
-  document.getElementById('submitJson').value = JSON.stringify(recipe, null, 2);
-  output.hidden = false;
-  // Scroll the modal body to show the output
-  const modalBody = document.getElementById('submitBody');
-  setTimeout(() => { output.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
 }
 
-function openSubmitModal() {
-  buildSubmitForm();
-  document.getElementById('submitModal').showModal();
+function showAdminError(msg) {
+  const el = document.getElementById('adminFormError');
+  el.textContent = msg;
+  el.hidden = false;
+}
+
+function openAdminModal(r = null) {
+  _adminEditingId = r?.id || null;
+  document.getElementById('adminModalTitle').textContent = r ? 'Edit recipe' : 'New recipe';
+  document.getElementById('adminDeleteBtn').hidden = !r;
+  buildAdminForm(r);
+  document.getElementById('adminModal').showModal();
   lockScroll();
 }
 
-document.getElementById('submitClose').addEventListener('click', () => {
-  document.getElementById('submitModal').close(); // triggers 'close' event
+function closeAdminModal() {
+  document.getElementById('adminModal').close();
+}
+
+document.getElementById('adminModalClose').addEventListener('click', closeAdminModal);
+document.getElementById('adminModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('adminModal')) closeAdminModal();
 });
-document.getElementById('submitModal').addEventListener('click', e => {
-  if (e.target === document.getElementById('submitModal')) {
-    document.getElementById('submitModal').close();
+
+document.getElementById('adminSaveBtn').addEventListener('click', async () => {
+  const fields = readAdminForm();
+  if (!fields.title) { showAdminError('Title is required.'); return; }
+  if (!fields.category) { showAdminError('Category is required.'); return; }
+
+  const btn = document.getElementById('adminSaveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  try {
+    if (_adminEditingId) {
+      await window.SB.updateRecipe(_adminEditingId, fields);
+      // Update local recipe object
+      for (const [cat, items] of Object.entries(recipes)) {
+        const idx = items.findIndex(r => r.id === _adminEditingId);
+        if (idx !== -1) {
+          const updated = { ...items[idx], ...fields, desc: fields.description, tips: fields.notes };
+          recipes[cat][idx] = updated;
+          // If category changed, move it
+          if (cat !== fields.category) {
+            recipes[cat].splice(idx, 1);
+            recipes[fields.category] = recipes[fields.category] || [];
+            recipes[fields.category].push(updated);
+          }
+          break;
+        }
+      }
+    } else {
+      fields.slug = fields.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      const created = await window.SB.createRecipe(fields);
+      recipes[fields.category] = recipes[fields.category] || [];
+      recipes[fields.category].push({
+        id: created.id, slug: created.slug, title: created.title,
+        desc: created.description, time_seconds: created.time_seconds,
+        servings: created.servings, ingredients: created.ingredients,
+        steps: created.steps, tips: created.notes, nutrition: created.nutrition,
+        category: created.category,
+      });
+    }
+    renderCards();
+    applyFilters();
+    closeAdminModal();
+  } catch (err) {
+    showAdminError(err.message || 'Save failed. Check the console.');
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save changes';
   }
 });
-document.getElementById('submitGenBtn').addEventListener('click', generateRecipeJson);
 
-// Cmd/Ctrl+Shift+N opens recipe submission form
-document.addEventListener('keydown', e => {
-  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'N') {
-    e.preventDefault();
-    openSubmitModal();
+document.getElementById('adminDeleteBtn').addEventListener('click', async () => {
+  if (!_adminEditingId) return;
+  const r = Object.values(recipes).flat().find(r => r.id === _adminEditingId);
+  if (!confirm(`Delete "${r?.title}"? This cannot be undone.`)) return;
+
+  const btn = document.getElementById('adminDeleteBtn');
+  btn.disabled = true;
+  btn.textContent = 'Deleting…';
+
+  try {
+    await window.SB.deleteRecipe(_adminEditingId);
+    for (const [cat, items] of Object.entries(recipes)) {
+      const idx = items.findIndex(r => r.id === _adminEditingId);
+      if (idx !== -1) { recipes[cat].splice(idx, 1); break; }
+    }
+    renderCards();
+    applyFilters();
+    closeAdminModal();
+  } catch (err) {
+    showAdminError(err.message || 'Delete failed.');
+    btn.disabled = false;
+    btn.textContent = 'Delete recipe';
   }
 });

@@ -199,6 +199,47 @@ async function fetchRecipes() {
   return data;
 }
 
+// ─── Admin ────────────────────────────────────────────────────────────────────
+async function isAdmin() {
+  if (!_currentUser) return false;
+  const { data } = await _sb.from('profiles').select('is_admin').eq('id', _currentUser.id).maybeSingle();
+  return data?.is_admin === true;
+}
+
+async function updateRecipe(id, fields) {
+  const { error } = await _sb.from('recipes').update(fields).eq('id', id);
+  if (error) throw error;
+}
+
+async function createRecipe(fields) {
+  const { data, error } = await _sb.from('recipes').insert(fields).select().single();
+  if (error) throw error;
+  return data;
+}
+
+async function deleteRecipe(id) {
+  const { error } = await _sb.from('recipes').delete().eq('id', id);
+  if (error) throw error;
+}
+
+// ─── Cook history (cloud) ─────────────────────────────────────────────────────
+async function recordCook(recipeId) {
+  await _sb.from('cooks').upsert(
+    { recipe_id: recipeId, session_id: getDeviceId(), cooked_at: new Date().toISOString() },
+    { onConflict: 'recipe_id,session_id' }
+  );
+}
+
+async function fetchCookCounts(recipeIds) {
+  if (!recipeIds?.length) return {};
+  const { data } = await _sb.from('cooks').select('recipe_id').in('recipe_id', recipeIds);
+  const counts = {};
+  (data || []).forEach(({ recipe_id }) => {
+    counts[recipe_id] = (counts[recipe_id] || 0) + 1;
+  });
+  return counts;
+}
+
 // ─── Public API ──────────────────────────────────────────────────────────────
 window.SB = {
   fetchRecipes,
@@ -215,4 +256,10 @@ window.SB = {
   pushFavourites,
   pullFavouriteIds,
   initSupabase,
+  isAdmin,
+  updateRecipe,
+  createRecipe,
+  deleteRecipe,
+  recordCook,
+  fetchCookCounts,
 };
