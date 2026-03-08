@@ -150,8 +150,61 @@ async function initSupabase(onUserChange) {
   });
 }
 
+// ─── Ratings ──────────────────────────────────────────────────────────────────
+async function fetchAllRatings() {
+  const { data } = await _sb.from('ratings').select('recipe_id, stars');
+  const map = {};
+  (data || []).forEach(({ recipe_id, stars }) => {
+    if (!map[recipe_id]) map[recipe_id] = { total: 0, count: 0 };
+    map[recipe_id].total += stars;
+    map[recipe_id].count += 1;
+  });
+  return Object.fromEntries(
+    Object.entries(map).map(([id, { total, count }]) => [id, { avg: total / count, count }])
+  );
+}
+
+async function fetchRating(recipeId) {
+  const sessionId = getDeviceId();
+  const [allRes, myRes] = await Promise.all([
+    _sb.from('ratings').select('stars').eq('recipe_id', recipeId),
+    _sb.from('ratings').select('stars').eq('recipe_id', recipeId).eq('session_id', sessionId).maybeSingle(),
+  ]);
+  const rows = allRes.data || [];
+  const avg = rows.length ? rows.reduce((s, r) => s + r.stars, 0) / rows.length : null;
+  return {
+    avg,
+    count: rows.length,
+    userStars: myRes.data?.stars || null,
+  };
+}
+
+async function rateRecipe(recipeId, stars) {
+  const sessionId = getDeviceId();
+  const { error } = await _sb.from('ratings').upsert(
+    { recipe_id: recipeId, session_id: sessionId, stars },
+    { onConflict: 'recipe_id,session_id' }
+  );
+  if (error) throw error;
+  return fetchRating(recipeId);
+}
+
+// ─── Recipes ──────────────────────────────────────────────────────────────────
+async function fetchRecipes() {
+  const { data, error } = await _sb
+    .from('recipes')
+    .select('*')
+    .order('title');
+  if (error) throw error;
+  return data;
+}
+
 // ─── Public API ──────────────────────────────────────────────────────────────
 window.SB = {
+  fetchRecipes,
+  fetchAllRatings,
+  fetchRating,
+  rateRecipe,
   loadLikes,
   toggleLike,
   getLikeState,

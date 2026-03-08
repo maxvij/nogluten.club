@@ -7,6 +7,20 @@ function formatLastCooked(ts) {
   return `cooked ${days}d ago`;
 }
 
+function formatTime(seconds) {
+  if (!seconds || seconds <= 0) return '—';
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (h === 0) return `${m} min`;
+  return m === 0 ? `${h} hr` : `${h} hr ${m} min`;
+}
+
+function formatTimerDisplay(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
 // iOS-safe scroll lock
 let _scrollY = 0;
 function lockScroll() {
@@ -139,6 +153,7 @@ function debounce(fn, ms) {
 }
 
 let recipes = {};
+let recipeRatings = {}; // recipeId → { avg, count }
 
 let currentSort = 'default';
 let sortDir = 'desc';
@@ -178,8 +193,9 @@ function toggleFavorite(title, btn) {
 
 function toggleShopList(title, btn) {
   shoppingList.has(title) ? shoppingList.delete(title) : shoppingList.add(title);
-  btn.classList.toggle('active', shoppingList.has(title));
-  btn.textContent = shoppingList.has(title) ? '✓ Added' : '+ Add';
+  const added = shoppingList.has(title);
+  btn.classList.toggle('active', added);
+  btn.innerHTML = `<i class="ph ${added ? 'ph-check' : 'ph-plus'}"></i>${added ? 'Added' : 'Add'}`;
   const fab = document.getElementById('shopFab');
   fab.hidden = shoppingList.size === 0;
   if (!fab.hidden) fab.textContent = `Shopping list (${shoppingList.size})`;
@@ -288,7 +304,7 @@ function renderCards() {
       const isFav = favorites.has(r.title);
       const inList = shoppingList.has(r.title);
       const sortOpt = SORT_OPTIONS[currentSort];
-      const metaText = sortOpt?.display ? `${sortOpt.display(r.nutrition)} · ${r.time}` : r.time;
+      const nutritionText = sortOpt?.display ? sortOpt.display(r.nutrition) : '';
       const { hue, angle, spread } = cardGradientVars(r.title);
       card.style.setProperty('--card-hue', hue);
       card.style.setProperty('--card-angle', angle + 'deg');
@@ -296,24 +312,28 @@ function renderCards() {
       const lastCooked = localStorage.getItem(`cooked:${r.title}`);
       const lastCookedLabel = lastCooked ? formatLastCooked(lastCooked) : '';
       card.innerHTML = `
-        <div class="card-image">${cardEmojiPattern(r.title)}</div>
+        <div class="card-image">
+          ${cardEmojiPattern(r.title)}
+          <span class="card-time-chip"><i class="ph ph-clock"></i>${formatTime(r.time_seconds)}</span>
+        </div>
         <button class="card-fav ${isFav ? 'active' : ''}" aria-label="Favourite">${isFav ? '♥' : '♡'}</button>
         <div class="card-meta">
-          <span class="card-time">${metaText}</span>
+          ${nutritionText ? `<span class="card-time">${nutritionText}</span>` : ''}
           ${lastCookedLabel ? `<span class="card-last-cooked">${lastCookedLabel}</span>` : ''}
         </div>
         <div class="card-title">${r.title}</div>
+        ${cardStarsHTML(recipeRatings[r.id])}
         <div class="card-desc" data-desc="${r.desc.replace(/"/g, '&quot;')}">${r.desc}</div>
         <span class="card-match"></span>
         <div class="card-actions">
           <button class="card-cook-btn">Start cooking</button>
-          <button class="card-shop-btn ${inList ? 'active' : ''}">${inList ? '✓ Added' : '+ Add'}</button>
+          <button class="card-shop-btn ${inList ? 'active' : ''}"><i class="ph ${inList ? 'ph-check' : 'ph-plus'}"></i>${inList ? 'Added' : 'Add'}</button>
         </div>
       `;
       card.tabIndex = 0;
       card.setAttribute('role', 'button');
       card.querySelector('.card-fav').addEventListener('click', e => { e.stopPropagation(); toggleFavorite(r.title, e.currentTarget); });
-      card.querySelector('.card-cook-btn').addEventListener('click', e => { e.stopPropagation(); openCookingMode(r.steps, r.ingredients, r.title); });
+      card.querySelector('.card-cook-btn').addEventListener('click', e => { e.stopPropagation(); openCookingMode(r.steps, r.ingredients, r.title, 0, r.slug); });
       card.querySelector('.card-shop-btn').addEventListener('click', e => { e.stopPropagation(); toggleShopList(r.title, e.currentTarget); });
       card.dataset.idx = i;
       card.dataset.title = r.title;
@@ -322,6 +342,69 @@ function renderCards() {
       grid.appendChild(card);
     });
   });
+}
+
+// ─── Star ratings ─────────────────────────────────────────────────────────────
+
+function renderStars(container, { avg, count, userStars }, onRate) {
+  const displayAvg = avg !== null ? (Math.round(avg * 10) / 10).toFixed(1) : null;
+
+  let starsHTML = '';
+  for (let i = 1; i <= 5; i++) {
+    const filled = userStars !== null ? i <= userStars : false;
+    starsHTML += `<button class="star-btn${filled ? ' filled' : ''}" data-star="${i}" aria-label="${i} star${i !== 1 ? 's' : ''}" type="button"><i class="ph${filled ? '-fill' : ''} ph-star"></i></button>`;
+  }
+
+  const metaText = displayAvg !== null
+    ? `${displayAvg} · ${count} rating${count !== 1 ? 's' : ''}`
+    : 'No ratings yet';
+
+  container.innerHTML = `
+    <div class="star-rating">
+      <div class="star-row" role="group" aria-label="Rate this recipe">${starsHTML}</div>
+      <span class="star-meta${displayAvg === null ? ' star-meta--empty' : ''}">${metaText}</span>
+    </div>
+  `;
+
+  const btns = [...container.querySelectorAll('.star-btn')];
+
+  btns.forEach(btn => {
+    btn.addEventListener('mouseenter', () => {
+      const n = parseInt(btn.dataset.star);
+      btns.forEach((b, i) => b.classList.toggle('preview', i < n));
+    });
+  });
+
+  container.querySelector('.star-row').addEventListener('mouseleave', () => {
+    btns.forEach(b => b.classList.remove('preview'));
+  });
+
+  btns.forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const stars = parseInt(btn.dataset.star);
+      btns.forEach(b => { b.disabled = true; });
+      try {
+        const result = await onRate(stars);
+        renderStars(container, result, onRate);
+      } catch {
+        btns.forEach(b => { b.disabled = false; });
+      }
+    });
+  });
+}
+
+function cardStarsHTML(rating) {
+  const hasRatings = rating && rating.count > 0;
+  const rounded = hasRatings ? Math.round(rating.avg) : 0;
+  let stars = '';
+  for (let i = 1; i <= 5; i++) {
+    stars += `<i class="ph${i <= rounded ? '-fill' : ''} ph-star card-star"></i>`;
+  }
+  const meta = hasRatings
+    ? `<span class="card-star-count">${(Math.round(rating.avg * 10) / 10).toFixed(1)} <span class="card-star-total">(${rating.count})</span></span>`
+    : '';
+  const label = hasRatings ? `${(Math.round(rating.avg * 10) / 10).toFixed(1)} out of 5, ${rating.count} ratings` : 'Not yet rated';
+  return `<div class="card-stars" aria-label="${label}">${stars}${meta}</div>`;
 }
 
 // Modal
@@ -395,7 +478,9 @@ function renderModalBody(r, servings) {
   }).join('');
   const stepsHTML = r.steps.map((s, i) => {
     const id = `step-${i}`;
-    return `<li><label class="ing-row"><input type="checkbox" id="${id}"><span class="step-num">${i + 1}</span><span>${s}</span></label></li>`;
+    const text = typeof s === 'object' ? s.text : s;
+    const dur = typeof s === 'object' && s.duration_seconds ? `<span class="step-duration">${formatTime(s.duration_seconds)}</span>` : '';
+    return `<li><label class="ing-row"><input type="checkbox" id="${id}"><span class="step-num">${i + 1}</span><span>${text}${dur}</span></label></li>`;
   }).join('');
   const modalContent = document.getElementById('modalContent');
   modalContent.innerHTML = `
@@ -426,7 +511,7 @@ function openModal(cat, idx) {
   modal._ac = new AbortController();
   const catLabels = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner', snack: 'Snack' };
   document.getElementById('modalTitle').textContent = r.title;
-  document.getElementById('modalStats').innerHTML = `${catLabels[cat]} recipe · ${r.time}`;
+  document.getElementById('modalStats').innerHTML = `${catLabels[cat]} recipe · ${formatTime(r.time_seconds)}`;
   document.getElementById('modalTitleCompact').textContent = r.title;
   const modalBar = document.getElementById('modalBar');
   modalBar.classList.remove('modal-bar--scrolled');
@@ -448,7 +533,7 @@ function openModal(cat, idx) {
   };
   const updateModalShop = () => {
     const inList = shoppingList.has(r.title);
-    modalShopBtn.textContent = inList ? '✓ Added' : 'Add to list';
+    modalShopBtn.innerHTML = inList ? '<i class="ph ph-check"></i>Added to list' : 'Add to list';
     modalShopBtn.classList.toggle('active', inList);
   };
 
@@ -457,7 +542,7 @@ function openModal(cat, idx) {
 
   modalFav.onclick = () => { toggleFavorite(r.title, modalFav); updateModalFav(); };
   modalShopBtn.onclick = () => { toggleShopList(r.title, modalShopBtn); updateModalShop(); };
-  document.getElementById('modalCookBtn').onclick = () => { closeModal(); openCookingMode(r.steps, r.ingredients, r.title); };
+  document.getElementById('modalCookBtn').onclick = () => { closeModal(); openCookingMode(r.steps, r.ingredients, r.title, 0, r.slug); };
   document.getElementById('modalShare').onclick = () => shareRecipe(r);
 
   let servings = 1;
@@ -481,12 +566,36 @@ function openModal(cat, idx) {
   }, { signal: modal._ac.signal });
 
 
+  // Rating stars — use cached aggregate, only fetch user's own stars
+  const ratingContainer = document.getElementById('modalRating');
+  const onRate = async stars => {
+    const result = await window.SB.rateRecipe(r.id, stars);
+    recipeRatings[r.id] = { avg: result.avg, count: result.count };
+    document.querySelectorAll(`.recipe-card[data-title="${CSS.escape(r.title)}"] .card-stars`).forEach(el => {
+      el.outerHTML = cardStarsHTML(recipeRatings[r.id]);
+    });
+    return result;
+  };
+  const cached = recipeRatings[r.id];
+  if (cached) {
+    // Render immediately with cached aggregate, then patch in userStars async
+    renderStars(ratingContainer, { ...cached, userStars: null }, onRate);
+    window.SB.fetchRating(r.id).then(fresh => {
+      if (fresh.userStars !== null) renderStars(ratingContainer, fresh, onRate);
+    }).catch(() => {});
+  } else {
+    ratingContainer.innerHTML = `<div class="star-rating"><div class="star-row star-row--loading">${Array.from({length: 5}, () => '<button class="star-btn" disabled aria-hidden="true"><i class="ph ph-star"></i></button>').join('')}</div><span class="star-meta">&nbsp;</span></div>`;
+    window.SB.fetchRating(r.id).then(fresh => {
+      renderStars(ratingContainer, fresh, onRate);
+    }).catch(() => { ratingContainer.innerHTML = ''; });
+  }
+
   document.getElementById('modalBody').scrollTop = 0;
   previousFocus = document.activeElement;
   modal.showModal();
   modal.focus();
   lockScroll();
-  history.replaceState(null, '', '#' + r.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
+  history.replaceState(null, '', '#' + (r.slug || r.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')));
 }
 
 function closeModal() {
@@ -848,7 +957,7 @@ function applyFilters() {
     section.querySelectorAll('.recipe-card').forEach((card) => {
       totalRecipes++;
       const r = recipes[cat][parseInt(card.dataset.idx)];
-      const mins = parseInt(r.time);
+      const mins = (r.time_seconds || 0) / 60;
       const timeMatch = !activeTime
         || (activeTime === '15'  && mins <= 15)
         || (activeTime === '30'  && mins > 15 && mins <= 30)
@@ -1388,25 +1497,28 @@ function boot() {
   setInterval(() => slogan.classList.toggle('show-b'), 10000);
 })();
 
-fetch('recipes.json')
-  .then(r => r.json())
+window.SB.fetchAllRatings().then(ratings => {
+  recipeRatings = ratings;
+  renderCards();
+}).catch(() => {});
+
+window.SB.fetchRecipes()
   .then(data => {
     recipes = { breakfast: [], lunch: [], dinner: [], snack: [] };
-    data.recipes.forEach(r => {
+    data.forEach(r => {
       const cat = r.category;
       if (!recipes[cat]) return;
-      const n = r.nutrition_per_serving;
       recipes[cat].push({
-        title:      r.title,
-        desc:       r.desc,
-        time:       r.time,
-        protein:    n.protein_g + 'g protein',
-        kcal:       n.energy_kcal + ' kcal',
-        servings:   r.servings,
+        id:          r.id,
+        slug:        r.slug,
+        title:       r.title,
+        desc:        r.description,
+        time_seconds: r.time_seconds,
+        servings:    r.servings,
         ingredients: r.ingredients,
-        steps:      r.steps,
-        tips:       r.benefits,
-        nutrition:  n,
+        steps:       r.steps,
+        tips:        r.notes,
+        nutrition:   r.nutrition,
       });
     });
     boot();
@@ -1414,9 +1526,7 @@ fetch('recipes.json')
     const savedCook = JSON.parse(sessionStorage.getItem('cookState') || 'null');
     if (savedCook) {
       for (const [, items] of Object.entries(recipes)) {
-        const r = items.find(r =>
-          r.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') === savedCook.slug
-        );
+        const r = items.find(r => r.slug === savedCook.slug);
         if (r) { openCookingMode(r.steps, r.ingredients, r.title, savedCook.step); break; }
       }
     } else {
@@ -1424,9 +1534,7 @@ fetch('recipes.json')
       const hash = window.location.hash.slice(1);
       if (hash) {
         for (const [cat, items] of Object.entries(recipes)) {
-          const idx = items.findIndex(r =>
-            r.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') === hash
-          );
+          const idx = items.findIndex(r => r.slug === hash);
           if (idx !== -1) { openModal(cat, idx); break; }
         }
       }
@@ -1478,8 +1586,9 @@ let cookSteps = [];
 let cookIdx = 0;
 let wakeLock = null;
 let cookAc = null;
+let cookTimerState = null; // { remaining, total, intervalId, running }
 
-function openCookingMode(steps, ingredients, recipeTitle, startAtStep = 0) {
+function openCookingMode(steps, ingredients, recipeTitle, startAtStep = 0, recipeSlug = null) {
   cookSteps = [...steps, null]; // null = done screen
   cookIdx = Math.min(startAtStep, cookSteps.length - 1);
 
@@ -1498,6 +1607,9 @@ function openCookingMode(steps, ingredients, recipeTitle, startAtStep = 0) {
   panel.hidden = true;
   toggle.setAttribute('aria-expanded', 'false');
 
+  // Reset timer when opening
+  resetCookTimer();
+
   renderCookStep();
   document.getElementById('cookModal').showModal();
   lockScroll();
@@ -1507,7 +1619,7 @@ function openCookingMode(steps, ingredients, recipeTitle, startAtStep = 0) {
   }
   if (recipeTitle) {
     localStorage.setItem(`cooked:${recipeTitle}`, Date.now());
-    const slug = recipeTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const slug = recipeSlug || recipeTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     history.replaceState(null, '', '#' + slug);
     sessionStorage.setItem('cookState', JSON.stringify({ slug, step: cookIdx }));
   }
@@ -1516,7 +1628,7 @@ function openCookingMode(steps, ingredients, recipeTitle, startAtStep = 0) {
   cookAc = new AbortController();
   document.addEventListener('keydown', e => {
     if (e.key === 'Enter' || e.key === 'ArrowRight') { e.preventDefault(); advanceCookStep(); }
-    else if (e.key === 'ArrowLeft') { e.preventDefault(); if (cookIdx > 0) { cookIdx--; renderCookStep(); } }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); if (cookIdx > 0) { cookIdx--; resetCookTimer(); renderCookStep(); } }
   }, { signal: cookAc.signal });
 
   // Ingredients toggle
@@ -1524,6 +1636,18 @@ function openCookingMode(steps, ingredients, recipeTitle, startAtStep = 0) {
     const expanded = toggle.getAttribute('aria-expanded') === 'true';
     panel.hidden = expanded;
     toggle.setAttribute('aria-expanded', String(!expanded));
+  }, { signal: cookAc.signal });
+
+  // Timer button
+  document.getElementById('cookTimerBtn').addEventListener('click', () => {
+    if (!cookTimerState) return;
+    const dur = stepDuration(cookSteps[cookIdx]);
+    if (!dur) return;
+    if (cookTimerState.running) {
+      pauseCookTimer();
+    } else {
+      startCookTimer(dur);
+    }
   }, { signal: cookAc.signal });
 }
 
@@ -1535,13 +1659,20 @@ const DONE_MESSAGES = [
   'Ready to serve. Eat well today.',
 ];
 
+function stepText(step) {
+  if (step === null) return DONE_MESSAGES[Math.floor(Math.random() * DONE_MESSAGES.length)];
+  return typeof step === 'object' ? step.text : step;
+}
+
+function stepDuration(step) {
+  return typeof step === 'object' ? (step.duration_seconds || null) : null;
+}
+
 function renderCookStep() {
   const isDone = cookSteps[cookIdx] === null;
   const realTotal = cookSteps.length - 1;
   document.getElementById('cookStepLabel').textContent = isDone ? '' : `Step ${cookIdx + 1} of ${realTotal}`;
-  document.getElementById('cookStepText').textContent = isDone
-    ? DONE_MESSAGES[Math.floor(Math.random() * DONE_MESSAGES.length)]
-    : cookSteps[cookIdx];
+  document.getElementById('cookStepText').textContent = stepText(cookSteps[cookIdx]);
   document.getElementById('cookHint').hidden = false;
   const dots = document.getElementById('cookDots');
   dots.innerHTML = Array.from({ length: realTotal }, (_, i) =>
@@ -1551,24 +1682,87 @@ function renderCookStep() {
   document.getElementById('cookNext').textContent = isDone ? '✓' : '→';
   const cs = sessionStorage.getItem('cookState');
   if (cs) sessionStorage.setItem('cookState', JSON.stringify({ ...JSON.parse(cs), step: cookIdx }));
+
+  // Timer
+  const dur = isDone ? null : stepDuration(cookSteps[cookIdx]);
+  renderCookTimer(dur);
+}
+
+function renderCookTimer(durationSeconds) {
+  const timerEl = document.getElementById('cookTimer');
+  const displayEl = document.getElementById('cookTimerDisplay');
+  const btnEl = document.getElementById('cookTimerBtn');
+
+  if (!durationSeconds) {
+    timerEl.hidden = true;
+    return;
+  }
+
+  timerEl.hidden = false;
+
+  // If no timer running (or it's a fresh step), initialise with the step duration
+  if (!cookTimerState) {
+    cookTimerState = { remaining: durationSeconds, total: durationSeconds, intervalId: null, running: false };
+  }
+
+  displayEl.textContent = formatTimerDisplay(cookTimerState.remaining);
+  btnEl.textContent = cookTimerState.running ? 'Pause' : (cookTimerState.remaining < cookTimerState.total ? 'Resume' : 'Start timer');
+}
+
+function startCookTimer(durationSeconds) {
+  if (!cookTimerState) cookTimerState = { remaining: durationSeconds, total: durationSeconds, intervalId: null, running: false };
+  if (cookTimerState.running) return;
+  cookTimerState.running = true;
+  cookTimerState.intervalId = setInterval(() => {
+    cookTimerState.remaining = Math.max(0, cookTimerState.remaining - 1);
+    const displayEl = document.getElementById('cookTimerDisplay');
+    const btnEl = document.getElementById('cookTimerBtn');
+    if (displayEl) displayEl.textContent = formatTimerDisplay(cookTimerState.remaining);
+    if (cookTimerState.remaining === 0) {
+      clearInterval(cookTimerState.intervalId);
+      cookTimerState.running = false;
+      cookTimerState.intervalId = null;
+      if (btnEl) btnEl.textContent = 'Done';
+    } else {
+      if (btnEl) btnEl.textContent = 'Pause';
+    }
+  }, 1000);
+}
+
+function pauseCookTimer() {
+  if (!cookTimerState || !cookTimerState.running) return;
+  clearInterval(cookTimerState.intervalId);
+  cookTimerState.intervalId = null;
+  cookTimerState.running = false;
+  const btnEl = document.getElementById('cookTimerBtn');
+  if (btnEl) btnEl.textContent = 'Resume';
+}
+
+function resetCookTimer() {
+  if (cookTimerState) {
+    clearInterval(cookTimerState.intervalId);
+    cookTimerState = null;
+  }
 }
 
 function advanceCookStep() {
   if (cookSteps[cookIdx] === null) { closeCookingMode(); return; }
   cookIdx++;
+  resetCookTimer();
   renderCookStep();
 }
 
 function closeCookingMode() {
   cookAc?.abort();
   cookAc = null;
+  resetCookTimer();
   sessionStorage.removeItem('cookState');
   document.getElementById('cookModal').close();
 }
 
 document.getElementById('cookClose').addEventListener('click', closeCookingMode);
 document.getElementById('cookPrev').addEventListener('click', () => {
-  if (cookIdx > 0) { cookIdx--; renderCookStep(); }
+  if (cookIdx > 0) { cookIdx--; resetCookTimer(); renderCookStep(); }
 });
 document.getElementById('cookNext').addEventListener('click', advanceCookStep);
 
@@ -1588,7 +1782,7 @@ document.getElementById('submitModal').addEventListener('close', () => unlockScr
     const dx = swipeStartX - e.changedTouches[0].clientX;
     if (Math.abs(dx) < 50) return;
     if (dx > 0) { advanceCookStep(); }
-    else if (dx < 0 && cookIdx > 0) { cookIdx--; renderCookStep(); }
+    else if (dx < 0 && cookIdx > 0) { cookIdx--; resetCookTimer(); renderCookStep(); }
   }, { passive: true });
 })();
 
