@@ -310,7 +310,7 @@ function renderCards() {
       card.style.setProperty('--card-angle', angle + 'deg');
       card.style.setProperty('--card-spread', spread);
       const lastCooked = localStorage.getItem(`cooked:${r.title}`);
-      const lastCookedLabel = lastCooked ? formatLastCooked(lastCooked) : '';
+      const lastCookedLabel = lastCooked ? formatLastCooked(lastCooked) : 'be the first to try!';
       card.innerHTML = `
         <div class="card-image">
           ${cardEmojiPattern(r.title)}
@@ -319,7 +319,7 @@ function renderCards() {
         <button class="card-fav ${isFav ? 'active' : ''}" aria-label="Favourite">${isFav ? '♥' : '♡'}</button>
         <div class="card-meta">
           ${nutritionText ? `<span class="card-time">${nutritionText}</span>` : ''}
-          ${lastCookedLabel ? `<span class="card-last-cooked">${lastCookedLabel}</span>` : ''}
+          <span class="card-last-cooked">${lastCookedLabel}</span>
         </div>
         <div class="card-title">${r.title}</div>
         ${cardStarsHTML(recipeRatings[r.id])}
@@ -328,7 +328,6 @@ function renderCards() {
         <div class="card-actions">
           <button class="card-cook-btn">Start cooking</button>
           <button class="card-shop-btn ${inList ? 'active' : ''}"><i class="ph ${inList ? 'ph-check' : 'ph-plus'}"></i>${inList ? 'Added' : 'Add'}</button>
-          ${_isAdmin ? `<button class="card-admin-btn" aria-label="Edit recipe">Edit</button>` : ''}
         </div>
       `;
       card.tabIndex = 0;
@@ -336,7 +335,6 @@ function renderCards() {
       card.querySelector('.card-fav').addEventListener('click', e => { e.stopPropagation(); toggleFavorite(r.title, e.currentTarget); });
       card.querySelector('.card-cook-btn').addEventListener('click', e => { e.stopPropagation(); openCookingMode(r.steps, r.ingredients, r.title, 0, r.slug); });
       card.querySelector('.card-shop-btn').addEventListener('click', e => { e.stopPropagation(); toggleShopList(r.title, e.currentTarget); });
-      card.querySelector('.card-admin-btn')?.addEventListener('click', e => { e.stopPropagation(); openAdminModal(r); });
       card.dataset.idx = i;
       card.dataset.title = r.title;
       card.addEventListener('click', () => openModal(cat, i));
@@ -546,6 +544,9 @@ function openModal(cat, idx) {
   modalShopBtn.onclick = () => { toggleShopList(r.title, modalShopBtn); updateModalShop(); };
   document.getElementById('modalCookBtn').onclick = () => { closeModal(); openCookingMode(r.steps, r.ingredients, r.title, 0, r.slug); };
   document.getElementById('modalShare').onclick = () => shareRecipe(r);
+  const adminEditBtn = document.getElementById('modalAdminEdit');
+  adminEditBtn.hidden = !_isAdmin;
+  adminEditBtn.onclick = () => { closeModal(); openAdminModal(r); };
 
   let servings = 1;
   renderModalBody(r, servings);
@@ -638,27 +639,35 @@ document.addEventListener('keydown', e => {
 
 
 
-// Theme toggle
-const themeToggle = document.getElementById('themeToggle');
-const themeIcon = themeToggle.querySelector('.theme-icon');
+// ─── Theme system ─────────────────────────────────────────────────────────────
+function syncThemeOptButtons() {
+  const saved = localStorage.getItem('theme');
+  const active = saved || 'system';
+  document.querySelectorAll('.theme-opt').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.theme === active);
+  });
+}
 
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
-  themeIcon.textContent = theme === 'light' ? 'I like darkness' : 'Let there be light';
+  syncThemeOptButtons();
 }
 
-function setTheme(theme) {
-  localStorage.setItem('theme', theme);
-  applyTheme(theme);
+function setTheme(pref) {
+  if (pref === 'system') {
+    localStorage.removeItem('theme');
+    applyTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  } else {
+    localStorage.setItem('theme', pref);
+    applyTheme(pref);
+  }
+  syncThemeOptButtons();
 }
 
-const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-const savedTheme = localStorage.getItem('theme');
-applyTheme(savedTheme || systemTheme);
+applyTheme(localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
 
-themeToggle.addEventListener('click', () => {
-  const current = document.documentElement.getAttribute('data-theme');
-  setTheme(current === 'light' ? 'dark' : 'light');
+document.querySelectorAll('.theme-opt').forEach(btn => {
+  btn.addEventListener('click', () => setTheme(btn.dataset.theme));
 });
 
 // Pantry data
@@ -1597,6 +1606,47 @@ window.SB.initSupabase(onUserChange).then(() => {
   // If already signed in from a previous session, check admin status
   if (window.SB.getCurrentUser()) checkAdminAndRender();
 }).catch(() => {});
+
+// ─── Login modal ──────────────────────────────────────────────────────────────
+const loginModal = document.getElementById('loginModal');
+document.getElementById('loginModalClose').addEventListener('click', () => loginModal.close());
+loginModal.addEventListener('click', e => { if (e.target === loginModal) loginModal.close(); });
+document.getElementById('googleSignInBtn').addEventListener('click', () => {
+  loginModal.close();
+  window.SB.signInWithGoogle();
+});
+
+// ─── Profile dropdown ─────────────────────────────────────────────────────────
+const profileDropdown = document.getElementById('profileDropdown');
+const profileWrap = document.getElementById('profileWrap');
+
+window._toggleProfileDropdown = function() {
+  profileDropdown.hidden = !profileDropdown.hidden;
+};
+
+document.addEventListener('click', e => {
+  if (!profileWrap.contains(e.target)) profileDropdown.hidden = true;
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') profileDropdown.hidden = true;
+});
+
+document.getElementById('profileSettingsBtn').addEventListener('click', () => {
+  profileDropdown.hidden = true;
+  syncThemeOptButtons();
+  document.getElementById('settingsModal').showModal();
+});
+
+document.getElementById('profileLogoutBtn').addEventListener('click', () => {
+  profileDropdown.hidden = true;
+  window.SB.signOut();
+});
+
+// ─── Settings modal ───────────────────────────────────────────────────────────
+const settingsModal = document.getElementById('settingsModal');
+document.getElementById('settingsModalClose').addEventListener('click', () => settingsModal.close());
+settingsModal.addEventListener('click', e => { if (e.target === settingsModal) settingsModal.close(); });
 
 // Reorder category sections by time of day
 (function() {

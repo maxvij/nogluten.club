@@ -122,15 +122,15 @@ function _renderAuthBtn() {
     btn.innerHTML = avatar
       ? `<img class="auth-avatar" src="${avatar}" alt="${name}" referrerpolicy="no-referrer"><span class="auth-name">${name}</span>`
       : `<span class="auth-name">${name}</span>`;
-    btn.title = 'Sign out';
-    btn.setAttribute('aria-label', `Signed in as ${name} — click to sign out`);
-    btn.onclick = signOut;
+    btn.title = 'Account';
+    btn.setAttribute('aria-label', `Signed in as ${name} — click for options`);
+    btn.onclick = () => window._toggleProfileDropdown?.();
     btn.classList.add('signed-in');
   } else {
     btn.innerHTML = 'Sign in';
-    btn.title = 'Sign in with Google to sync favourites';
-    btn.setAttribute('aria-label', 'Sign in with Google');
-    btn.onclick = signInWithGoogle;
+    btn.title = 'Sign in to sync favourites';
+    btn.setAttribute('aria-label', 'Sign in');
+    btn.onclick = () => document.getElementById('loginModal')?.showModal();
     btn.classList.remove('signed-in');
   }
 }
