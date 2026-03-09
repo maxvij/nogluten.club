@@ -179,12 +179,11 @@ async function fetchRating(recipeId) {
   };
 }
 
-async function rateRecipe(recipeId, stars) {
+async function rateRecipe(recipeId, stars, feedback = null) {
   const sessionId = getDeviceId();
-  const { error } = await _sb.from('ratings').upsert(
-    { recipe_id: recipeId, session_id: sessionId, stars },
-    { onConflict: 'recipe_id,session_id' }
-  );
+  const row = { recipe_id: recipeId, session_id: sessionId, stars };
+  if (feedback != null) row.feedback = feedback;
+  const { error } = await _sb.from('ratings').upsert(row, { onConflict: 'recipe_id,session_id' });
   if (error) throw error;
   return fetchRating(recipeId);
 }
@@ -223,11 +222,19 @@ async function deleteRecipe(id) {
 }
 
 // ─── Cook history (cloud) ─────────────────────────────────────────────────────
-async function recordCook(recipeId) {
-  await _sb.from('cooks').upsert(
-    { recipe_id: recipeId, session_id: getDeviceId(), cooked_at: new Date().toISOString() },
-    { onConflict: 'recipe_id,session_id' }
-  );
+async function recordCook(recipeId, durationSeconds = null) {
+  const row = { recipe_id: recipeId, session_id: getDeviceId(), cooked_at: new Date().toISOString() };
+  if (durationSeconds != null) row.duration_seconds = durationSeconds;
+  await _sb.from('cooks').upsert(row, { onConflict: 'recipe_id,session_id' });
+}
+
+async function fetchAvgCookTime(recipeId) {
+  const { data } = await _sb.from('cooks')
+    .select('duration_seconds')
+    .eq('recipe_id', recipeId)
+    .not('duration_seconds', 'is', null);
+  if (!data?.length) return null;
+  return Math.round(data.reduce((s, r) => s + r.duration_seconds, 0) / data.length);
 }
 
 async function fetchCookCounts(recipeIds) {
@@ -262,4 +269,5 @@ window.SB = {
   deleteRecipe,
   recordCook,
   fetchCookCounts,
+  fetchAvgCookTime,
 };

@@ -2101,6 +2101,7 @@
   .cook-body {
     flex: 1;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 2rem;
@@ -2126,7 +2127,7 @@
   .cook-timer {
     display: flex;
     align-items: center;
-    gap: 0.875rem;
+    gap: 1rem;
     margin-top: 1.5rem;
   }
 
@@ -2140,11 +2141,207 @@
     min-width: 4.5ch;
   }
 
-  .cook-timer-btn {
+  .cook-timer-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .cook-timer-play-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1.5px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    cursor: pointer;
+  }
+
+  .cook-timer-play-btn:hover { background: var(--accent); color: #fff; }
+  .cook-timer-play-btn:disabled { opacity: 0.35; cursor: default; }
+  .cook-timer-play-btn:disabled:hover { background: transparent; color: var(--accent); }
+
+  .cook-timer-reset-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    opacity: 0.5;
+  }
+
+  .cook-timer-reset-btn:hover { opacity: 1; color: var(--text); }
+
+  .cook-hint {
+    display: block;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin-top: 32px;
+    width: 100%;
+    max-width: 520px;
+  }
+
+  /* ── Done screen ── */
+  .cook-done-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.625rem;
+    padding: 1rem 0;
+  }
+
+  .cook-done-check {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-bottom: 0.5rem;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .cook-done-check::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 26px;
+    height: 14px;
+    border-left: 2.5px solid #fff;
+    border-bottom: 2.5px solid #fff;
+    transform: rotate(-45deg) translate(1px, -3px);
+  }
+
+  .cook-done-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.75rem, 5vw, 2.5rem);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--text);
+    margin: 0;
+  }
+
+  .cook-done-body {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 300;
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  .cook-done-time {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    opacity: 0.6;
+    margin: 0.25rem 0 0;
+  }
+
+  .cook-done-rating-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.625rem;
+    width: 100%;
+    opacity: 0;
+    transition: opacity 300ms ease;
+  }
+
+  .cook-done-rating-section.visible {
+    opacity: 1;
+  }
+
+  .cook-done-divider {
+    width: 100%;
+    height: 1px;
+    background: var(--border);
+    margin: 0.5rem 0;
+  }
+
+  .cook-done-rating-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin: 0 0 0.625rem;
+  }
+
+  .cook-done-stars {
+    display: flex;
+    gap: 0.25rem;
+    transition: opacity 200ms ease;
+  }
+
+  @keyframes rating-pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+  }
+
+  .cook-done-stars.rating-loading {
+    animation: rating-pulse 600ms ease-in-out infinite;
+  }
+
+  .cook-done-star-btn {
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    color: var(--border);
+    display: flex;
+    align-items: center;
+    min-height: 40px;
+  }
+
+  .cook-done-star-btn.filled { color: #C8960C; }
+  [data-theme="dark"] .cook-done-star-btn.filled { color: #D4A843; }
+  .cook-done-star-btn:hover { color: var(--accent); }
+
+  .cook-done-feedback {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+    margin-top: 0.25rem;
+  }
+
+  /* Keep space reserved even when hidden so card height doesn't shift */
+  .cook-done-feedback[hidden] {
+    display: flex !important;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .cook-done-feedback-input {
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    padding: 0.625rem 0.75rem;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    resize: none;
+    box-sizing: border-box;
+  }
+
+  .cook-done-feedback-input:focus { outline: none; border-color: var(--accent); }
+
+  .cook-done-feedback-btn {
+    width: 100%;
     font-family: 'DM Sans', sans-serif;
     font-size: 0.875rem;
     font-weight: 500;
-    padding: 0.5rem 1rem;
+    padding: 0.375rem 1rem;
     border-radius: 6px;
     border: 1.5px solid var(--accent);
     background: transparent;
@@ -2153,14 +2350,55 @@
     min-height: 40px;
   }
 
-  .cook-timer-btn:hover { background: var(--accent); color: #fff; }
+  .cook-done-feedback-btn:hover { background: var(--accent); color: #fff; }
+  .cook-done-feedback-btn:disabled { opacity: 0.5; cursor: default; }
+  .cook-done-feedback-btn:disabled:hover { background: transparent; color: var(--accent); }
 
-  .cook-hint {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.75rem;
+  .cook-done-feedback-thanks {
+    display: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
     color: var(--text-muted);
-    opacity: 0.6;
-    align-self: flex-end;
+    margin: 0;
+    text-align: center;
+  }
+
+  .cook-done-rating-section {
+    position: relative;
+  }
+
+  .cook-done-rating-section.rating-submitted .cook-done-rating-label,
+  .cook-done-rating-section.rating-submitted .cook-done-stars,
+  .cook-done-rating-section.rating-submitted .cook-done-keyboard-hint,
+  .cook-done-rating-section.rating-submitted .cook-done-feedback {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .cook-done-rating-section.rating-submitted .cook-done-feedback-thanks {
+    display: block;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cook-done-keyboard-hint {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+
+  @keyframes cook-done-fade-out {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+  }
+
+  .cook-done-fading {
+    animation: cook-done-fade-out 350ms ease forwards;
   }
 
   .modal-content {

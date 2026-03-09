@@ -531,7 +531,15 @@ function openModal(cat, idx) {
   modal._ac = new AbortController();
   const catLabels = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner', snack: 'Snack' };
   document.getElementById('modalTitle').textContent = r.title;
-  document.getElementById('modalStats').innerHTML = `${catLabels[cat]} recipe · ${formatTime(r.time_seconds)}`;
+  const statsEl = document.getElementById('modalStats');
+  statsEl.innerHTML = `${catLabels[cat]} recipe · ${formatTime(r.time_seconds)}`;
+  if (r.id) {
+    window.SB.fetchAvgCookTime(r.id).then(avgSec => {
+      if (!avgSec) return;
+      const avgMins = Math.round(avgSec / 60);
+      statsEl.innerHTML = `${catLabels[cat]} recipe · ${formatTime(r.time_seconds)} · avg ${avgMins} min`;
+    }).catch(() => {});
+  }
   document.getElementById('modalTitleCompact').textContent = r.title;
   const modalBar = document.getElementById('modalBar');
   modalBar.classList.remove('modal-bar--scrolled');
@@ -1628,11 +1636,24 @@ window.SB.initSupabase(onUserChange).then(() => {
 }).catch(() => {});
 
 // ─── Shared app context for lazy-loaded modules ───────────────────────────────
+function refreshCardRating(recipeId) {
+  window.SB.fetchRating(recipeId).then(fresh => {
+    recipeRatings[recipeId] = { avg: fresh.avg, count: fresh.count };
+    const recipe = Object.values(recipes).flat().find(r => r.id === recipeId);
+    if (!recipe) return;
+    document.querySelectorAll(`.recipe-card[data-title="${CSS.escape(recipe.title)}"] .card-stars`).forEach(el => {
+      el.outerHTML = cardStarsHTML(recipeRatings[recipeId]);
+    });
+  }).catch(() => {});
+}
+
 window.APP = {
   get recipes() { return recipes; },
   lockScroll,
   unlockScroll,
   formatTimerDisplay,
+  icon,
+  refreshCardRating,
   renderCards,
   applyFilters,
   closeModal,
