@@ -54,14 +54,22 @@ function startDoneRotation(elapsedSeconds) {
     timeEl.hidden = false;
   }
 
-  setTimeout(() => {
-    document.getElementById('cookDoneRatingSection')?.classList.add('visible');
-  }, 400);
+  const doneBtn = document.getElementById('cookDoneBtn');
+  const ratingSection = document.getElementById('cookDoneRatingSection');
+  if (doneBtn) doneBtn.hidden = true;
 
   renderDoneRating(null);
+  ratingSection.hidden = false;
+  setTimeout(() => ratingSection.classList.add('visible'), 400);
+
   if (currentRecipeId) {
     window.SB.fetchRating(currentRecipeId).then(({ userStars }) => {
-      renderDoneRating(userStars);
+      if (userStars != null) {
+        ratingSection.classList.add('already-rated');
+        if (doneBtn) doneBtn.hidden = false;
+      } else {
+        renderDoneRating(userStars);
+      }
     }).catch(() => {});
   }
 }
@@ -125,6 +133,7 @@ function renderCookStep() {
   const isDone = cookSteps[cookIdx] === null;
   const realTotal = cookSteps.length - 1;
   document.getElementById('cookStepLabel').textContent = isDone ? '' : `Step ${cookIdx + 1} of ${realTotal}`;
+  document.getElementById('cookStepStrip').hidden = isDone;
 
   const stepTextEl = document.getElementById('cookStepText');
   const doneContentEl = document.getElementById('cookDoneContent');
@@ -150,6 +159,7 @@ function renderCookStep() {
   dots.innerHTML = Array.from({ length: realTotal }, (_, i) =>
     `<div class="cook-dot${i === cookIdx ? ' active' : ''}"></div>`
   ).join('');
+  document.getElementById('cookNav').hidden = isDone;
   document.getElementById('cookPrev').disabled = cookIdx === 0;
   document.getElementById('cookNext').textContent = isDone ? '✓' : '→';
   const cs = sessionStorage.getItem('cookState');
@@ -353,6 +363,8 @@ function openCookingMode(steps, ingredients, recipeTitle, startAtStep = 0, recip
   document.getElementById('cookTimerResetBtn').addEventListener('click', () => {
     resetTimerToStart();
   }, { signal: cookAc.signal });
+
+  document.getElementById('cookDoneBtn').addEventListener('click', closeCookingMode, { signal: cookAc.signal });
 
 }
 

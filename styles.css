@@ -15,6 +15,7 @@
     --bg-content: #FCFFF7;
     --header-h: 64px;
   --cat-accent: var(--accent);
+  --font-serif: 'Playfair Display', serif;
 
   }
 
@@ -38,10 +39,34 @@
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   [hidden] { display: none !important; }
 
+  @keyframes skel-shimmer {
+    from { background-position: 200% 0; }
+    to   { background-position: -200% 0; }
+  }
+
+  .skel {
+    display: block;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--border) 25%, var(--surface2) 50%, var(--border) 75%);
+    background-size: 200% 100%;
+    animation: skel-shimmer 1.5s ease infinite;
+  }
+
+  .skel-heading {
+    height: 1.85rem;
+    width: 55%;
+    margin-bottom: 0.25rem;
+  }
+
+  .skel-subtext {
+    height: 0.875rem;
+    width: 40%;
+  }
+
   body {
     background: var(--bg-content);
     color: var(--text);
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-weight: 400;
     min-height: 100vh;
     overflow-x: hidden;
@@ -55,7 +80,7 @@
   }
 
   .logo-block h1 {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-serif);
     font-size: 1.4rem;
     font-weight: 400;
     letter-spacing: -0.02em;
@@ -80,7 +105,7 @@
     background: none;
     border: none;
     color: var(--text-muted);
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.8rem;
     letter-spacing: 0.01em;
     cursor: pointer;
@@ -95,7 +120,7 @@
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.8rem;
     font-weight: 500;
     background: none;
@@ -114,7 +139,7 @@
     display: flex;
     align-items: center;
     gap: 0.35rem;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.85rem;
     font-weight: 500;
     background: var(--accent);
@@ -128,15 +153,17 @@
   .admin-new-btn:hover { opacity: 0.9; }
 
   .modal-admin-edit {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.75rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
     background: none;
-    border: 1px dashed var(--border);
-    border-radius: 6px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
     color: var(--text-muted);
-    padding: 0.25rem 0.6rem;
+    padding: 0 0.75rem;
+    height: 40px;
     cursor: pointer;
-    min-height: 36px;
+    white-space: nowrap;
   }
   .modal-admin-edit:hover { border-color: var(--accent); color: var(--accent); }
 
@@ -149,12 +176,15 @@
     z-index: 100;
     width: 100%;
     height: var(--header-h);
+    /* Extend behind iOS status bar */
+    padding-top: env(safe-area-inset-top);
+    height: calc(var(--header-h) + env(safe-area-inset-top));
     background: var(--bg-glass);
     border-bottom: 1px solid var(--border);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     display: flex;
-    align-items: center;
+    align-items: flex-end;
   }
 
   .site-header-inner {
@@ -164,6 +194,7 @@
     align-items: center;
     gap: 1.25rem;
     padding: 0 2rem;
+    position: relative;
   }
 
   .header-left {
@@ -173,18 +204,17 @@
     flex-shrink: 0;
   }
 
-  .header-sep {
-    width: 1px;
-    height: 1.1rem;
-    background: var(--border);
-    flex-shrink: 0;
-  }
+  .header-sep { display: none; }
 
   .header-center {
-    flex: 1;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     justify-content: center;
+    pointer-events: none;
   }
+  .header-center .search-input { pointer-events: auto; }
 
   .header-center .search-input {
     max-width: 420px;
@@ -196,6 +226,7 @@
     align-items: center;
     gap: 0.75rem;
     flex-shrink: 0;
+    margin-left: auto;
   }
 
   /* Profile dropdown */
@@ -231,7 +262,7 @@
     border-radius: 8px;
     background: none;
     color: var(--text);
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.875rem;
     text-align: left;
     cursor: pointer;
@@ -267,7 +298,7 @@
   }
 
   .login-modal-logo {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-serif);
     font-size: 1.25rem;
     font-weight: 400;
     color: var(--text);
@@ -301,7 +332,7 @@
     background: var(--surface);
     border: 1.5px solid var(--border);
     border-radius: 10px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.9rem;
     font-weight: 500;
     color: var(--text);
@@ -332,7 +363,7 @@
   }
 
   .settings-section-label {
-    font-family: 'DM Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 0.75rem;
     color: var(--text-muted);
     letter-spacing: 0.05em;
@@ -366,7 +397,7 @@
     border-radius: 6px;
     background: none;
     color: var(--text-muted);
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.8rem;
     cursor: pointer;
     white-space: nowrap;
@@ -384,7 +415,7 @@
 
   /* Sidebar header label */
   .sidebar-header-label {
-    font-family: 'DM Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 0.75rem;
     color: var(--text-muted);
     letter-spacing: 0.05em;
@@ -396,6 +427,7 @@
     height: 22px;
     border-radius: 50%;
     object-fit: cover;
+    color: transparent;
   }
 
   .auth-name {
@@ -427,13 +459,7 @@
   .sheet-handle { display: none; }
 
   .sidebar-header {
-    flex-shrink: 0;
-    height: var(--header-h);
-    display: flex;
-    align-items: center;
-    padding: 0 1.5rem;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface2);
+    display: none;
   }
 
   .sidebar-body {
@@ -545,7 +571,7 @@
   }
 
   .time-btn {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.875rem;
     padding: 0 0.875rem;
     height: 40px;
@@ -569,7 +595,7 @@
     background: var(--surface);
     border: 1px solid var(--border);
     color: var(--text);
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.875rem;
     padding: 0.5rem 0.75rem;
     border-radius: 6px;
@@ -614,7 +640,14 @@
   .header-slogan.show-b .slogan-b { opacity: 1; }
 
   .main-body {
-    padding: 2rem 2rem 4rem;
+    padding: 0 0 4rem;
+  }
+
+  .content-hero {
+    background: var(--surface);
+    padding: 2rem 2rem 1rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2rem;
   }
 
   .section-header {
@@ -625,20 +658,21 @@
   }
 
   .section-header h2 {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-serif);
     font-size: 1.1rem;
     font-weight: 400;
     color: var(--text);
   }
 
   .section-count {
-    font-family: 'DM Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 0.8rem;
     color: var(--text-muted);
   }
 
   .category-section {
     margin-bottom: 3.5rem;
+    padding: 0 2rem;
   }
 
   .category-section.hidden { display: none; }
@@ -691,7 +725,7 @@
     display: flex;
     align-items: center;
     gap: 0.3rem;
-    font-family: 'DM Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 0.7rem;
     color: var(--text);
     background: var(--bg-glass);
@@ -780,7 +814,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
     min-height: 0;
   }
 
@@ -788,14 +822,20 @@
     margin-bottom: 0;
   }
 
+  .card-stats {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
+  }
   .card-time {
-    font-family: 'DM Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 0.8rem;
     color: var(--text-muted);
     letter-spacing: 0.02em;
   }
   .card-last-cooked {
-    font-family: 'DM Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 0.75rem;
     color: var(--accent);
     opacity: 0.8;
@@ -811,11 +851,11 @@
   }
 
   .card-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-serif);
     font-size: 1.15rem;
     font-weight: 400;
     line-height: 1.3;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.25rem;
     color: var(--text);
     white-space: nowrap;
     overflow: hidden;
@@ -831,6 +871,7 @@
     font-size: 0.875rem;
     color: var(--text-mid);
     line-height: 1.5;
+    margin-top: 0.75rem;
     margin-bottom: 1rem;
     flex: 1;
     display: -webkit-box;
@@ -866,8 +907,12 @@
     margin-top: 0.75rem;
   }
   .card-cook-btn, .card-shop-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex: 1;
-    font-family: 'DM Sans', sans-serif;
+    gap: 0.4rem;
+    font-family: 'Inter', sans-serif;
     font-size: 0.8rem;
     height: 40px;
     border-radius: 6px;
@@ -876,6 +921,9 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+  .card-shop-btn svg {
+    display: flex;
   }
   .card-cook-btn {
     background: var(--accent);
@@ -893,7 +941,7 @@
   .card-shop-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
   .card-admin-btn {
-    font-family: 'DM Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 0.7rem;
     padding: 0 0.6rem;
     border-radius: 6px;
@@ -917,7 +965,7 @@
 
   .admin-save-btn {
     flex: 1;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.9rem;
     font-weight: 500;
     padding: 0.625rem 1rem;
@@ -932,7 +980,7 @@
   .admin-save-btn:disabled { opacity: 0.5; cursor: default; }
 
   .admin-delete-btn {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.875rem;
     padding: 0.625rem 1rem;
     border-radius: 8px;
@@ -946,7 +994,7 @@
   .admin-delete-btn:disabled { opacity: 0.5; cursor: default; }
 
   .admin-sub-label {
-    font-family: 'DM Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 0.72rem;
     color: var(--text-muted);
     font-weight: 400;
@@ -959,10 +1007,20 @@
     background: #fdecea;
     color: #c0392b;
     font-size: 0.875rem;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
   }
 
   [data-theme="dark"] .admin-form-error { background: #3d1a1a; color: #e57373; }
+
+  /* Mobile search bar (below header, scrolls away) */
+  .mobile-search-bar {
+    display: none;
+  }
+
+  /* Filter FAB (mobile only) */
+  .filter-fab {
+    display: none;
+  }
 
   /* Shopping list FAB */
   .shop-fab {
@@ -976,7 +1034,7 @@
     border-radius: 999px;
     padding: 0 1.25rem;
     height: 44px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.875rem;
     font-weight: 500;
     cursor: pointer;
@@ -1005,7 +1063,7 @@
 
   .shop-copy-btn {
     flex: 1;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.875rem;
     font-weight: 500;
     background: var(--accent);
@@ -1020,7 +1078,7 @@
   #shopModal .modal-body { padding: 1.5rem 2rem; }
   .shop-recipe-group { margin-bottom: 1.25rem; }
   .shop-recipe-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-serif);
     font-size: 0.95rem;
     color: var(--text);
     margin-bottom: 0.375rem;
@@ -1037,7 +1095,7 @@
     color: var(--text);
   }
   .shop-ing:last-child { border-bottom: none; }
-  .shop-ing-amount { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--accent); min-width: 90px; flex-shrink: 0; }
+  .shop-ing-amount { font-family: 'Fira Code', monospace; font-size: 0.8rem; color: var(--accent); min-width: 90px; flex-shrink: 0; }
   .shop-footer-row { display: flex; gap: 0.75rem; }
   .shop-clear-btn {
     height: 44px;
@@ -1045,7 +1103,7 @@
     background: none;
     border: 1px solid var(--border);
     border-radius: 8px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.875rem;
     color: var(--text-muted);
     cursor: pointer;
@@ -1101,7 +1159,7 @@
   .modal-bar-title {
     flex: 1;
     min-width: 0;
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-serif);
     font-size: 1rem;
     font-weight: 400;
     white-space: nowrap;
@@ -1172,15 +1230,19 @@
   }
 
   .modal-shop-btn {
-    width: 100%;
+    width: auto;
     height: 48px;
     background: none;
     border: 1px solid var(--border);
     border-radius: 8px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.9rem;
     color: var(--text-muted);
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
   }
   .modal-shop-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
   .modal-shop-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
@@ -1206,7 +1268,7 @@
   .modal-close:hover { border-color: var(--text); color: var(--text); }
 
   .modal-cat-label {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.875rem;
     color: var(--text-muted);
     letter-spacing: 0.02em;
@@ -1214,7 +1276,7 @@
   }
 
   .modal-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-serif);
     font-size: 1.75rem;
     font-weight: 400;
     line-height: 1.2;
@@ -1228,7 +1290,7 @@
   }
 
   .stat {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.875rem;
     color: var(--text-muted);
   }
@@ -1262,7 +1324,7 @@
 
   .card-star {
     font-size: 0.65rem;
-    color: var(--border);
+    color: var(--text-muted);
   }
 
   .card-star.filled {
@@ -1274,7 +1336,7 @@
   }
 
   .card-star-count {
-    font-family: 'DM Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 0.65rem;
     color: var(--text-muted);
     margin-left: 0.2rem;
@@ -1286,29 +1348,78 @@
 
   /* ── Star ratings ── */
   .modal-rating {
-    margin-top: 0.75rem;
     min-height: 1.5rem;
   }
 
   .star-rating {
     display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .star-row-wrap {
+    display: flex;
     align-items: center;
     gap: 0.5rem;
+  }
+
+  .star-feedback {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+  }
+
+  .star-feedback-input {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface2);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+    resize: none;
+  }
+
+  .star-feedback-btn {
+    align-self: flex-start;
+    height: 36px;
+    padding: 0 1rem;
+    background: var(--accent);
+    border: none;
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .star-feedback-btn:disabled { opacity: 0.6; cursor: default; }
+
+  .star-feedback-thanks {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-style: italic;
   }
 
   .star-row {
     display: flex;
     gap: 0;
-    margin-left: -0.25rem;
+    margin-left: -0.15rem;
   }
 
   .star-btn {
     background: none;
     border: none;
     cursor: pointer;
-    padding: 0 0.2rem;
+    padding: 0 0.1rem;
     min-height: 40px;
-    min-width: 32px;
+    min-width: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1338,7 +1449,7 @@
   }
 
   .star-meta {
-    font-family: 'DM Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 0.725rem;
     color: var(--text-muted);
   }
@@ -1359,7 +1470,7 @@
   }
 
   .modal-section-title {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.875rem;
     font-weight: 600;
     letter-spacing: 0.02em;
@@ -1375,7 +1486,7 @@
   }
 
   .ingredient-list li {
-    padding: 0.45rem 0;
+    padding: 0.6rem 0;
     border-bottom: 1px solid var(--border);
     font-size: 0.88rem;
   }
@@ -1405,7 +1516,7 @@
   }
 
   .ing-amount {
-    font-family: 'DM Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 0.8rem;
     color: var(--accent);
     min-width: 110px;
@@ -1427,7 +1538,7 @@
   .steps-list li:last-child { border-bottom: none; }
 
   .step-num {
-    font-family: 'DM Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 0.8rem;
     color: var(--accent);
     min-width: 1.5rem;
@@ -1436,7 +1547,7 @@
 
   .step-duration {
     display: inline-block;
-    font-family: 'DM Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 0.72rem;
     color: var(--text-muted);
     background: var(--surface2);
@@ -1541,7 +1652,7 @@
   .nutrition-row.energy .nutrition-value { font-weight: 600; color: var(--text); }
   .nutrition-row.sub .nutrition-label { padding-left: 1rem; font-size: 0.75rem; color: var(--text-muted); }
   .nutrition-label { color: var(--text-mid); }
-  .nutrition-value { font-family: 'DM Mono', monospace; color: var(--text); font-variant-numeric: tabular-nums; text-align: right; padding-right: 0; }
+  .nutrition-value { font-family: 'Fira Code', monospace; color: var(--text); font-variant-numeric: tabular-nums; text-align: right; padding-right: 0; }
   .nutrition-kj { font-size: 0.75rem; color: var(--text-muted); margin-left: 0.4rem; }
 
   /* Empty state */
@@ -1549,7 +1660,7 @@
     text-align: center;
     padding: 4rem 2rem;
     color: var(--text-muted);
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.875rem;
     display: none;
   }
@@ -1561,7 +1672,7 @@
   }
 
   .recipe-card.skeleton {
-    min-height: 200px;
+    min-height: 378px;
     background: linear-gradient(90deg, var(--surface2) 25%, var(--border) 50%, var(--surface2) 75%);
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.6s ease infinite;
@@ -1580,7 +1691,7 @@
   }
 
   .pvt-btn {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.875rem;
     background: none;
     border: none;
@@ -1679,7 +1790,7 @@
   .card-match {
     display: none;
     font-size: 0.75rem;
-    font-family: 'DM Mono', monospace;
+    font-family: 'Fira Code', monospace;
     letter-spacing: 0.03em;
     padding: 0 0.5rem;
     height: 22px;
@@ -1697,11 +1808,11 @@
   /* Greeting block */
   .greeting-block {
     width: 100%;
-    margin-bottom: 1.75rem;
+    margin-bottom: 1rem;
   }
 
   .greeting-heading {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-serif);
     font-size: 1.6rem;
     font-weight: 400;
     line-height: 1.15;
@@ -1741,7 +1852,7 @@
   }
 
   .sidebar-count {
-    font-family: 'DM Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 0.8rem;
     color: var(--text-muted);
   }
@@ -1776,7 +1887,7 @@
   }
 
   .sidebar-reset-btn {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.8rem;
     background: none;
     border: none;
@@ -1796,10 +1907,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-bottom: 1.25rem;
-    margin-bottom: 2rem;
-    border-bottom: 1px solid var(--border);
     gap: 1rem;
+    padding: 0.625rem 2rem 1rem;
   }
 
   .sort-bar-left {
@@ -1846,7 +1955,7 @@
   }
 
   .sort-select {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.875rem;
     background: var(--surface2);
     border: 1px solid var(--border);
@@ -1866,7 +1975,7 @@
   .sort-select:focus { border-color: var(--accent); }
 
   .sort-dir-btn {
-    font-family: 'DM Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 1rem;
     background: var(--surface2);
     border: 1px solid var(--border);
@@ -1911,7 +2020,7 @@
   }
 
   .filter-resume-apply {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.8rem;
     background: var(--accent);
     color: #fff;
@@ -1923,7 +2032,7 @@
   }
 
   .filter-resume-dismiss {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.8rem;
     background: none;
     border: none;
@@ -1959,7 +2068,7 @@
 
   /* Share button */
   .modal-share {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.8rem;
     font-weight: 500;
     background: none;
@@ -1975,26 +2084,28 @@
 
   /* Modal footer two-button layout */
   .modal-footer-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 0.75rem;
   }
   .modal-cook-btn {
-    flex: 1;
     height: 48px;
     padding: 0 1rem;
     background: var(--accent);
     border: 1px solid var(--accent);
     border-radius: 8px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.9rem;
     font-weight: 500;
     color: #fff;
     cursor: pointer;
-    white-space: nowrap;
-    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
   }
   .modal-cook-btn:hover { opacity: 0.9; }
-  .modal-shop-btn { flex: 1; width: auto; min-width: 0; }
+  .modal-cook-btn svg, .modal-shop-btn svg { display: block; flex-shrink: 0; }
 
   /* Cooking mode dialog — full screen, inherits page theme */
   #cookModal {
@@ -2014,34 +2125,49 @@
     color: var(--text);
   }
   .cook-header {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    padding: 1.25rem 1.5rem;
-    padding-top: max(1.25rem, calc(1rem + env(safe-area-inset-top)));
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0 1.5rem;
+    padding-top: max(1rem, calc(0.75rem + env(safe-area-inset-top)));
+    padding-bottom: 0.875rem;
     flex-shrink: 0;
     border-bottom: 1px solid var(--border);
   }
   .cook-header-right {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    gap: 0.5rem;
+    justify-content: space-between;
   }
+  .cook-step-strip {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    height: 36px;
+    border-bottom: 1px solid var(--border);
+  }
+
   .cook-step-label {
-    font-family: 'DM Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 0.8rem;
     color: var(--text-muted);
   }
   .cook-recipe-title {
-    text-align: center;
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-serif);
     font-size: 0.95rem;
     color: var(--text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    padding: 0 0.75rem;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    padding-top: 0.75rem;
+    margin-top: 0.25rem;
+    margin-left: -1.5rem;
+    margin-right: -1.5rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
   }
   .cook-ingredients-toggle {
     height: 40px;
@@ -2050,7 +2176,7 @@
     border: 1px solid var(--border);
     background: var(--surface2);
     color: var(--text-muted);
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.8rem;
     cursor: pointer;
   }
@@ -2092,7 +2218,7 @@
     color: var(--text);
   }
   .cook-ing-amount {
-    font-family: 'DM Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 0.8rem;
     color: var(--accent);
     min-width: 80px;
@@ -2132,7 +2258,7 @@
   }
 
   .cook-timer-display {
-    font-family: 'DM Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: clamp(2rem, 6vw, 3rem);
     font-weight: 500;
     color: var(--text);
@@ -2183,12 +2309,17 @@
   .cook-hint {
     display: block;
     text-align: center;
-    font-family: 'DM Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 1rem;
     color: var(--text-muted);
     margin-top: 32px;
     width: 100%;
     max-width: 520px;
+  }
+
+  /* Hide keyboard hints on touch-only devices */
+  @media (hover: none) and (pointer: coarse) {
+    .cook-hint { display: none; }
   }
 
   /* ── Done screen ── */
@@ -2224,7 +2355,7 @@
   }
 
   .cook-done-heading {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-serif);
     font-size: clamp(1.75rem, 5vw, 2.5rem);
     font-weight: 700;
     line-height: 1.1;
@@ -2233,7 +2364,7 @@
   }
 
   .cook-done-body {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 1rem;
     font-weight: 300;
     color: var(--text-muted);
@@ -2241,7 +2372,7 @@
   }
 
   .cook-done-time {
-    font-family: 'DM Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 0.75rem;
     color: var(--text-muted);
     opacity: 0.6;
@@ -2254,12 +2385,20 @@
     align-items: center;
     gap: 0.625rem;
     width: 100%;
+    min-height: 160px;
     opacity: 0;
     transition: opacity 300ms ease;
   }
 
   .cook-done-rating-section.visible {
     opacity: 1;
+  }
+
+  .cook-done-rating-section.already-rated .cook-done-divider,
+  .cook-done-rating-section.already-rated .cook-done-rating-label,
+  .cook-done-rating-section.already-rated .cook-done-stars,
+  .cook-done-rating-section.already-rated .cook-done-keyboard-hint {
+    display: none;
   }
 
   .cook-done-divider {
@@ -2270,7 +2409,7 @@
   }
 
   .cook-done-rating-label {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.875rem;
     color: var(--text-muted);
     margin: 0 0 0.625rem;
@@ -2323,7 +2462,7 @@
 
   .cook-done-feedback-input {
     width: 100%;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.875rem;
     padding: 0.625rem 0.75rem;
     border: 1.5px solid var(--border);
@@ -2338,7 +2477,7 @@
 
   .cook-done-feedback-btn {
     width: 100%;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.875rem;
     font-weight: 500;
     padding: 0.375rem 1rem;
@@ -2356,7 +2495,7 @@
 
   .cook-done-feedback-thanks {
     display: none;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.875rem;
     color: var(--text-muted);
     margin: 0;
@@ -2385,10 +2524,32 @@
   }
 
   .cook-done-keyboard-hint {
-    font-family: 'DM Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 0.7rem;
     color: var(--text-muted);
     margin: 0;
+  }
+
+  .cook-done-btn {
+    margin-top: auto;
+    height: 48px;
+    padding: 0 2rem;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cook-done-btn:hover { opacity: 0.9; }
+
+  @media (hover: none) and (pointer: coarse) {
+    .cook-done-btn { display: flex !important; }
   }
 
 
@@ -2409,7 +2570,7 @@
     margin-bottom: 0.25rem;
   }
   .cook-step-text {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-serif);
     font-size: clamp(1.25rem, 3.5vw, 1.875rem);
     line-height: 1.55;
     text-align: left;
@@ -2470,7 +2631,7 @@
     margin-bottom: 1.75rem;
   }
   .submit-section-label {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.8rem;
     font-weight: 600;
     color: var(--text-muted);
@@ -2485,14 +2646,14 @@
   }
   .submit-label {
     display: block;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.8rem;
     color: var(--text-muted);
     margin-bottom: 0.3rem;
   }
   .submit-input {
     width: 100%;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.875rem;
     color: var(--text);
     background: var(--surface2);
@@ -2504,7 +2665,7 @@
   }
   .submit-input:focus { outline: none; border-color: var(--accent); }
   .submit-add-btn {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.75rem;
     background: none;
     border: 1px solid var(--border);
@@ -2525,7 +2686,7 @@
   .sf-ing-unit { width: 60px; flex-shrink: 0; }
   .sf-ing-item { flex: 1; }
   .submit-step-num {
-    font-family: 'DM Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 0.75rem;
     color: var(--text-muted);
     padding-top: 0.6rem;
@@ -2552,7 +2713,7 @@
     gap: 0.5rem;
   }
   .submit-json {
-    font-family: 'DM Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 0.75rem;
     min-height: 200px;
     color: var(--text);
@@ -2602,10 +2763,13 @@
     }
 
     .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0.75rem 1.25rem;
       background: var(--surface);
-      border-bottom-color: var(--border);
-      gap: 0.75rem;
     }
+    .sidebar-header-label { display: none; }
 
     .sheet-close-btn {
       display: flex;
@@ -2649,7 +2813,7 @@
       display: block;
       background: var(--accent);
       color: #fff;
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Inter', sans-serif;
       font-size: 0.875rem;
       font-weight: 500;
       border-radius: 8px;
@@ -2657,68 +2821,101 @@
       text-align: center;
     }
 
-    .mobile-filter-toggle {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: none;
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.875rem;
-      height: 40px;
-      padding: 0 0.875rem;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    .mobile-filter-toggle.open { color: var(--accent); border-color: var(--accent); }
-
+    /* ── Header: single slim row, no search ── */
     .header-sep { display: none; }
     .header-slogan { display: none; }
-    .site-header { height: auto; }
+    .header-center { display: none; }
+    .site-header {
+      height: calc(var(--header-h) + env(safe-area-inset-top));
+      align-items: flex-end;
+    }
     .site-header-inner {
-      flex-wrap: wrap;
-      padding: 0 1rem;
-      row-gap: 0;
-      height: auto;
-      gap: 0.625rem;
+      padding: 0 1rem 0;
+      height: var(--header-h);
+      align-items: center;
     }
-    .header-left { flex: 1; height: var(--header-h); }
-    .header-right { height: var(--header-h); }
-    .header-center {
-      order: 3;
+    .header-left { flex: 1; }
+    .header-right { flex-shrink: 0; }
+
+    /* ── Mobile search bar (normal flow, scrolls away) ── */
+    .mobile-search-bar {
+      display: block;
+      padding: 0.625rem 1rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+    .mobile-search-bar .search-input {
       width: 100%;
-      justify-content: stretch;
-      padding-bottom: 0.625rem;
+      font-size: 16px;
     }
-    .header-center .search-input { max-width: 100%; }
-    .main-body { padding: 1.5rem 1.25rem 3rem; }
+
+    /* ── Filter FAB ── */
+    .filter-fab {
+      display: flex;
+      position: fixed;
+      bottom: max(1.5rem, calc(1rem + env(safe-area-inset-bottom)));
+      left: 1.25rem;
+      z-index: 50;
+      align-items: center;
+      gap: 0.375rem;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      border-radius: 100px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 0 1.25rem;
+      height: 48px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      cursor: pointer;
+    }
+    .filter-fab.open {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    [data-theme="dark"] .filter-fab { box-shadow: 0 4px 20px rgba(0,0,0,0.35); }
+
+    /* ── Layout & cards ── */
+    .main-body { padding: 0 0 6rem; }
+    .content-hero { padding: 1.25rem 1.25rem 1.25rem; }
+    .category-section { padding: 0 1.25rem; }
     .recipe-grid { grid-template-columns: 1fr; }
     .modal-content, .modal-footer { padding-left: 1.25rem; padding-right: 1.25rem; }
-    .modal-footer { padding-bottom: max(2rem, calc(1.25rem + env(safe-area-inset-bottom))); }
+    .modal-footer { padding-bottom: max(1.25rem, calc(0.5rem + env(safe-area-inset-bottom))); }
+    .nutrition-panel, .nutrition-header { max-width: 100%; }
     .search-input { font-size: 16px; }
-
-    .sort-bar { flex-direction: row; align-items: center; }
+    .sort-bar { flex-direction: column; align-items: stretch; gap: 0.625rem; padding: 0.875rem 1.25rem; }
+    .sort-bar-left { flex: unset; width: 100%; }
+    .sort-control { justify-content: flex-start; }
     .filter-all-label { font-size: 0; }
     .filter-all-label::after { content: 'Showing all recipes'; font-size: 0.75rem; }
 
+    /* ── Modals ── */
     dialog {
       width: 100%;
       max-width: 100%;
       position: fixed;
-      top: 8%;
+      top: 5dvh;
       bottom: 0;
       left: 0;
       right: 0;
-      height: 92%;
-      max-height: 92%;
+      height: 95dvh;
+      max-height: 95dvh;
       border-radius: 16px 16px 0 0;
       translate: none;
       transform: none;
     }
 
-    /* Cook mode is always full screen, even on mobile */
+    /* Login + settings: short sheets from bottom */
+    #loginModal, #settingsModal {
+      top: auto;
+      height: auto;
+      max-height: 75dvh;
+    }
+
+    /* Cook mode is always full screen */
     #cookModal {
       top: 0 !important;
       height: 100% !important;
@@ -2727,6 +2924,16 @@
     }
 
     .modal-cook-btn, .modal-shop-btn { height: 44px; font-size: 0.85rem; }
-
     .submit-nutrition-grid { grid-template-columns: 1fr; }
+
+    /* Recipe modal header */
+    .modal-artwork { height: 140px; }
+    .modal-header-bottom { padding: 0.875rem 1.25rem 1rem; }
+    .modal-header-bottom .modal-title { font-size: 1.35rem; }
+
+    /* Cook mode mobile */
+    .cook-step-card { padding: 1.25rem 1.25rem 1rem; }
+    .cook-step-text { font-size: 1rem; }
+    .cook-body { padding: 1.25rem; }
+
   }
