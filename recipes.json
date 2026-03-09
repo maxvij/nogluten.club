@@ -4,7 +4,7 @@
       "id": 1,
       "title": "Scrambled Eggs with Spinach",
       "category": "breakfast",
-      "desc": "Fluffy eggs with wilted spinach \u2014 simple, fast and protein-rich.",
+      "desc": "Fluffy eggs with wilted spinach — simple, fast and protein-rich.",
       "servings": 1,
       "time": "8 min",
       "ingredients": [
@@ -36,7 +36,7 @@
       ],
       "steps": [
         "Whisk eggs with salt and pepper.",
-        "Heat olive oil in a non-stick pan over medium heat. Add spinach and wilt for 1 minute.",
+        "Heat olive oil in a non-stick pan over medium heat.\nAdd spinach and wilt for 1 minute.",
         "Pour in eggs and scramble gently on low heat until just set."
       ],
       "nutrition_per_serving": {
@@ -84,7 +84,7 @@
       ],
       "steps": [
         "Add all ingredients to blender.",
-        "Blend until smooth. Add ice if desired."
+        "Blend until smooth.\nAdd ice if desired."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 380,
@@ -116,7 +116,7 @@
         {
           "amount": "2",
           "unit": "tbsp",
-          "item": "almond butter"
+          "item": "plant-based butter"
         },
         {
           "amount": "1",
@@ -144,16 +144,16 @@
     },
     {
       "id": 4,
-      "title": "Yogurt with Berries & Chia Seeds",
+      "title": "Yoghurt with Berries & Chia Seeds",
       "category": "breakfast",
-      "desc": "Creamy lactose-free yogurt layered with berries, chia seeds and honey.",
+      "desc": "Creamy lactose-free yoghurt layered with berries, chia seeds and honey.",
       "servings": 1,
       "time": "3 min",
       "ingredients": [
         {
           "amount": "200",
           "unit": "g",
-          "item": "lactose-free yogurt"
+          "item": "lactose-free yoghurt"
         },
         {
           "amount": "100",
@@ -172,7 +172,7 @@
         }
       ],
       "steps": [
-        "Spoon yogurt into a bowl.",
+        "Spoon yoghurt into a bowl.",
         "Top with berries, chia seeds and a drizzle of honey."
       ],
       "nutrition_per_serving": {
@@ -293,7 +293,7 @@
         "sodium_mg": 260,
         "salt_g": 0.7
       },
-      "benefits": "Avocado is rich in monounsaturated fats and potassium \u2014 more than bananas. Combined with eggs, this delivers sustained energy and excellent satiety."
+      "benefits": "Avocado is rich in monounsaturated fats and potassium — more than bananas. Combined with eggs, this delivers sustained energy and excellent satiety."
     },
     {
       "id": 7,
@@ -367,7 +367,7 @@
           "item": "eggs"
         },
         {
-          "amount": "\u00bd",
+          "amount": "½",
           "unit": "",
           "item": "red bell pepper, diced"
         },
@@ -377,7 +377,7 @@
           "item": "olive oil"
         },
         {
-          "amount": "\u00bd",
+          "amount": "½",
           "unit": "tsp",
           "item": "smoked paprika"
         }
@@ -425,12 +425,12 @@
           "item": "olive oil"
         },
         {
-          "amount": "\u00bd",
+          "amount": "½",
           "unit": "tsp",
           "item": "garlic powder"
         },
         {
-          "amount": "\u00bd",
+          "amount": "½",
           "unit": "tsp",
           "item": "smoked paprika"
         }
@@ -489,8 +489,8 @@
         }
       ],
       "steps": [
-        "Bring broth to a boil. Add rice and simmer 20 minutes, stirring occasionally, until porridge-like.",
-        "Crack eggs directly into the congee and stir gently \u2014 they will poach in about 2 minutes.",
+        "Bring broth to a boil.\nAdd rice and simmer 20 minutes, stirring occasionally, until porridge-like.",
+        "Crack eggs directly into the congee and stir gently — they will poach in about 2 minutes.",
         "Finish with sesame oil and spring onions."
       ],
       "nutrition_per_serving": {
@@ -511,7 +511,7 @@
       "id": 11,
       "title": "Tuna & Brown Rice Bowl",
       "category": "lunch",
-      "desc": "Canned tuna over brown rice with cucumber and a tamari sesame dressing.",
+      "desc": "Canned tuna over brown rice with cucumber and a soy sauce (gluten-free) sesame dressing.",
       "servings": 1,
       "time": "10 min",
       "ingredients": [
@@ -526,14 +526,14 @@
           "item": "cooked brown rice"
         },
         {
-          "amount": "\u00bd",
+          "amount": "½",
           "unit": "",
           "item": "cucumber, sliced"
         },
         {
           "amount": "2",
           "unit": "tbsp",
-          "item": "tamari (GF soy sauce)"
+          "item": "soy sauce (gluten-free)"
         },
         {
           "amount": "1",
@@ -542,7 +542,7 @@
         }
       ],
       "steps": [
-        "Drain tuna thoroughly and mix with tamari and sesame oil.",
+        "Drain tuna thoroughly and mix with soy sauce (gluten-free) and sesame oil.",
         "Serve over rice with sliced cucumber alongside."
       ],
       "nutrition_per_serving": {
@@ -594,7 +594,7 @@
         }
       ],
       "steps": [
-        "Toss vegetables with half the oil and herbs. Roast at 200\u00b0C for 20 minutes.",
+        "Toss vegetables with half the oil and herbs.\nRoast at 200°C for 20 minutes.",
         "Pan-fry chicken in remaining oil, 6 minutes per side until cooked through.",
         "Slice chicken and serve over roasted vegetables."
       ],
@@ -647,9 +647,9 @@
         }
       ],
       "steps": [
-        "Saut\u00e9 onion and garlic in a drizzle of oil for 3 minutes.",
-        "Add lentils, cumin and broth. Bring to a boil.",
-        "Simmer 25 minutes until lentils are soft. Blend half for a creamy-chunky texture."
+        "Sauté onion and garlic in a drizzle of oil for 3 minutes.",
+        "Add lentils, cumin and broth.\nBring to a boil.",
+        "Simmer 25 minutes until lentils are soft.\nBlend half for a creamy-chunky texture."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 380,
@@ -663,7 +663,7 @@
         "sodium_mg": 480,
         "salt_g": 1.2
       },
-      "benefits": "Red lentils are extraordinarily nutrient-dense \u2014 high in plant protein, iron, folate, and fibre. They reduce cholesterol and stabilise blood sugar effectively."
+      "benefits": "Red lentils are extraordinarily nutrient-dense — high in plant protein, iron, folate, and fibre. They reduce cholesterol and stabilise blood sugar effectively."
     },
     {
       "id": 14,
@@ -716,13 +716,13 @@
         "sodium_mg": 540,
         "salt_g": 1.4
       },
-      "benefits": "Prawns are extremely lean \u2014 nearly all calories from protein. Avocado adds heart-healthy fats and folate, making this a nutritionally complete light meal."
+      "benefits": "Prawns are extremely lean — nearly all calories from protein. Avocado adds heart-healthy fats and folate, making this a nutritionally complete light meal."
     },
     {
       "id": 15,
       "title": "Chicken & Edamame Rice Bowl",
       "category": "lunch",
-      "desc": "Shredded chicken and edamame over rice with a tamari and sesame finish.",
+      "desc": "Shredded chicken and edamame over rice with a soy sauce (gluten-free) and sesame finish.",
       "servings": 1,
       "time": "15 min",
       "ingredients": [
@@ -744,7 +744,7 @@
         {
           "amount": "2",
           "unit": "tbsp",
-          "item": "tamari (GF soy sauce)"
+          "item": "soy sauce (gluten-free)"
         },
         {
           "amount": "1",
@@ -755,7 +755,7 @@
       "steps": [
         "Warm chicken and edamame in a pan or microwave.",
         "Serve over rice.",
-        "Drizzle with tamari and finish with sesame seeds."
+        "Drizzle with soy sauce (gluten-free) and finish with sesame seeds."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 520,
@@ -790,7 +790,7 @@
           "item": "rice cakes (GF)"
         },
         {
-          "amount": "\u00bd",
+          "amount": "½",
           "unit": "",
           "item": "cucumber, sliced"
         },
@@ -858,9 +858,9 @@
         }
       ],
       "steps": [
-        "Saut\u00e9 garlic in a little oil for 1 minute.",
-        "Add diced tomatoes, chickpeas and cumin. Simmer 15 minutes.",
-        "Stir in spinach and cook until wilted. Season and serve."
+        "Sauté garlic in a little oil for 1 minute.",
+        "Add diced tomatoes, chickpeas and cumin.\nSimmer 15 minutes.",
+        "Stir in spinach and cook until wilted.\nSeason and serve."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 360,
@@ -933,7 +933,7 @@
       "id": 19,
       "title": "Egg & Veggie Fried Rice",
       "category": "lunch",
-      "desc": "Classic fried rice with egg, peas and tamari \u2014 best made with leftover cold rice.",
+      "desc": "Classic fried rice with egg, peas and soy sauce (gluten-free) — best made with leftover cold rice.",
       "servings": 1,
       "time": "15 min",
       "ingredients": [
@@ -955,7 +955,7 @@
         {
           "amount": "2",
           "unit": "tbsp",
-          "item": "tamari (GF soy sauce)"
+          "item": "soy sauce (gluten-free)"
         },
         {
           "amount": "1",
@@ -964,9 +964,9 @@
         }
       ],
       "steps": [
-        "Heat a wok or large pan very hot. Stir-fry cold rice in sesame oil for 2 minutes.",
+        "Heat a wok or large pan very hot.\nStir-fry cold rice in sesame oil for 2 minutes.",
         "Push rice aside, scramble eggs in the gap.",
-        "Add peas and tamari, toss everything together for 2 more minutes."
+        "Add peas and soy sauce (gluten-free), toss everything together for 2 more minutes."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 420,
@@ -1003,7 +1003,7 @@
         {
           "amount": "2",
           "unit": "tbsp",
-          "item": "tamari (GF soy sauce)"
+          "item": "soy sauce (gluten-free)"
         },
         {
           "amount": "1",
@@ -1018,7 +1018,7 @@
       ],
       "steps": [
         "Brown turkey in a pan with garlic and ginger over medium-high heat.",
-        "Season with tamari and cook until liquid reduces slightly.",
+        "Season with soy sauce (gluten-free) and cook until liquid reduces slightly.",
         "Spoon into lettuce cups and serve immediately."
       ],
       "nutrition_per_serving": {
@@ -1070,9 +1070,9 @@
         }
       ],
       "steps": [
-        "Toss broccoli with half the oil and garlic powder. Arrange on a baking tray.",
+        "Toss broccoli with half the oil and garlic powder.\nArrange on a baking tray.",
         "Place salmon alongside, drizzle with remaining oil.",
-        "Roast at 200\u00b0C for 18 minutes. Squeeze lemon over before serving."
+        "Roast at 200°C for 18 minutes.\nSqueeze lemon over before serving."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 520,
@@ -1092,7 +1092,7 @@
       "id": 22,
       "title": "Beef & Broccoli Stir-Fry",
       "category": "dinner",
-      "desc": "Thinly sliced beef seared fast with broccoli in a tamari garlic glaze.",
+      "desc": "Thinly sliced beef seared fast with broccoli in a soy sauce (gluten-free) garlic glaze.",
       "servings": 2,
       "time": "15 min",
       "ingredients": [
@@ -1109,7 +1109,7 @@
         {
           "amount": "3",
           "unit": "tbsp",
-          "item": "tamari (GF soy sauce)"
+          "item": "soy sauce (gluten-free)"
         },
         {
           "amount": "2",
@@ -1123,9 +1123,9 @@
         }
       ],
       "steps": [
-        "Mix tamari with cornstarch and 2 tbsp water to make a sauce.",
-        "Sear beef in a very hot pan for 1\u20132 minutes. Set aside.",
-        "Stir-fry broccoli and garlic 3 minutes. Return beef, pour sauce over, toss 1 minute."
+        "Mix soy sauce (gluten-free) with cornstarch and 2 tbsp water to make a sauce.",
+        "Sear beef in a very hot pan for 1–2 minutes.\nSet aside.",
+        "Stir-fry broccoli and garlic 3 minutes.\nReturn beef, pour sauce over, toss 1 minute."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 480,
@@ -1139,7 +1139,7 @@
         "sodium_mg": 1100,
         "salt_g": 2.8
       },
-      "benefits": "Beef is rich in creatine, zinc, and B12 \u2014 nutrients critical for muscle function. Broccoli's vitamin C increases iron bioavailability from the beef significantly."
+      "benefits": "Beef is rich in creatine, zinc, and B12 — nutrients critical for muscle function. Broccoli's vitamin C increases iron bioavailability from the beef significantly."
     },
     {
       "id": 23,
@@ -1177,8 +1177,8 @@
       ],
       "steps": [
         "Fry curry paste in a dry pan for 1 minute until fragrant.",
-        "Add chicken and cook 3\u20134 minutes, coating in paste.",
-        "Pour in coconut milk. Simmer 15 minutes. Add zucchini and cook 5 more minutes.",
+        "Add chicken and cook 3–4 minutes, coating in paste.",
+        "Pour in coconut milk.\nSimmer 15 minutes.\nAdd zucchini and cook 5 more minutes.",
         "Season with fish sauce and serve over rice."
       ],
       "nutrition_per_serving": {
@@ -1230,8 +1230,8 @@
         }
       ],
       "steps": [
-        "Combine lamb, garlic, spices and parsley. Mix well and form into 8 oval patties.",
-        "Grill or pan-fry on medium-high heat, 3\u20134 minutes per side.",
+        "Combine lamb, garlic, spices and parsley.\nMix well and form into 8 oval patties.",
+        "Grill or pan-fry on medium-high heat, 3–4 minutes per side.",
         "Serve with diced tomato and cucumber salad."
       ],
       "nutrition_per_serving": {
@@ -1252,7 +1252,7 @@
       "id": 25,
       "title": "Miso-Glazed Salmon",
       "category": "dinner",
-      "desc": "Salmon fillets baked under a sweet miso, honey and tamari glaze.",
+      "desc": "Salmon fillets baked under a sweet miso, honey and soy sauce (gluten-free) glaze.",
       "servings": 2,
       "time": "20 min",
       "ingredients": [
@@ -1274,7 +1274,7 @@
         {
           "amount": "1",
           "unit": "tbsp",
-          "item": "tamari (GF soy sauce)"
+          "item": "soy sauce (gluten-free)"
         },
         {
           "amount": "1",
@@ -1283,9 +1283,9 @@
         }
       ],
       "steps": [
-        "Mix miso, honey, tamari and ginger into a smooth glaze.",
+        "Mix miso, honey, soy sauce (gluten-free) and ginger into a smooth glaze.",
         "Coat salmon fillets generously on top.",
-        "Bake at 200\u00b0C for 12\u201314 minutes until glaze is caramelised."
+        "Bake at 200°C for 12–14 minutes until glaze is caramelised."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 520,
@@ -1338,7 +1338,7 @@
       "steps": [
         "Toss everything with oil and spices.",
         "Spread on a large baking tray in a single layer.",
-        "Roast at 200\u00b0C for 35 minutes until chicken skin is crispy."
+        "Roast at 200°C for 35 minutes until chicken skin is crispy."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 560,
@@ -1389,9 +1389,9 @@
         }
       ],
       "steps": [
-        "Saut\u00e9 garlic and paprika in olive oil for 1 minute.",
+        "Sauté garlic and paprika in olive oil for 1 minute.",
         "Add diced tomatoes and simmer 10 minutes.",
-        "Add prawns and cook 3 minutes until pink. Top with parsley."
+        "Add prawns and cook 3 minutes until pink.\nTop with parsley."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 380,
@@ -1411,7 +1411,7 @@
       "id": 28,
       "title": "Steak & Asparagus",
       "category": "dinner",
-      "desc": "Pan-seared sirloin steak with garlic-saut\u00e9ed asparagus and lemon.",
+      "desc": "Pan-seared sirloin steak with garlic-sautéed asparagus and lemon.",
       "servings": 1,
       "time": "20 min",
       "ingredients": [
@@ -1436,13 +1436,13 @@
           "item": "garlic cloves, minced"
         },
         {
-          "amount": "\u00bd",
+          "amount": "½",
           "unit": "",
           "item": "lemon, juiced"
         }
       ],
       "steps": [
-        "Sear steak in a hot pan with half the oil, 3 minutes per side for medium. Rest 5 minutes.",
+        "Sear steak in a hot pan with half the oil, 3 minutes per side for medium.\nRest 5 minutes.",
         "In the same pan, cook asparagus with garlic and remaining oil for 4 minutes.",
         "Slice steak against the grain and serve with asparagus and lemon."
       ],
@@ -1464,7 +1464,7 @@
       "id": 29,
       "title": "Egg Drop Soup",
       "category": "dinner",
-      "desc": "Silky chicken broth with ribbons of egg \u2014 one of the fastest nourishing dinners.",
+      "desc": "Silky chicken broth with ribbons of egg — one of the fastest nourishing dinners.",
       "servings": 2,
       "time": "10 min",
       "ingredients": [
@@ -1491,12 +1491,12 @@
         {
           "amount": "1",
           "unit": "tsp",
-          "item": "tamari (GF soy sauce)"
+          "item": "soy sauce (gluten-free)"
         }
       ],
       "steps": [
-        "Bring broth to a simmer with tamari.",
-        "Slowly drizzle in beaten eggs while stirring gently \u2014 they cook in thin ribbons.",
+        "Bring broth to a simmer with soy sauce (gluten-free).",
+        "Slowly drizzle in beaten eggs while stirring gently — they cook in thin ribbons.",
         "Finish with sesame oil and spring onions."
       ],
       "nutrition_per_serving": {
@@ -1550,7 +1550,7 @@
       "steps": [
         "Rub chicken thighs with harissa paste.",
         "Toss chickpeas and tomatoes with olive oil on a baking tray.",
-        "Nestle chicken on top and roast at 200\u00b0C for 30 minutes until caramelised."
+        "Nestle chicken on top and roast at 200°C for 30 minutes until caramelised."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 580,
@@ -1564,7 +1564,7 @@
         "sodium_mg": 640,
         "salt_g": 1.6
       },
-      "benefits": "Harissa contains chillies, garlic and cumin \u2014 a potent anti-inflammatory trio. Chickpeas absorb the harissa juices and become deeply flavourful."
+      "benefits": "Harissa contains chillies, garlic and cumin — a potent anti-inflammatory trio. Chickpeas absorb the harissa juices and become deeply flavourful."
     },
     {
       "id": 31,
@@ -1580,12 +1580,12 @@
           "item": "frozen edamame pods (in shell)"
         },
         {
-          "amount": "\u00bd",
+          "amount": "½",
           "unit": "tsp",
           "item": "coarse sea salt"
         },
         {
-          "amount": "\u00bd",
+          "amount": "½",
           "unit": "tsp",
           "item": "chili flakes"
         }
@@ -1630,7 +1630,7 @@
         {
           "amount": "3",
           "unit": "tbsp",
-          "item": "peanut butter"
+          "item": "plant-based butter"
         },
         {
           "amount": "2",
@@ -1645,7 +1645,7 @@
       ],
       "steps": [
         "Mix oats, protein, peanut butter and honey until combined.",
-        "Fold in chocolate chips. Add 1\u20132 tbsp water if too dry to roll.",
+        "Fold in chocolate chips.\nAdd 1–2 tbsp water if too dry to roll.",
         "Roll into 12 balls and refrigerate 30 minutes."
       ],
       "nutrition_per_serving": {
@@ -1664,9 +1664,9 @@
     },
     {
       "id": 33,
-      "title": "Hard-Boiled Eggs with Tamari Dip",
+      "title": "Hard-Boiled Eggs with Soy sauce (gluten-free) Dip",
       "category": "snack",
-      "desc": "Batch-cook hard-boiled eggs and dip them in a sesame tamari sauce.",
+      "desc": "Batch-cook hard-boiled eggs and dip them in a sesame soy sauce (gluten-free) sauce.",
       "servings": 1,
       "time": "12 min",
       "ingredients": [
@@ -1678,10 +1678,10 @@
         {
           "amount": "1",
           "unit": "tbsp",
-          "item": "tamari (GF soy sauce)"
+          "item": "soy sauce (gluten-free)"
         },
         {
-          "amount": "\u00bd",
+          "amount": "½",
           "unit": "tsp",
           "item": "sesame oil"
         },
@@ -1693,8 +1693,8 @@
       ],
       "steps": [
         "Place eggs in cold water, bring to boil, cook exactly 9 minutes.",
-        "Transfer to ice water immediately. Peel when cool.",
-        "Mix tamari, sesame oil and chili flakes as dipping sauce."
+        "Transfer to ice water immediately.\nPeel when cool.",
+        "Mix soy sauce (gluten-free), sesame oil and chili flakes as dipping sauce."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 220,
@@ -1708,7 +1708,7 @@
         "sodium_mg": 560,
         "salt_g": 1.4
       },
-      "benefits": "Eggs are the reference food for protein quality. The yolk contains choline, essential for brain function \u2014 a nutrient most people are deficient in."
+      "benefits": "Eggs are the reference food for protein quality. The yolk contains choline, essential for brain function — a nutrient most people are deficient in."
     },
     {
       "id": 34,
@@ -1729,7 +1729,7 @@
           "item": "tuna in spring water, drained"
         },
         {
-          "amount": "\u00bd",
+          "amount": "½",
           "unit": "",
           "item": "avocado"
         },
@@ -1761,7 +1761,7 @@
         "sodium_mg": 480,
         "salt_g": 1.2
       },
-      "benefits": "Three macronutrients in perfect balance \u2014 complex carbs, lean protein and healthy fats \u2014 in under 5 minutes with zero cooking."
+      "benefits": "Three macronutrients in perfect balance — complex carbs, lean protein and healthy fats — in under 5 minutes with zero cooking."
     },
     {
       "id": 35,
@@ -1840,20 +1840,20 @@
           "item": "smoked paprika"
         },
         {
-          "amount": "\u00bd",
+          "amount": "½",
           "unit": "tsp",
           "item": "ground cumin"
         },
         {
-          "amount": "\u00bd",
+          "amount": "½",
           "unit": "tsp",
           "item": "sea salt"
         }
       ],
       "steps": [
-        "Thoroughly pat chickpeas dry \u2014 this is key for crunch.",
+        "Thoroughly pat chickpeas dry — this is key for crunch.",
         "Toss with oil and spices.",
-        "Roast at 200\u00b0C for 25 minutes, shaking halfway, until golden and crispy."
+        "Roast at 200°C for 25 minutes, shaking halfway, until golden and crispy."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 280,
@@ -1900,7 +1900,7 @@
       ],
       "steps": [
         "Add all ingredients to a shaker bottle or blender.",
-        "Shake or blend until smooth. Serve immediately over ice."
+        "Shake or blend until smooth.\nServe immediately over ice."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 250,
@@ -1951,9 +1951,9 @@
         }
       ],
       "steps": [
-        "Saut\u00e9 pepper 3 minutes. Add tomatoes and spices.",
+        "Sauté pepper 3 minutes.\nAdd tomatoes and spices.",
         "Simmer 10 minutes until slightly thickened.",
-        "Make 4 wells, crack in eggs, cover and cook 5\u20137 minutes until whites are set."
+        "Make 4 wells, crack in eggs, cover and cook 5–7 minutes until whites are set."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 340,
@@ -2006,7 +2006,7 @@
       "steps": [
         "Scramble eggs in olive oil over low heat until almost set.",
         "Fold in smoked salmon and spinach in the last minute.",
-        "Remove from heat \u2014 residual warmth finishes the eggs."
+        "Remove from heat — residual warmth finishes the eggs."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 380,
@@ -2200,7 +2200,7 @@
           "item": "tuna in spring water, drained"
         },
         {
-          "amount": "\u00bd",
+          "amount": "½",
           "unit": "",
           "item": "avocado"
         },
@@ -2216,7 +2216,7 @@
         }
       ],
       "steps": [
-        "Bake sweet potato at 200\u00b0C for 40 minutes until tender.",
+        "Bake sweet potato at 200°C for 40 minutes until tender.",
         "Mix tuna with mashed avocado and lemon juice.",
         "Halve the potato and fill with tuna mixture."
       ],
@@ -2323,7 +2323,7 @@
       ],
       "steps": [
         "Cook quinoa per packet instructions, about 15 minutes.",
-        "Toss zucchini and onion with olive oil. Roast at 200\u00b0C for 20 minutes.",
+        "Toss zucchini and onion with olive oil.\nRoast at 200°C for 20 minutes.",
         "Combine warm quinoa with roasted veg and lemon juice."
       ],
       "nutrition_per_serving": {
@@ -2344,7 +2344,7 @@
       "id": 46,
       "title": "Tofu Scramble",
       "category": "breakfast",
-      "desc": "Crumbled firm tofu scrambled with turmeric and tamari \u2014 a plant-based egg alternative.",
+      "desc": "Crumbled firm tofu scrambled with turmeric and soy sauce (gluten-free) — a plant-based egg alternative.",
       "servings": 1,
       "time": "10 min",
       "ingredients": [
@@ -2361,7 +2361,7 @@
         {
           "amount": "2",
           "unit": "tbsp",
-          "item": "tamari (GF soy sauce)"
+          "item": "soy sauce (gluten-free)"
         },
         {
           "amount": "1",
@@ -2377,7 +2377,7 @@
       "steps": [
         "Crumble tofu with your hands into small chunks.",
         "Fry in olive oil 3 minutes.",
-        "Add turmeric and tamari. Stir in spinach until wilted."
+        "Add turmeric and soy sauce (gluten-free).\nStir in spinach until wilted."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 280,
@@ -2391,7 +2391,7 @@
         "sodium_mg": 780,
         "salt_g": 2.0
       },
-      "benefits": "Tofu contains all essential amino acids and turmeric adds anti-inflammatory curcumin. The tamari provides umami depth without any gluten."
+      "benefits": "Tofu contains all essential amino acids and turmeric adds anti-inflammatory curcumin. The soy sauce (gluten-free) provides umami depth without any gluten."
     },
     {
       "id": 47,
@@ -2430,7 +2430,7 @@
       "steps": [
         "Squeeze as much moisture as possible from grated sweet potato.",
         "Form into two patties and fry in oil 4 minutes per side until golden.",
-        "Poach eggs 3 minutes. Serve on rosti with chives."
+        "Poach eggs 3 minutes.\nServe on rosti with chives."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 380,
@@ -2482,7 +2482,7 @@
       ],
       "steps": [
         "Mix chia seeds with coconut milk, vanilla and honey.",
-        "Refrigerate overnight \u2014 the seeds will swell into a thick pudding.",
+        "Refrigerate overnight — the seeds will swell into a thick pudding.",
         "Top with fresh mango and serve."
       ],
       "nutrition_per_serving": {
@@ -2573,7 +2573,7 @@
         {
           "amount": "1",
           "unit": "tsp",
-          "item": "almond butter"
+          "item": "plant-based butter"
         }
       ],
       "steps": [
@@ -2592,13 +2592,13 @@
         "sodium_mg": 140,
         "salt_g": 0.4
       },
-      "benefits": "Blueberries have the highest antioxidant content of any common fruit \u2014 rich in anthocyanins linked to improved memory, reduced blood pressure, and eye health."
+      "benefits": "Blueberries have the highest antioxidant content of any common fruit — rich in anthocyanins linked to improved memory, reduced blood pressure, and eye health."
     },
     {
       "id": 51,
       "title": "Baked Eggs in Tomato Sauce",
       "category": "breakfast",
-      "desc": "Eggs baked in a spiced tomato sauce \u2014 GF shakshuka at its simplest.",
+      "desc": "Eggs baked in a spiced tomato sauce — GF shakshuka at its simplest.",
       "servings": 2,
       "time": "20 min",
       "ingredients": [
@@ -2631,7 +2631,7 @@
       "steps": [
         "Simmer tomatoes with garlic and cumin 10 minutes.",
         "Make 4 wells and crack in eggs.",
-        "Cover and cook 5\u20137 minutes until whites are set. Top with parsley."
+        "Cover and cook 5–7 minutes until whites are set.\nTop with parsley."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 300,
@@ -2731,7 +2731,7 @@
       "steps": [
         "Cook quinoa 15 minutes per packet.",
         "Poach eggs 3 minutes in simmering water.",
-        "Wilt spinach in olive oil. Serve eggs over quinoa and spinach with lemon."
+        "Wilt spinach in olive oil.\nServe eggs over quinoa and spinach with lemon."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 420,
@@ -2804,7 +2804,7 @@
       "id": 55,
       "title": "Asian Slaw with Sesame Dressing",
       "category": "lunch",
-      "desc": "Shredded red cabbage and carrot with a tamari sesame dressing.",
+      "desc": "Shredded red cabbage and carrot with a soy sauce (gluten-free) sesame dressing.",
       "servings": 2,
       "time": "10 min",
       "ingredients": [
@@ -2821,7 +2821,7 @@
         {
           "amount": "2",
           "unit": "tbsp",
-          "item": "tamari (GF soy sauce)"
+          "item": "soy sauce (gluten-free)"
         },
         {
           "amount": "1",
@@ -2836,7 +2836,7 @@
       ],
       "steps": [
         "Shred cabbage and grate carrots into a bowl.",
-        "Toss with tamari, sesame oil and rice vinegar.",
+        "Toss with soy sauce (gluten-free), sesame oil and rice vinegar.",
         "Let sit 5 minutes before serving."
       ],
       "nutrition_per_serving": {
@@ -2851,7 +2851,7 @@
         "sodium_mg": 860,
         "salt_g": 2.2
       },
-      "benefits": "Red cabbage contains 10x more vitamin C than green and is rich in anthocyanins \u2014 purple antioxidants linked to brain protection and reduced inflammation."
+      "benefits": "Red cabbage contains 10x more vitamin C than green and is rich in anthocyanins — purple antioxidants linked to brain protection and reduced inflammation."
     },
     {
       "id": 56,
@@ -2882,7 +2882,7 @@
           "item": "lime, juiced"
         },
         {
-          "amount": "\u00bd",
+          "amount": "½",
           "unit": "tsp",
           "item": "ground cumin"
         }
@@ -2941,9 +2941,9 @@
         }
       ],
       "steps": [
-        "Roast sweet potato at 200\u00b0C for 20 minutes.",
+        "Roast sweet potato at 200°C for 20 minutes.",
         "Blend with broth and cumin until smooth.",
-        "Stir in black beans and heat through. Finish with lime juice."
+        "Stir in black beans and heat through.\nFinish with lime juice."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 380,
@@ -2978,7 +2978,7 @@
           "item": "tomatoes, sliced"
         },
         {
-          "amount": "\u00bd",
+          "amount": "½",
           "unit": "",
           "item": "red onion, thinly sliced"
         },
@@ -3100,7 +3100,7 @@
         }
       ],
       "steps": [
-        "Roast tomatoes and garlic with olive oil at 200\u00b0C for 15 minutes.",
+        "Roast tomatoes and garlic with olive oil at 200°C for 15 minutes.",
         "Season cod and pan-fry 3 minutes per side.",
         "Serve cod with roasted tomatoes and fresh basil."
       ],
@@ -3154,8 +3154,8 @@
       ],
       "steps": [
         "Sear pork in oil 3 minutes per side until browned.",
-        "Transfer to oven at 180\u00b0C for 12 minutes.",
-        "Steam green beans 4 minutes. Rest pork 5 minutes before slicing."
+        "Transfer to oven at 180°C for 12 minutes.",
+        "Steam green beans 4 minutes.\nRest pork 5 minutes before slicing."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 420,
@@ -3228,7 +3228,7 @@
       "id": 63,
       "title": "Baked Trout with Lemon & Dill",
       "category": "dinner",
-      "desc": "Trout wrapped in foil with lemon slices and dill \u2014 moist, delicate and effortless.",
+      "desc": "Trout wrapped in foil with lemon slices and dill — moist, delicate and effortless.",
       "servings": 2,
       "time": "20 min",
       "ingredients": [
@@ -3259,9 +3259,9 @@
         }
       ],
       "steps": [
-        "Place each fillet on foil. Layer with lemon slices and dill.",
+        "Place each fillet on foil.\nLayer with lemon slices and dill.",
         "Drizzle with olive oil and wrap tightly.",
-        "Bake at 190\u00b0C for 15 minutes."
+        "Bake at 190°C for 15 minutes."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 420,
@@ -3312,9 +3312,9 @@
         }
       ],
       "steps": [
-        "Saut\u00e9 onion and mushrooms 5 minutes.",
+        "Sauté onion and mushrooms 5 minutes.",
         "Add chicken, broth and thyme.",
-        "Simmer 20 minutes. Remove chicken, shred, and return to soup."
+        "Simmer 20 minutes.\nRemove chicken, shred, and return to soup."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 360,
@@ -3367,7 +3367,7 @@
       "steps": [
         "Simmer broth with lemongrass and ginger 5 minutes.",
         "Add coconut milk and bring to gentle simmer.",
-        "Add chicken and cook 15 minutes. Remove lemongrass before serving."
+        "Add chicken and cook 15 minutes.\nRemove lemongrass before serving."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 460,
@@ -3387,7 +3387,7 @@
       "id": 66,
       "title": "Teriyaki Salmon Bowl",
       "category": "dinner",
-      "desc": "Pan-fried salmon basted in a honey tamari glaze, served over steamed rice.",
+      "desc": "Pan-fried salmon basted in a honey soy sauce (gluten-free) glaze, served over steamed rice.",
       "servings": 2,
       "time": "20 min",
       "ingredients": [
@@ -3399,7 +3399,7 @@
         {
           "amount": "3",
           "unit": "tbsp",
-          "item": "tamari (GF soy sauce)"
+          "item": "soy sauce (gluten-free)"
         },
         {
           "amount": "1",
@@ -3418,9 +3418,9 @@
         }
       ],
       "steps": [
-        "Mix tamari and honey for the glaze.",
+        "Mix soy sauce (gluten-free) and honey for the glaze.",
         "Pan-fry salmon skin-side down 4 minutes, flip and baste generously with glaze.",
-        "Cook 3 more minutes. Serve over steamed rice with sesame seeds."
+        "Cook 3 more minutes.\nServe over steamed rice with sesame seeds."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 540,
@@ -3473,7 +3473,7 @@
       "steps": [
         "Brown turkey with herbs and tomatoes until reduced.",
         "Mix in cooked rice.",
-        "Fill halved peppers and bake at 180\u00b0C for 25 minutes."
+        "Fill halved peppers and bake at 180°C for 25 minutes."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 480,
@@ -3487,7 +3487,7 @@
         "sodium_mg": 420,
         "salt_g": 1.1
       },
-      "benefits": "Peppers become sweeter and more digestible when baked. Turkey provides tryptophan \u2014 the precursor to serotonin \u2014 supporting mood and sleep quality."
+      "benefits": "Peppers become sweeter and more digestible when baked. Turkey provides tryptophan — the precursor to serotonin — supporting mood and sleep quality."
     },
     {
       "id": 68,
@@ -3525,8 +3525,8 @@
       ],
       "steps": [
         "Rub lamb chops with cumin and coriander.",
-        "Grill 3\u20134 minutes per side.",
-        "Saut\u00e9 spinach with garlic until wilted. Serve alongside with lemon."
+        "Grill 3–4 minutes per side.",
+        "Sauté spinach with garlic until wilted.\nServe alongside with lemon."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 520,
@@ -3546,7 +3546,7 @@
       "id": 69,
       "title": "Prawn Pad Thai",
       "category": "dinner",
-      "desc": "Rice noodles stir-fried with prawns and egg in a tamari lime sauce.",
+      "desc": "Rice noodles stir-fried with prawns and egg in a soy sauce (gluten-free) lime sauce.",
       "servings": 2,
       "time": "20 min",
       "ingredients": [
@@ -3568,7 +3568,7 @@
         {
           "amount": "3",
           "unit": "tbsp",
-          "item": "tamari (GF soy sauce)"
+          "item": "soy sauce (gluten-free)"
         },
         {
           "amount": "1",
@@ -3578,8 +3578,8 @@
       ],
       "steps": [
         "Soak noodles per packet instructions.",
-        "Stir-fry prawns in a hot wok 2 minutes. Push aside and scramble eggs.",
-        "Add drained noodles, tamari and lime. Toss everything on high heat."
+        "Stir-fry prawns in a hot wok 2 minutes.\nPush aside and scramble eggs.",
+        "Add drained noodles, soy sauce (gluten-free) and lime.\nToss everything on high heat."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 480,
@@ -3683,7 +3683,7 @@
         }
       ],
       "steps": [
-        "Boil sweet potato until tender, about 15 minutes. Drain and mash with olive oil.",
+        "Boil sweet potato until tender, about 15 minutes.\nDrain and mash with olive oil.",
         "Pan-fry mackerel skin-side down 4 minutes, flip and cook 2 more minutes.",
         "Serve with mash and lemon."
       ],
@@ -3705,7 +3705,7 @@
       "id": 72,
       "title": "Egg Fried Cauliflower Rice",
       "category": "dinner",
-      "desc": "Grated cauliflower stir-fried with egg, peas and tamari \u2014 a low-carb rice swap.",
+      "desc": "Grated cauliflower stir-fried with egg, peas and soy sauce (gluten-free) — a low-carb rice swap.",
       "servings": 1,
       "time": "15 min",
       "ingredients": [
@@ -3727,7 +3727,7 @@
         {
           "amount": "2",
           "unit": "tbsp",
-          "item": "tamari (GF soy sauce)"
+          "item": "soy sauce (gluten-free)"
         },
         {
           "amount": "2",
@@ -3738,7 +3738,7 @@
       "steps": [
         "Grate cauliflower or pulse in food processor into rice-sized pieces.",
         "Stir-fry with garlic in a hot pan 4 minutes.",
-        "Push aside, scramble eggs. Add peas and tamari and toss together."
+        "Push aside, scramble eggs.\nAdd peas and soy sauce (gluten-free) and toss together."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 280,
@@ -3811,7 +3811,7 @@
       "id": 74,
       "title": "Chili Con Carne (GF)",
       "category": "dinner",
-      "desc": "Classic chili with lean beef and kidney beans \u2014 hearty, high-protein and GF.",
+      "desc": "Classic chili with lean beef and kidney beans — hearty, high-protein and GF.",
       "servings": 3,
       "time": "40 min",
       "ingredients": [
@@ -3917,7 +3917,7 @@
       "id": 76,
       "title": "Sesame Tuna Steak",
       "category": "dinner",
-      "desc": "Sesame-crusted tuna steak seared rare with tamari and lime.",
+      "desc": "Sesame-crusted tuna steak seared rare with soy sauce (gluten-free) and lime.",
       "servings": 1,
       "time": "15 min",
       "ingredients": [
@@ -3934,7 +3934,7 @@
         {
           "amount": "2",
           "unit": "tbsp",
-          "item": "tamari (GF soy sauce)"
+          "item": "soy sauce (gluten-free)"
         },
         {
           "amount": "1",
@@ -3949,8 +3949,8 @@
       ],
       "steps": [
         "Press sesame seeds firmly onto both sides of tuna steaks.",
-        "Sear in a very hot pan 90 seconds per side \u2014 keep the centre pink.",
-        "Slice and drizzle with tamari and lime."
+        "Sear in a very hot pan 90 seconds per side — keep the centre pink.",
+        "Slice and drizzle with soy sauce (gluten-free) and lime."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 440,
@@ -3970,7 +3970,7 @@
       "id": 77,
       "title": "Beef & Spinach Meatballs",
       "category": "dinner",
-      "desc": "Baked lean beef meatballs with spinach folded in \u2014 great with rice or tomato sauce.",
+      "desc": "Baked lean beef meatballs with spinach folded in — great with rice or tomato sauce.",
       "servings": 3,
       "time": "30 min",
       "ingredients": [
@@ -4003,7 +4003,7 @@
       "steps": [
         "Combine all ingredients and mix thoroughly.",
         "Roll into 18 evenly-sized balls.",
-        "Bake at 200\u00b0C for 20 minutes until cooked through and lightly golden."
+        "Bake at 200°C for 20 minutes until cooked through and lightly golden."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 480,
@@ -4055,7 +4055,7 @@
       ],
       "steps": [
         "Rub chicken legs with paprika, garlic powder and olive oil.",
-        "Roast at 200\u00b0C for 40 minutes until skin is deeply golden and crispy.",
+        "Roast at 200°C for 40 minutes until skin is deeply golden and crispy.",
         "Squeeze lemon over before serving."
       ],
       "nutrition_per_serving": {
@@ -4076,7 +4076,7 @@
       "id": 79,
       "title": "Almond Butter & Apple Slices",
       "category": "snack",
-      "desc": "Crisp apple slices for dipping in almond butter \u2014 two ingredients, perfectly balanced.",
+      "desc": "Crisp apple slices for dipping in almond butter — two ingredients, perfectly balanced.",
       "servings": 1,
       "time": "3 min",
       "ingredients": [
@@ -4088,7 +4088,7 @@
         {
           "amount": "3",
           "unit": "tbsp",
-          "item": "almond butter"
+          "item": "plant-based butter"
         }
       ],
       "steps": [
@@ -4125,7 +4125,7 @@
         {
           "amount": "2",
           "unit": "tbsp",
-          "item": "peanut butter (GF)"
+          "item": "plant-based butter"
         }
       ],
       "steps": [
@@ -4144,7 +4144,7 @@
         "sodium_mg": 80,
         "salt_g": 0.2
       },
-      "benefits": "Banana's potassium and peanut butter's magnesium together support muscle contraction and recovery \u2014 ideal post-training."
+      "benefits": "Banana's potassium and peanut butter's magnesium together support muscle contraction and recovery — ideal post-training."
     },
     {
       "id": 81,
@@ -4203,7 +4203,7 @@
       "id": 82,
       "title": "Mixed Nuts & Dark Chocolate",
       "category": "snack",
-      "desc": "A portioned mix of nuts and 80%+ dark chocolate \u2014 satisfying and nutrient-dense.",
+      "desc": "A portioned mix of nuts and 80%+ dark chocolate — satisfying and nutrient-dense.",
       "servings": 1,
       "time": "1 min",
       "ingredients": [
@@ -4293,7 +4293,7 @@
       "id": 84,
       "title": "Mango & Lime Sorbet",
       "category": "snack",
-      "desc": "Frozen mango blended with lime juice and honey \u2014 a naturally dairy-free frozen treat.",
+      "desc": "Frozen mango blended with lime juice and honey — a naturally dairy-free frozen treat.",
       "servings": 2,
       "time": "5 min + freeze",
       "ingredients": [
@@ -4378,7 +4378,7 @@
       "id": 86,
       "title": "Silken Tofu Snack Bowl",
       "category": "snack",
-      "desc": "Crumbled silken tofu seasoned with lemon, chives and black pepper \u2014 a dairy-free alternative to cottage cheese.",
+      "desc": "Crumbled silken tofu seasoned with lemon, chives and black pepper — a dairy-free alternative to cottage cheese.",
       "servings": 1,
       "time": "3 min",
       "ingredients": [
@@ -4516,8 +4516,8 @@
       ],
       "steps": [
         "Simmer chicken in water 8 minutes.",
-        "Remove a ladle of liquid and dissolve miso paste in it, then return to pot \u2014 don't boil miso.",
-        "Add tofu and spring onions. Serve immediately."
+        "Remove a ladle of liquid and dissolve miso paste in it, then return to pot — don't boil miso.",
+        "Add tofu and spring onions.\nServe immediately."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 320,
@@ -4557,7 +4557,7 @@
           "item": "lime juice"
         },
         {
-          "amount": "\u00bd",
+          "amount": "½",
           "unit": "tsp",
           "item": "ground cumin"
         },
@@ -4605,7 +4605,7 @@
           "item": "tuna in spring water, drained"
         },
         {
-          "amount": "\u00bd",
+          "amount": "½",
           "unit": "",
           "item": "avocado"
         },
@@ -4674,9 +4674,9 @@
         }
       ],
       "steps": [
-        "Saut\u00e9 onion 3 minutes. Add pumpkin, broth and cumin.",
+        "Sauté onion 3 minutes.\nAdd pumpkin, broth and cumin.",
         "Simmer 20 minutes until pumpkin is tender.",
-        "Blend soup. Add chicken and simmer 10 minutes. Shred before serving."
+        "Blend soup.\nAdd chicken and simmer 10 minutes.\nShred before serving."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 380,
@@ -4696,7 +4696,7 @@
       "id": 92,
       "title": "Chicken Tikka (GF)",
       "category": "dinner",
-      "desc": "Chicken thighs marinated in coconut yogurt and tikka spices, grilled until charred.",
+      "desc": "Chicken thighs marinated in lactose-free yoghurt and tikka spices, grilled until charred.",
       "servings": 2,
       "time": "30 min + marinate",
       "ingredients": [
@@ -4708,7 +4708,7 @@
         {
           "amount": "150",
           "unit": "g",
-          "item": "coconut yogurt"
+          "item": "lactose-free yoghurt"
         },
         {
           "amount": "1",
@@ -4727,9 +4727,9 @@
         }
       ],
       "steps": [
-        "Mix yogurt with spices and lemon juice.",
+        "Mix yoghurt with spices and lemon juice.",
         "Coat chicken and marinate at least 1 hour.",
-        "Grill or bake at 220\u00b0C for 20 minutes until charred and cooked through."
+        "Grill or bake at 220°C for 20 minutes until charred and cooked through."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 420,
@@ -4743,7 +4743,7 @@
         "sodium_mg": 280,
         "salt_g": 0.7
       },
-      "benefits": "Turmeric and garam masala create a potent anti-inflammatory combination. Coconut yogurt tenderises the meat while keeping it entirely dairy-free."
+      "benefits": "Turmeric and garam masala create a potent anti-inflammatory combination. Lactose-free yoghurt tenderises the meat while keeping it entirely dairy-free."
     },
     {
       "id": 93,
@@ -4782,7 +4782,7 @@
       "steps": [
         "Mix lemon juice, zest, garlic, thyme and olive oil.",
         "Coat chicken and marinate 10 minutes.",
-        "Bake at 200\u00b0C for 20 minutes until cooked through."
+        "Bake at 200°C for 20 minutes until cooked through."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 380,
@@ -4802,7 +4802,7 @@
       "id": 94,
       "title": "Pork & Vegetable Stir-Fry",
       "category": "dinner",
-      "desc": "Thin pork loin strips stir-fried with bok choy and carrot in sesame tamari sauce.",
+      "desc": "Thin pork loin strips stir-fried with bok choy and carrot in sesame soy sauce (gluten-free) sauce.",
       "servings": 2,
       "time": "20 min",
       "ingredients": [
@@ -4824,7 +4824,7 @@
         {
           "amount": "3",
           "unit": "tbsp",
-          "item": "tamari (GF soy sauce)"
+          "item": "soy sauce (gluten-free)"
         },
         {
           "amount": "1",
@@ -4835,7 +4835,7 @@
       "steps": [
         "Stir-fry pork in a very hot wok 3 minutes until cooked.",
         "Add bok choy and carrot, stir-fry 3 more minutes.",
-        "Add tamari and sesame oil. Toss and serve."
+        "Add soy sauce (gluten-free) and sesame oil.\nToss and serve."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 460,
@@ -4887,7 +4887,7 @@
       ],
       "steps": [
         "Blend parsley, capers, olive oil and lemon juice into a chunky salsa verde.",
-        "Season cod and bake at 200\u00b0C for 14 minutes.",
+        "Season cod and bake at 200°C for 14 minutes.",
         "Spoon salsa verde generously over cooked fish."
       ],
       "nutrition_per_serving": {
@@ -4902,7 +4902,7 @@
         "sodium_mg": 360,
         "salt_g": 0.9
       },
-      "benefits": "Capers are high in quercetin and rutin \u2014 flavonoids with strong antioxidant and anti-inflammatory effects. Parsley is exceptionally rich in vitamin K and C."
+      "benefits": "Capers are high in quercetin and rutin — flavonoids with strong antioxidant and anti-inflammatory effects. Parsley is exceptionally rich in vitamin K and C."
     },
     {
       "id": 96,
@@ -4930,7 +4930,7 @@
         {
           "amount": "1",
           "unit": "tsp",
-          "item": "tamari (GF soy sauce)"
+          "item": "soy sauce (gluten-free)"
         },
         {
           "amount": "1",
@@ -4940,7 +4940,7 @@
       ],
       "steps": [
         "Heat broth with ginger.",
-        "Add shredded beef and tamari.",
+        "Add shredded beef and soy sauce (gluten-free).",
         "Serve in a deep bowl topped with spring onions."
       ],
       "nutrition_per_serving": {
@@ -4961,7 +4961,7 @@
       "id": 97,
       "title": "One-Pan Chicken & Broccoli",
       "category": "dinner",
-      "desc": "Chicken breast and broccoli stir-fried with garlic and tamari cornstarch glaze.",
+      "desc": "Chicken breast and broccoli stir-fried with garlic and soy sauce (gluten-free) cornstarch glaze.",
       "servings": 2,
       "time": "15 min",
       "ingredients": [
@@ -4978,7 +4978,7 @@
         {
           "amount": "3",
           "unit": "tbsp",
-          "item": "tamari (GF soy sauce)"
+          "item": "soy sauce (gluten-free)"
         },
         {
           "amount": "2",
@@ -4992,9 +4992,9 @@
         }
       ],
       "steps": [
-        "Mix tamari and cornstarch with 2 tbsp water.",
+        "Mix soy sauce (gluten-free) and cornstarch with 2 tbsp water.",
         "Stir-fry chicken in a hot pan 4 minutes.",
-        "Add broccoli and garlic, cook 3 minutes. Pour sauce over and toss."
+        "Add broccoli and garlic, cook 3 minutes.\nPour sauce over and toss."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 440,
@@ -5084,7 +5084,7 @@
         {
           "amount": "3",
           "unit": "tbsp",
-          "item": "tamari (GF soy sauce)"
+          "item": "soy sauce (gluten-free)"
         },
         {
           "amount": "2",
@@ -5098,9 +5098,9 @@
         }
       ],
       "steps": [
-        "Sear beef in a very hot wok 2 minutes. Set aside.",
+        "Sear beef in a very hot wok 2 minutes.\nSet aside.",
         "Add garlic and ginger, cook 30 seconds.",
-        "Add bok choy and tamari, stir-fry 2 minutes. Return beef and toss."
+        "Add bok choy and soy sauce (gluten-free), stir-fry 2 minutes.\nReturn beef and toss."
       ],
       "nutrition_per_serving": {
         "energy_kcal": 480,
@@ -5120,7 +5120,7 @@
       "id": 100,
       "title": "Smoked Salmon Rice Bowl",
       "category": "lunch",
-      "desc": "Cold rice noodles with smoked salmon, cucumber and a sesame tamari dressing.",
+      "desc": "Cold rice noodles with smoked salmon, cucumber and a sesame soy sauce (gluten-free) dressing.",
       "servings": 1,
       "time": "15 min",
       "ingredients": [
@@ -5135,14 +5135,14 @@
           "item": "rice noodles"
         },
         {
-          "amount": "\u00bd",
+          "amount": "½",
           "unit": "",
           "item": "cucumber, julienned"
         },
         {
           "amount": "2",
           "unit": "tbsp",
-          "item": "tamari (GF soy sauce)"
+          "item": "soy sauce (gluten-free)"
         },
         {
           "amount": "1",
@@ -5152,7 +5152,7 @@
       ],
       "steps": [
         "Cook rice noodles per packet, drain and rinse cold.",
-        "Toss with tamari and sesame oil.",
+        "Toss with soy sauce (gluten-free) and sesame oil.",
         "Top with smoked salmon and cucumber."
       ],
       "nutrition_per_serving": {

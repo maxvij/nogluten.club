@@ -1,5 +1,5 @@
-const CACHE = 'nogluten-v4';
-const PRECACHE = ['/index.html', '/styles.css', '/main.js', '/recipes.json'];
+const CACHE = 'nogluten-v5';
+const PRECACHE = ['/index.html', '/styles.css', '/main.js', '/supabase-client.js', '/cooking.js', '/admin.js', '/recipes.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(

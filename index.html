@@ -10,16 +10,17 @@
     // Live-update when OS theme changes, but only if user hasn't manually set a preference
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
       if (!localStorage.getItem('theme')) {
-        var t = e.matches ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-theme', t);
-        var icon = document.querySelector('.theme-icon');
-        if (icon) icon.textContent = t === 'light' ? 'I like darkness' : 'Let there be light';
+        document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
       }
     });
   })();
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>nogluten.club — Curated healthy recipes, gluten-free &amp; lactose-free</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="https://afnbnxfqwzwvofgxztzq.supabase.co">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <link href="styles.css" rel="stylesheet" />
 <meta name="theme-color" content="#046865">
@@ -31,15 +32,63 @@
 
 <div class="sheet-backdrop" id="sheetBackdrop"></div>
 
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="icon-plus" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/></symbol>
+  <symbol id="icon-check" viewBox="0 0 256 256"><path d="M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z"/></symbol>
+  <symbol id="icon-clock" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z"/></symbol>
+  <symbol id="icon-star" viewBox="0 0 256 256"><path d="M239.18,97.26A16.38,16.38,0,0,0,224.92,86l-59-4.76L143.14,26.15a16.36,16.36,0,0,0-30.27,0L90.11,81.23,31.08,86a16.46,16.46,0,0,0-9.37,28.86l45,38.83L53,211.75a16.38,16.38,0,0,0,24.5,17.82L128,198.49l50.53,31.08A16.4,16.4,0,0,0,203,211.75l-13.76-58.07,45-38.83A16.43,16.43,0,0,0,239.18,97.26Zm-15.34,5.47-48.7,42a8,8,0,0,0-2.56,7.91l14.88,62.8a.37.37,0,0,1-.17.48c-.18.14-.23.11-.38,0l-54.72-33.65a8,8,0,0,0-8.38,0L69.09,215.94c-.15.09-.19.12-.38,0a.37.37,0,0,1-.17-.48l14.88-62.8a8,8,0,0,0-2.56-7.91l-48.7-42c-.12-.1-.23-.19-.13-.5s.18-.27.33-.29l63.92-5.16A8,8,0,0,0,103,91.86l24.62-59.61c.08-.17.11-.25.35-.25s.27.08.35.25L153,91.86a8,8,0,0,0,6.75,4.92l63.92,5.16c.15,0,.24,0,.33.29S224,102.63,223.84,102.73Z"/></symbol>
+  <symbol id="icon-star-fill" viewBox="0 0 256 256"><path d="M234.29,114.85l-45,38.83L203,211.75a16.4,16.4,0,0,1-24.5,17.82L128,198.49,77.47,229.57A16.4,16.4,0,0,1,53,211.75l13.76-58.07-45-38.83A16.46,16.46,0,0,1,31.08,86l59-4.76,22.76-55.08a16.36,16.36,0,0,1,30.27,0l22.75,55.08,59,4.76a16.46,16.46,0,0,1,9.37,28.86Z"/></symbol>
+  <symbol id="icon-gear" viewBox="0 0 256 256"><path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm88-29.84q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.21,107.21,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3L186,40.54a8,8,0,0,0-3.94-6,107.71,107.71,0,0,0-26.25-10.87,8,8,0,0,0-7.06,1.49L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.94,107.71,107.71,0,0,0-10.87,26.25,8,8,0,0,0,1.49,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.21,107.21,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.94,6,107.71,107.71,0,0,0,26.25,10.87,8,8,0,0,0,7.06-1.49L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3L215.46,186a8,8,0,0,0,6-3.94,107.71,107.71,0,0,0,10.87-26.25,8,8,0,0,0-1.49-7.06Zm-16.1-6.5a73.93,73.93,0,0,1,0,8.68,8,8,0,0,0,1.74,5.48l14.19,17.73a91.57,91.57,0,0,1-6.23,15L187,173.11a8,8,0,0,0-5.1,2.64,74.11,74.11,0,0,1-6.14,6.14,8,8,0,0,0-2.64,5.1l-2.51,22.58a91.32,91.32,0,0,1-15,6.23l-17.74-14.19a8,8,0,0,0-5-1.75h-.48a73.93,73.93,0,0,1-8.68,0,8,8,0,0,0-5.48,1.74L100.45,215.8a91.57,91.57,0,0,1-15-6.23L82.89,187a8,8,0,0,0-2.64-5.1,74.11,74.11,0,0,1-6.14-6.14,8,8,0,0,0-5.1-2.64L46.43,170.6a91.32,91.32,0,0,1-6.23-15l14.19-17.74a8,8,0,0,0,1.74-5.48,73.93,73.93,0,0,1,0-8.68,8,8,0,0,0-1.74-5.48L40.2,100.45a91.57,91.57,0,0,1,6.23-15L69,82.89a8,8,0,0,0,5.1-2.64,74.11,74.11,0,0,1,6.14-6.14A8,8,0,0,0,82.89,69L85.4,46.43a91.32,91.32,0,0,1,15-6.23l17.74,14.19a8,8,0,0,0,5.48,1.74,73.93,73.93,0,0,1,8.68,0,8,8,0,0,0,5.48-1.74L155.55,40.2a91.57,91.57,0,0,1,15,6.23L173.11,69a8,8,0,0,0,2.64,5.1,74.11,74.11,0,0,1,6.14,6.14,8,8,0,0,0,5.1,2.64l22.58,2.51a91.32,91.32,0,0,1,6.23,15l-14.19,17.74A8,8,0,0,0,199.87,123.66Z"/></symbol>
+  <symbol id="icon-sign-out" viewBox="0 0 256 256"><path d="M120,216a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V40a8,8,0,0,1,8-8h64a8,8,0,0,1,0,16H56V208h56A8,8,0,0,1,120,216Zm109.66-93.66-40-40a8,8,0,0,0-11.32,11.32L204.69,120H112a8,8,0,0,0,0,16h92.69l-26.35,26.34a8,8,0,0,0,11.32,11.32l40-40A8,8,0,0,0,229.66,122.34Z"/></symbol>
+  <symbol id="icon-play" viewBox="0 0 256 256"><path d="M215.15,118.6l-128-80A8,8,0,0,0,76,40V216a8,8,0,0,0,11.15,7.4l128-80a8,8,0,0,0,0-14.8ZM92,197.63V58.37L199.12,128Z"/></symbol>
+  <symbol id="icon-pause" viewBox="0 0 256 256"><path d="M200,32H160a16,16,0,0,0-16,16V208a16,16,0,0,0,16,16h40a16,16,0,0,0,16-16V48A16,16,0,0,0,200,32Zm0,176H160V48h40ZM96,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V48A16,16,0,0,0,96,32Zm0,176H56V48H96Z"/></symbol>
+  <symbol id="icon-reset" viewBox="0 0 256 256"><path d="M224,48V96a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h30.69L181.07,70.34a88,88,0,1,0,2.24,126A8,8,0,1,1,194.7,207.6a104,104,0,1,1-2.7-149.06L208,73.37V48a8,8,0,0,1,16,0Z"/></symbol>
+  <symbol id="icon-arrow-up" viewBox="0 0 256 256"><path d="M207.39,115.06A8,8,0,0,1,200,120H136v96a8,8,0,0,1-16,0V120H56a8,8,0,0,1-5.66-13.66l72-72a8,8,0,0,1,11.32,0l72,72A8,8,0,0,1,207.39,115.06Z"/></symbol>
+  <symbol id="icon-arrow-down" viewBox="0 0 256 256"><path d="M205.66,149.66l-72,72a8,8,0,0,1-11.32,0l-72-72A8,8,0,0,1,56,136h64V40a8,8,0,0,1,16,0v96h64a8,8,0,0,1,5.66,13.66Z"/></symbol>
+  <symbol id="icon-check-circle-fill" viewBox="0 0 256 256"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Z"/></symbol>
+</svg>
+
+<header class="site-header" id="siteHeader">
+  <div class="site-header-inner">
+    <div class="header-left">
+      <div class="logo-block">
+        <h1>nogluten<em>.club</em></h1>
+      </div>
+      <span class="header-sep" aria-hidden="true"></span>
+      <p class="header-slogan">
+        <span class="slogan-text">
+          <span class="slogan-a">Curated healthy recipes</span>
+          <span class="slogan-b">Gluten-free &amp; lactose-free</span>
+        </span>
+      </p>
+    </div>
+    <div class="header-center">
+      <div style="position:relative;width:100%;max-width:420px">
+        <input class="search-input" id="searchInput" type="search" placeholder="Search recipes…" aria-label="Search recipes" autocomplete="off">
+        <kbd style="position:absolute;right:0.625rem;top:50%;transform:translateY(-50%);font-size:0.75rem;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:0.1rem 0.35rem;pointer-events:none">/</kbd>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="mobile-filter-toggle" id="mobileFilterToggle" aria-expanded="false">Filters</button>
+      <button class="admin-new-btn" id="adminNewBtn" hidden aria-label="Add new recipe"><svg width="16" height="16" fill="currentColor" aria-hidden="true"><use href="#icon-plus"/></svg> Recipe</button>
+      <div class="profile-wrap" id="profileWrap">
+        <button class="auth-btn" id="authBtn" aria-label="Sign in">Sign in</button>
+        <div class="profile-dropdown" id="profileDropdown" hidden>
+          <button class="profile-dd-item" id="profileSettingsBtn"><svg width="16" height="16" fill="currentColor" aria-hidden="true"><use href="#icon-gear"/></svg> Settings</button>
+          <div class="profile-dd-sep"></div>
+          <button class="profile-dd-item profile-dd-item--danger" id="profileLogoutBtn"><svg width="16" height="16" fill="currentColor" aria-hidden="true"><use href="#icon-sign-out"/></svg> Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
 <div class="layout">
   <aside class="sidebar" id="sidebar">
     <div class="sheet-handle" aria-hidden="true"></div>
 
     <div class="sidebar-header">
-      <div style="position:relative;flex:1;min-width:0">
-        <input class="search-input" id="searchInput" type="search" placeholder="Search recipes…" aria-label="Search recipes" autocomplete="off">
-        <kbd style="position:absolute;right:0.625rem;top:50%;transform:translateY(-50%);font-size:0.75rem;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:0.1rem 0.35rem;pointer-events:none">/</kbd>
-      </div>
+      <span class="sidebar-header-label">Filters</span>
       <button class="sheet-close-btn" id="sheetClose" aria-label="Close filters">✕</button>
     </div>
 
@@ -99,23 +148,6 @@
   </aside>
 
   <main>
-    <div class="main-header">
-      <div class="logo-block">
-        <h1>nogluten<em>.club</em></h1>
-      </div>
-      <div class="main-header-right">
-        <button class="mobile-filter-toggle" id="mobileFilterToggle" aria-expanded="false">Filters</button>
-        <p class="header-slogan">
-          <span class="slogan-text">
-            <span class="slogan-a">Curated healthy recipes</span>
-            <span class="slogan-b">Gluten-free &amp; lactose-free</span>
-          </span>
-          <span class="slogan-sep" aria-hidden="true">·</span>
-          <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="theme-icon"></span></button>
-        </p>
-      </div>
-    </div>
-
     <div class="main-body">
       <div class="greeting-block">
         <div class="greeting-heading" id="greetingHeading"></div>
@@ -219,6 +251,7 @@
     <span class="modal-bar-title" id="modalTitleCompact"></span>
     <div class="modal-bar-actions">
       <button class="modal-share" id="modalShare" aria-label="Share recipe">Share</button>
+      <button class="modal-admin-edit" id="modalAdminEdit" aria-label="Edit recipe" hidden>Edit</button>
       <button class="modal-fav" id="modalFav" aria-label="Favourite">♡</button>
       <button class="modal-close" id="modalClose" aria-label="Close recipe">✕</button>
     </div>
@@ -228,6 +261,7 @@
     <div class="modal-header-bottom" id="modalHeaderBottom">
       <h2 class="modal-title" id="modalTitle"></h2>
       <div class="modal-stats" id="modalStats"></div>
+      <div class="modal-rating" id="modalRating"></div>
     </div>
     <div id="modalContent" class="modal-content"></div>
   </div>
@@ -254,9 +288,37 @@
   </div>
   <div class="cook-body">
     <div class="cook-step-card">
+      <div class="cook-done-content" id="cookDoneContent" hidden>
+        <div class="cook-done-check" aria-hidden="true"></div>
+        <p class="cook-done-heading" id="cookDoneHeading"></p>
+        <p class="cook-done-body" id="cookDoneBody"></p>
+        <p class="cook-done-time" id="cookDoneTime" hidden></p>
+        <div class="cook-done-rating-section" id="cookDoneRatingSection">
+          <div class="cook-done-divider"></div>
+          <p class="cook-done-rating-label">Did you like this recipe?</p>
+          <div class="cook-done-stars" id="cookDoneStars"></div>
+          <p class="cook-done-keyboard-hint">press 1–5 to rate</p>
+          <div class="cook-done-feedback" id="cookDoneFeedback" hidden>
+            <textarea class="cook-done-feedback-input" id="cookDoneFeedbackInput" placeholder="What could be improved?" rows="2"></textarea>
+            <button class="cook-done-feedback-btn" id="cookDoneFeedbackBtn" type="button">Submit</button>
+          </div>
+          <p class="cook-done-feedback-thanks" id="cookDoneFeedbackThanks">Thank you for your feedback!</p>
+        </div>
+      </div>
       <p class="cook-step-text" id="cookStepText"></p>
-      <span class="cook-hint" id="cookHint">Press Enter to continue</span>
+      <div class="cook-timer" id="cookTimer" hidden>
+        <span class="cook-timer-display" id="cookTimerDisplay">0:00</span>
+        <div class="cook-timer-controls">
+          <button class="cook-timer-play-btn" id="cookTimerBtn" type="button" aria-label="Start timer">
+            <svg width="20" height="20" fill="currentColor" aria-hidden="true"><use href="#icon-play"/></svg>
+          </button>
+          <button class="cook-timer-reset-btn" id="cookTimerResetBtn" type="button" aria-label="Reset timer">
+            <svg width="16" height="16" fill="currentColor" aria-hidden="true"><use href="#icon-reset"/></svg>
+          </button>
+        </div>
+      </div>
     </div>
+    <span class="cook-hint" id="cookHint" hidden></span>
   </div>
   <div class="cook-nav">
     <button class="cook-nav-btn" id="cookPrev" aria-label="Previous step">←</button>
@@ -266,19 +328,62 @@
 </dialog>
 
 
-<!-- Recipe submission modal -->
-<dialog id="submitModal" aria-label="Add a recipe">
+<!-- Admin recipe editor modal -->
+<dialog id="adminModal" aria-label="Edit recipe">
   <div class="shop-modal-header">
-    <h2 class="modal-title">New recipe</h2>
-    <button class="modal-close" id="submitClose" aria-label="Close">✕</button>
+    <h2 class="modal-title" id="adminModalTitle">Edit recipe</h2>
+    <button class="modal-close" id="adminModalClose" aria-label="Close">✕</button>
   </div>
-  <div class="modal-body" id="submitBody"></div>
+  <div class="modal-body admin-modal-body" id="adminModalBody"></div>
   <div class="modal-footer">
-    <button class="shop-copy-btn" id="submitGenBtn">Generate JSON</button>
+    <div class="admin-footer-row">
+      <button class="admin-save-btn" id="adminSaveBtn">Save changes</button>
+      <button class="admin-delete-btn" id="adminDeleteBtn">Delete recipe</button>
+    </div>
   </div>
 </dialog>
 
-<script src="main.js" type="text/javascript"></script>
+<!-- Login modal -->
+<dialog id="loginModal" aria-label="Sign in">
+  <div class="login-modal-inner">
+    <div class="login-modal-header">
+      <h2 class="login-modal-logo">nogluten<em>.club</em></h2>
+      <button class="modal-close" id="loginModalClose" aria-label="Close">✕</button>
+    </div>
+    <div class="login-modal-body">
+      <p class="login-subtitle">Sign in to sync your favourites across devices.</p>
+      <button class="google-signin-btn" id="googleSignInBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Continue with Google
+      </button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Settings / Preferences modal -->
+<dialog id="settingsModal" aria-label="Preferences">
+  <div class="shop-modal-header">
+    <h2 class="modal-title">Preferences</h2>
+    <button class="modal-close" id="settingsModalClose" aria-label="Close">✕</button>
+  </div>
+  <div class="settings-modal-body">
+    <div class="settings-section">
+      <div class="settings-section-label">Appearance</div>
+      <div class="settings-row">
+        <span class="settings-row-label">Theme</span>
+        <div class="theme-option-group" id="settingsThemeGroup">
+          <button class="theme-opt" data-theme="light">Light</button>
+          <button class="theme-opt" data-theme="dark">Dark</button>
+          <button class="theme-opt" data-theme="system">System</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="supabase-client.js" defer></script>
+<script src="main.js" defer></script>
 <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js');
