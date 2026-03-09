@@ -21,7 +21,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="dns-prefetch" href="https://afnbnxfqwzwvofgxztzq.supabase.co">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
 <link href="styles.css" rel="stylesheet" />
 <meta name="theme-color" content="#046865">
 <link rel="manifest" href="/manifest.json">
@@ -54,8 +54,7 @@
       <div class="logo-block">
         <h1>nogluten<em>.club</em></h1>
       </div>
-      <span class="header-sep" aria-hidden="true"></span>
-      <p class="header-slogan">
+<p class="header-slogan">
         <span class="slogan-text">
           <span class="slogan-a">Curated healthy recipes</span>
           <span class="slogan-b">Gluten-free &amp; lactose-free</span>
@@ -63,17 +62,14 @@
       </p>
     </div>
     <div class="header-center">
-      <div style="position:relative;width:100%;max-width:420px">
-        <input class="search-input" id="searchInput" type="search" placeholder="Search recipes…" aria-label="Search recipes" autocomplete="off">
-        <kbd style="position:absolute;right:0.625rem;top:50%;transform:translateY(-50%);font-size:0.75rem;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:0.1rem 0.35rem;pointer-events:none">/</kbd>
-      </div>
+      <input class="search-input" id="searchInput" type="search" placeholder="Search recipes…" aria-label="Search recipes" autocomplete="off" style="max-width:280px">
     </div>
     <div class="header-right">
-      <button class="mobile-filter-toggle" id="mobileFilterToggle" aria-expanded="false">Filters</button>
-      <button class="admin-new-btn" id="adminNewBtn" hidden aria-label="Add new recipe"><svg width="16" height="16" fill="currentColor" aria-hidden="true"><use href="#icon-plus"/></svg> Recipe</button>
       <div class="profile-wrap" id="profileWrap">
         <button class="auth-btn" id="authBtn" aria-label="Sign in">Sign in</button>
         <div class="profile-dropdown" id="profileDropdown" hidden>
+          <button class="profile-dd-item" id="adminNewBtn" hidden><svg width="16" height="16" fill="currentColor" aria-hidden="true"><use href="#icon-plus"/></svg> Add recipe</button>
+          <div class="profile-dd-sep admin-sep" id="adminSep" hidden></div>
           <button class="profile-dd-item" id="profileSettingsBtn"><svg width="16" height="16" fill="currentColor" aria-hidden="true"><use href="#icon-gear"/></svg> Settings</button>
           <div class="profile-dd-sep"></div>
           <button class="profile-dd-item profile-dd-item--danger" id="profileLogoutBtn"><svg width="16" height="16" fill="currentColor" aria-hidden="true"><use href="#icon-sign-out"/></svg> Logout</button>
@@ -82,6 +78,10 @@
     </div>
   </div>
 </header>
+
+<div class="mobile-search-bar" id="mobileSearchBar">
+  <input class="search-input" id="mobileSearchInput" type="search" placeholder="Search recipes…" aria-label="Search recipes" autocomplete="off">
+</div>
 
 <div class="layout">
   <aside class="sidebar" id="sidebar">
@@ -149,10 +149,12 @@
 
   <main>
     <div class="main-body">
-      <div class="greeting-block">
-        <div class="greeting-heading" id="greetingHeading"></div>
-        <div class="greeting-suggestion" id="greetingSuggestion"></div>
-      </div>
+      <div class="content-hero">
+        <div class="greeting-block">
+          <div class="greeting-heading" id="greetingHeading"><span class="skel skel-heading" aria-hidden="true"></span></div>
+          <div class="greeting-suggestion" id="greetingSuggestion"><span class="skel skel-subtext" aria-hidden="true"></span></div>
+        </div>
+      </div><!-- /.content-hero -->
 
       <div class="sort-bar">
         <div class="sort-bar-left">
@@ -228,6 +230,7 @@
   </main>
 </div>
 
+<button class="filter-fab" id="mobileFilterToggle" aria-expanded="false">Filters</button>
 <button class="shop-fab" id="shopFab" hidden>Shopping list</button>
 
 <!-- Shopping list modal -->
@@ -250,8 +253,8 @@
   <div class="modal-bar" id="modalBar">
     <span class="modal-bar-title" id="modalTitleCompact"></span>
     <div class="modal-bar-actions">
-      <button class="modal-share" id="modalShare" aria-label="Share recipe">Share</button>
       <button class="modal-admin-edit" id="modalAdminEdit" aria-label="Edit recipe" hidden>Edit</button>
+      <button class="modal-share" id="modalShare" aria-label="Share recipe">Share</button>
       <button class="modal-fav" id="modalFav" aria-label="Favourite">♡</button>
       <button class="modal-close" id="modalClose" aria-label="Close recipe">✕</button>
     </div>
@@ -276,15 +279,17 @@
 <!-- Cooking mode -->
 <dialog id="cookModal" aria-label="Cooking mode">
   <div class="cook-header">
-    <span class="cook-step-label" id="cookStepLabel">Step 1 of 1</span>
-    <span class="cook-recipe-title" id="cookRecipeTitle"></span>
     <div class="cook-header-right">
       <button class="cook-ingredients-toggle" id="cookIngredientsToggle" aria-expanded="false">Ingredients</button>
       <button class="cook-close" id="cookClose" aria-label="Exit cooking mode">✕</button>
     </div>
+    <span class="cook-recipe-title" id="cookRecipeTitle"></span>
   </div>
   <div class="cook-ingredients-panel" id="cookIngredientsPanel" hidden>
     <ul class="cook-ingredients-list" id="cookIngredientsList"></ul>
+  </div>
+  <div class="cook-step-strip" id="cookStepStrip">
+    <span class="cook-step-label" id="cookStepLabel"></span>
   </div>
   <div class="cook-body">
     <div class="cook-step-card">
@@ -303,6 +308,7 @@
             <button class="cook-done-feedback-btn" id="cookDoneFeedbackBtn" type="button">Submit</button>
           </div>
           <p class="cook-done-feedback-thanks" id="cookDoneFeedbackThanks">Thank you for your feedback!</p>
+          <button class="cook-done-btn" id="cookDoneBtn" hidden>Done</button>
         </div>
       </div>
       <p class="cook-step-text" id="cookStepText"></p>
@@ -320,7 +326,7 @@
     </div>
     <span class="cook-hint" id="cookHint" hidden></span>
   </div>
-  <div class="cook-nav">
+  <div class="cook-nav" id="cookNav">
     <button class="cook-nav-btn" id="cookPrev" aria-label="Previous step">←</button>
     <div class="cook-dots" id="cookDots"></div>
     <button class="cook-nav-btn" id="cookNext" aria-label="Next step">→</button>

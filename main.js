@@ -25,14 +25,19 @@ function formatTimerDisplay(seconds) {
 let _scrollY = 0;
 function lockScroll() {
   _scrollY = window.scrollY;
+  const header = document.getElementById('siteHeader');
+  const headerH = header ? header.offsetHeight : 0;
+  if (header) { header.style.position = 'fixed'; header.style.top = '0'; header.style.left = '0'; header.style.right = '0'; }
   document.body.style.position = 'fixed';
-  document.body.style.top = `-${_scrollY}px`;
+  document.body.style.top = `-${_scrollY - headerH}px`;
   document.body.style.left = '0';
   document.body.style.right = '0';
   document.body.style.overflow = 'hidden';
 }
 function unlockScroll() {
   if (document.body.style.position !== 'fixed') return;
+  const header = document.getElementById('siteHeader');
+  if (header) { header.style.position = ''; header.style.top = ''; header.style.left = ''; header.style.right = ''; }
   document.body.style.position = '';
   document.body.style.top = '';
   document.body.style.left = '';
@@ -337,11 +342,11 @@ function renderCards() {
           <span class="card-time-chip">${icon('clock', 14)}${formatTime(r.time_seconds)}</span>
         </div>
         <button class="card-fav ${isFav ? 'active' : ''}" aria-label="Favourite">${isFav ? '♥' : '♡'}</button>
+        <div class="card-title">${r.title}</div>
         <div class="card-meta">
           ${nutritionText ? `<span class="card-time">${nutritionText}</span>` : ''}
           <span class="card-last-cooked">${lastCookedLabel}</span>
         </div>
-        <div class="card-title">${r.title}</div>
         ${cardStarsHTML(recipeRatings[r.id])}
         <div class="card-desc" data-desc="${r.desc.replace(/"/g, '&quot;')}">${r.desc}</div>
         <span class="card-match"></span>
@@ -368,21 +373,31 @@ function renderCards() {
 
 function renderStars(container, { avg, count, userStars }, onRate) {
   const displayAvg = avg !== null ? (Math.round(avg * 10) / 10).toFixed(1) : null;
+  const alreadyRated = userStars != null;
 
   let starsHTML = '';
   for (let i = 1; i <= 5; i++) {
-    const filled = userStars !== null ? i <= userStars : false;
+    const filled = alreadyRated && i <= userStars;
     starsHTML += `<button class="star-btn${filled ? ' filled' : ''}" data-star="${i}" aria-label="${i} star${i !== 1 ? 's' : ''}" type="button">${icon(filled ? 'star-fill' : 'star', 14)}</button>`;
   }
 
   const metaText = displayAvg !== null
     ? `${displayAvg} · ${count} rating${count !== 1 ? 's' : ''}`
-    : 'No ratings yet';
+    : '';
+
+  const showFeedback = alreadyRated && userStars <= 2;
 
   container.innerHTML = `
     <div class="star-rating">
-      <div class="star-row" role="group" aria-label="Rate this recipe">${starsHTML}</div>
-      <span class="star-meta${displayAvg === null ? ' star-meta--empty' : ''}">${metaText}</span>
+      <div class="star-row-wrap">
+        <div class="star-row" role="group" aria-label="Rate this recipe">${starsHTML}</div>
+        <span class="star-meta${displayAvg === null ? ' star-meta--empty' : ''}">${metaText}</span>
+      </div>
+      <div class="star-feedback" ${showFeedback ? '' : 'hidden'}>
+        <textarea class="star-feedback-input" placeholder="What could be improved?" rows="2"></textarea>
+        <button class="star-feedback-btn" type="button">Submit</button>
+      </div>
+      <p class="star-feedback-thanks" hidden>Thank you for your feedback!</p>
     </div>
   `;
 
@@ -402,15 +417,37 @@ function renderStars(container, { avg, count, userStars }, onRate) {
   btns.forEach(btn => {
     btn.addEventListener('click', async () => {
       const stars = parseInt(btn.dataset.star);
+      container.querySelector('.star-row').classList.add('star-row--loading');
       btns.forEach(b => { b.disabled = true; });
       try {
         const result = await onRate(stars);
-        renderStars(container, result, onRate);
+        renderStars(container, { ...result, userStars: stars }, onRate);
       } catch {
+        container.querySelector('.star-row')?.classList.remove('star-row--loading');
         btns.forEach(b => { b.disabled = false; });
       }
     });
   });
+
+  const feedbackBtn = container.querySelector('.star-feedback-btn');
+  const feedbackInput = container.querySelector('.star-feedback-input');
+  if (feedbackBtn && feedbackInput) {
+    feedbackBtn.addEventListener('click', async () => {
+      const text = feedbackInput.value.trim();
+      if (!text) return;
+      feedbackBtn.disabled = true;
+      try {
+        await onRate(userStars, text);
+        container.querySelector('.star-feedback').hidden = true;
+        container.querySelector('.star-feedback-thanks').hidden = false;
+      } catch {
+        feedbackBtn.disabled = false;
+      }
+    });
+    feedbackInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); feedbackBtn.click(); }
+    });
+  }
 }
 
 function cardStarsHTML(rating) {
@@ -422,7 +459,7 @@ function cardStarsHTML(rating) {
   }
   const meta = hasRatings
     ? `<span class="card-star-count">${(Math.round(rating.avg * 10) / 10).toFixed(1)} <span class="card-star-total">(${rating.count})</span></span>`
-    : '';
+    : `<span class="card-star-count" aria-hidden="true" style="visibility:hidden">0.0 (0)</span>`;
   const label = hasRatings ? `${(Math.round(rating.avg * 10) / 10).toFixed(1)} out of 5, ${rating.count} ratings` : 'Not yet rated';
   return `<div class="card-stars" aria-label="${label}">${stars}${meta}</div>`;
 }
@@ -561,7 +598,7 @@ function openModal(cat, idx) {
   };
   const updateModalShop = () => {
     const inList = shoppingList.has(r.title);
-    modalShopBtn.innerHTML = inList ? icon('check') + 'Added to list' : 'Add to list';
+    modalShopBtn.innerHTML = inList ? icon('check') + 'Added to list' : icon('plus') + 'Add to list';
     modalShopBtn.classList.toggle('active', inList);
   };
 
@@ -599,8 +636,8 @@ function openModal(cat, idx) {
 
   // Rating stars — use cached aggregate, only fetch user's own stars
   const ratingContainer = document.getElementById('modalRating');
-  const onRate = async stars => {
-    const result = await window.SB.rateRecipe(r.id, stars);
+  const onRate = async (stars, feedback = null) => {
+    const result = await window.SB.rateRecipe(r.id, stars, feedback);
     recipeRatings[r.id] = { avg: result.avg, count: result.count };
     document.querySelectorAll(`.recipe-card[data-title="${CSS.escape(r.title)}"] .card-stars`).forEach(el => {
       el.outerHTML = cardStarsHTML(recipeRatings[r.id]);
@@ -615,15 +652,15 @@ function openModal(cat, idx) {
       if (fresh.userStars !== null) renderStars(ratingContainer, fresh, onRate);
     }).catch(() => {});
   } else {
-    ratingContainer.innerHTML = `<div class="star-rating"><div class="star-row star-row--loading">${Array.from({length: 5}, () => '<button class="star-btn" disabled aria-hidden="true">' + icon('star', 14) + '</button>').join('')}</div><span class="star-meta">&nbsp;</span></div>`;
+    ratingContainer.innerHTML = `<div class="star-rating"><div class="star-row-wrap"><div class="star-row star-row--loading">${Array.from({length: 5}, () => '<button class="star-btn" disabled aria-hidden="true">' + icon('star', 14) + '</button>').join('')}</div><span class="star-meta star-meta--loading">&nbsp;</span></div></div>`;
     window.SB.fetchRating(r.id).then(fresh => {
       renderStars(ratingContainer, fresh, onRate);
     }).catch(() => { ratingContainer.innerHTML = ''; });
   }
 
-  document.getElementById('modalBody').scrollTop = 0;
   previousFocus = document.activeElement;
   modal.showModal();
+  requestAnimationFrame(() => { document.getElementById('modalBody').scrollTop = 0; });
   modal.focus();
   lockScroll();
   history.replaceState(null, '', '#' + (r.slug || r.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')));
@@ -960,6 +997,8 @@ function clearAllFilters() {
   activeTime = null;
   document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('searchInput').value = '';
+  const _ms = document.getElementById('mobileSearchInput');
+  if (_ms) _ms.value = '';
   selectedIngredients.clear();
   document.getElementById('pantryClear').hidden = true;
   renderPantryItems();
@@ -1171,8 +1210,15 @@ document.querySelectorAll('.time-btn').forEach(btn => {
   });
 });
 
-// Search
+// Search (desktop header + mobile bar below header stay in sync)
 document.getElementById('searchInput').addEventListener('input', debounce(applyFilters, 150));
+const _mobileSearch = document.getElementById('mobileSearchInput');
+if (_mobileSearch) {
+  _mobileSearch.addEventListener('input', debounce(() => {
+    document.getElementById('searchInput').value = _mobileSearch.value;
+    applyFilters();
+  }, 150));
+}
 
 // Pantry clear
 document.getElementById('pantryClear').addEventListener('click', () => {
@@ -1232,7 +1278,7 @@ sheetToggleBtn.addEventListener('click', () => {
 });
 
 sheetBackdrop.addEventListener('click', closeSheet);
-document.getElementById('sheetApply').addEventListener('click', closeSheet);
+document.getElementById('sheetApply').addEventListener('click', () => { closeSheet(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
 document.getElementById('sheetClose').addEventListener('click', closeSheet);
 
 // Swipe down on handle only to close
@@ -1603,6 +1649,8 @@ async function onUserChange(event, user, prev) {
     // Signed out — reset admin state
     _isAdmin = false;
     document.getElementById('adminNewBtn').hidden = true;
+    const _adminSep = document.getElementById('adminSep');
+    if (_adminSep) _adminSep.hidden = true;
     renderCards();
   }
 }
@@ -1743,6 +1791,8 @@ let _isAdmin = false;
 async function checkAdminAndRender() {
   _isAdmin = await window.SB.isAdmin().catch(() => false);
   document.getElementById('adminNewBtn').hidden = !_isAdmin;
+  const adminSep = document.getElementById('adminSep');
+  if (adminSep) adminSep.hidden = !_isAdmin;
   if (_isAdmin) renderCards(); // re-render to show edit buttons
 }
 
