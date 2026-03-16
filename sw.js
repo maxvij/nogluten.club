@@ -1,4 +1,4 @@
-const CACHE = 'nogluten-v5';
+const CACHE = 'nogluten-v6';
 const PRECACHE = ['/index.html', '/styles.css', '/main.js', '/supabase-client.js', '/cooking.js', '/admin.js', '/recipes.json'];
 
 self.addEventListener('install', e => {

@@ -5,7 +5,7 @@ let cookSteps = [];
 let cookIdx = 0;
 let wakeLock = null;
 let cookAc = null;
-let cookTimerState = null; // { remaining, total, intervalId, running }
+let cookTimers = new Map(); // name → { name, total, remaining, running, intervalId }
 let cookStartTime = null;
 let cookElapsed = 0;
 let doneReached = false;
@@ -30,6 +30,102 @@ function stepText(step) {
 function stepDuration(step) {
   return step && typeof step === 'object' ? (step.duration_seconds || null) : null;
 }
+
+function stepTimerName(step) {
+  return step && typeof step === 'object' ? (step.timer_name || null) : null;
+}
+
+// ─── Multi-timer ──────────────────────────────────────────────────────────────
+
+function buildTimers(steps) {
+  cookTimers = new Map();
+  steps.forEach((step, i) => {
+    if (!step?.duration_seconds) return;
+    const name = step.timer_name || `Step ${i + 1}`;
+    if (!cookTimers.has(name)) {
+      cookTimers.set(name, { name, total: step.duration_seconds, remaining: step.duration_seconds, running: false, intervalId: null });
+    }
+  });
+}
+
+function currentStepTimerName() {
+  const step = cookSteps[cookIdx];
+  if (!step?.duration_seconds) return null;
+  return step.timer_name || `Step ${cookIdx + 1}`;
+}
+
+function renderTimersBar() {
+  const bar = document.getElementById('cookTimersBar');
+  if (!bar) return;
+  if (cookTimers.size === 0) { bar.hidden = true; return; }
+  bar.hidden = false;
+  const activeName = currentStepTimerName();
+  bar.innerHTML = [...cookTimers.values()].map(t => {
+    const isActive = t.name === activeName;
+    const isDone = t.remaining === 0;
+    return `
+      <div class="cook-timer-card${isActive ? ' is-active' : ''}${isDone ? ' is-done' : ''}${t.running ? ' is-running' : ''}" data-timer="${encodeURIComponent(t.name)}">
+        <span class="cook-timer-name">${t.name}</span>
+        <span class="cook-timer-display">${window.APP.formatTimerDisplay(t.remaining)}</span>
+        <div class="cook-timer-controls">
+          <button class="cook-timer-play-btn" type="button" aria-label="${t.running ? 'Pause' : 'Start'} ${t.name} timer"${isDone ? ' disabled' : ''}>
+            <svg width="18" height="18" fill="currentColor" aria-hidden="true"><use href="#icon-${t.running ? 'pause' : 'play'}"/></svg>
+          </button>
+          <button class="cook-timer-reset-btn" type="button" aria-label="Reset ${t.name} timer">
+            <svg width="14" height="14" fill="currentColor" aria-hidden="true"><use href="#icon-reset"/></svg>
+          </button>
+        </div>
+      </div>`;
+  }).join('');
+  bar.querySelectorAll('.cook-timer-card').forEach(card => {
+    const name = decodeURIComponent(card.dataset.timer);
+    card.querySelector('.cook-timer-play-btn')?.addEventListener('click', () => toggleTimer(name));
+    card.querySelector('.cook-timer-reset-btn')?.addEventListener('click', () => resetTimer(name));
+  });
+}
+
+function toggleTimer(name) {
+  const t = cookTimers.get(name);
+  if (!t || t.remaining === 0) return;
+  if (t.running) {
+    clearInterval(t.intervalId);
+    t.intervalId = null;
+    t.running = false;
+  } else {
+    t.running = true;
+    t.intervalId = setInterval(() => {
+      t.remaining = Math.max(0, t.remaining - 1);
+      if (t.remaining === 0) {
+        clearInterval(t.intervalId);
+        t.intervalId = null;
+        t.running = false;
+      }
+      renderTimersBar();
+      updateCookHint();
+    }, 1000);
+  }
+  renderTimersBar();
+  updateCookHint();
+}
+
+function resetTimer(name) {
+  const t = cookTimers.get(name);
+  if (!t) return;
+  clearInterval(t.intervalId);
+  t.intervalId = null;
+  t.remaining = t.total;
+  t.running = false;
+  renderTimersBar();
+  updateCookHint();
+}
+
+function stopAllTimers() {
+  cookTimers.forEach(t => { clearInterval(t.intervalId); t.intervalId = null; t.running = false; });
+  cookTimers.clear();
+  stopDoneRotation();
+}
+
+// ─── Done screen ──────────────────────────────────────────────────────────────
 
 function stopDoneRotation() {
   if (doneRotateInterval) { clearInterval(doneRotateInterval); doneRotateInterval = null; }
@@ -129,6 +225,24 @@ function renderDoneRating(userStars) {
   }
 }
 
+// ─── Step rendering ───────────────────────────────────────────────────────────
+
+function updateCookHint() {
+  const hint = document.getElementById('cookHint');
+  if (!hint) return;
+  const name = currentStepTimerName();
+  if (name) {
+    const t = cookTimers.get(name);
+    if (t) {
+      if (t.remaining === 0) hint.textContent = 'Press Enter to continue';
+      else if (t.running)    hint.textContent = 'Press Enter to pause';
+      else                   hint.textContent = 'Press Enter to start timer';
+      return;
+    }
+  }
+  hint.textContent = 'Press Enter to continue';
+}
+
 function renderCookStep() {
   const isDone = cookSteps[cookIdx] === null;
   const realTotal = cookSteps.length - 1;
@@ -153,8 +267,10 @@ function renderCookStep() {
     doneContentEl.hidden = true;
   }
 
+  renderTimersBar();
   updateCookHint();
   document.getElementById('cookHint').hidden = false;
+
   const dots = document.getElementById('cookDots');
   dots.innerHTML = Array.from({ length: realTotal }, (_, i) =>
     `<div class="cook-dot${i === cookIdx ? ' active' : ''}"></div>`
@@ -162,111 +278,18 @@ function renderCookStep() {
   document.getElementById('cookNav').hidden = isDone;
   document.getElementById('cookPrev').disabled = cookIdx === 0;
   document.getElementById('cookNext').textContent = isDone ? '✓' : '→';
+
   const cs = sessionStorage.getItem('cookState');
   if (cs) sessionStorage.setItem('cookState', JSON.stringify({ ...JSON.parse(cs), step: cookIdx }));
-
-  const dur = isDone ? null : stepDuration(cookSteps[cookIdx]);
-  renderCookTimer(dur);
-}
-
-function updateTimerBtn() {
-  const btnEl = document.getElementById('cookTimerBtn');
-  if (!btnEl || !cookTimerState) return;
-  const running = cookTimerState.running;
-  const done = cookTimerState.remaining === 0;
-  btnEl.innerHTML = `<svg width="20" height="20" fill="currentColor" aria-hidden="true"><use href="#icon-${running ? 'pause' : 'play'}"/></svg>`;
-  btnEl.setAttribute('aria-label', running ? 'Pause timer' : (done ? 'Timer done' : (cookTimerState.remaining < cookTimerState.total ? 'Resume timer' : 'Start timer')));
-  btnEl.disabled = done;
-}
-
-function updateCookHint() {
-  const hint = document.getElementById('cookHint');
-  if (!hint) return;
-  const dur = cookSteps[cookIdx] ? stepDuration(cookSteps[cookIdx]) : null;
-  if (dur && cookTimerState) {
-    if (cookTimerState.remaining === 0) hint.textContent = 'Press Enter to continue';
-    else if (cookTimerState.running)    hint.textContent = 'Press Enter to pause';
-    else                                hint.textContent = 'Press Enter to start timer';
-  } else if (dur && !cookTimerState) {
-    hint.textContent = 'Press Enter to start timer';
-  } else {
-    hint.textContent = 'Press Enter to continue';
-  }
-}
-
-function renderCookTimer(durationSeconds) {
-  const timerEl = document.getElementById('cookTimer');
-  const displayEl = document.getElementById('cookTimerDisplay');
-
-  if (!durationSeconds) {
-    timerEl.hidden = true;
-    return;
-  }
-
-  timerEl.hidden = false;
-
-  if (!cookTimerState) {
-    cookTimerState = { remaining: durationSeconds, total: durationSeconds, intervalId: null, running: false };
-  }
-
-  displayEl.textContent = window.APP.formatTimerDisplay(cookTimerState.remaining);
-  updateTimerBtn();
-}
-
-function startCookTimer(durationSeconds) {
-  if (!cookTimerState) cookTimerState = { remaining: durationSeconds, total: durationSeconds, intervalId: null, running: false };
-  if (cookTimerState.running) return;
-  cookTimerState.running = true;
-  updateTimerBtn();
-  updateCookHint();
-  cookTimerState.intervalId = setInterval(() => {
-    cookTimerState.remaining = Math.max(0, cookTimerState.remaining - 1);
-    const displayEl = document.getElementById('cookTimerDisplay');
-    if (displayEl) displayEl.textContent = window.APP.formatTimerDisplay(cookTimerState.remaining);
-    if (cookTimerState.remaining === 0) {
-      clearInterval(cookTimerState.intervalId);
-      cookTimerState.running = false;
-      cookTimerState.intervalId = null;
-      updateTimerBtn();
-      updateCookHint();
-    }
-  }, 1000);
-}
-
-function pauseCookTimer() {
-  if (!cookTimerState || !cookTimerState.running) return;
-  clearInterval(cookTimerState.intervalId);
-  cookTimerState.intervalId = null;
-  cookTimerState.running = false;
-  updateTimerBtn();
-  updateCookHint();
-}
-
-function resetTimerToStart() {
-  if (!cookTimerState) return;
-  clearInterval(cookTimerState.intervalId);
-  const total = cookTimerState.total;
-  cookTimerState = { remaining: total, total, intervalId: null, running: false };
-  const displayEl = document.getElementById('cookTimerDisplay');
-  if (displayEl) displayEl.textContent = window.APP.formatTimerDisplay(total);
-  updateTimerBtn();
-  updateCookHint();
-}
-
-function resetCookTimer() {
-  if (cookTimerState) {
-    clearInterval(cookTimerState.intervalId);
-    cookTimerState = null;
-  }
-  stopDoneRotation();
 }
 
 function advanceCookStep() {
   if (cookSteps[cookIdx] === null) { closeCookingMode(); return; }
   cookIdx++;
-  resetCookTimer();
   renderCookStep();
 }
+
+// ─── Open / close ─────────────────────────────────────────────────────────────
 
 function closeCookingMode() {
   if (doneReached && currentRecipeId && cookElapsed > 0) {
@@ -276,7 +299,7 @@ function closeCookingMode() {
   cookAc = null;
   doneReached = false;
   cookElapsed = 0;
-  resetCookTimer();
+  stopAllTimers();
   sessionStorage.removeItem('cookState');
   document.getElementById('cookModal').close();
 }
@@ -300,18 +323,17 @@ function openCookingMode(steps, ingredients, recipeTitle, startAtStep = 0, recip
 
   cookStartTime = Date.now();
   currentRecipeId = null;
-  if (recipeTitle) {
-    const recipeObj = Object.values(window.APP.recipes).flat().find(r => r.title === recipeTitle);
-    if (recipeObj) currentRecipeId = recipeObj.id;
-  }
-  resetCookTimer();
+
+  buildTimers(steps);
   renderCookStep();
+
   document.getElementById('cookModal').showModal();
   window.APP.lockScroll();
 
   if (navigator.wakeLock) {
     navigator.wakeLock.request('screen').then(wl => { wakeLock = wl; }).catch(() => {});
   }
+
   if (recipeTitle) {
     localStorage.setItem(`cooked:${recipeTitle}`, Date.now());
     const slug = recipeSlug || recipeTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -325,20 +347,23 @@ function openCookingMode(steps, ingredients, recipeTitle, startAtStep = 0, recip
   }
 
   cookAc = new AbortController();
+
   document.addEventListener('keydown', e => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      const dur = stepDuration(cookSteps[cookIdx]);
-      if (dur && cookTimerState && cookTimerState.remaining > 0) {
-        if (cookTimerState.running) pauseCookTimer(); else startCookTimer(dur);
-      } else if (dur && !cookTimerState) {
-        startCookTimer(dur);
-      } else {
-        advanceCookStep();
+      const name = currentStepTimerName();
+      if (name) {
+        const t = cookTimers.get(name);
+        if (t && t.remaining > 0) { toggleTimer(name); return; }
       }
-    } else if (e.key === 'ArrowRight') { e.preventDefault(); advanceCookStep(); }
-    else if (e.key === 'ArrowLeft') { e.preventDefault(); if (cookIdx > 0) { cookIdx--; resetCookTimer(); renderCookStep(); } }
-    else if (doneReached && /^[1-5]$/.test(e.key) && currentRecipeId && e.target.tagName !== 'TEXTAREA') {
+      advanceCookStep();
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      advanceCookStep();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      if (cookIdx > 0) { cookIdx--; renderCookStep(); }
+    } else if (doneReached && /^[1-5]$/.test(e.key) && currentRecipeId && e.target.tagName !== 'TEXTAREA') {
       e.preventDefault();
       submitRating(parseInt(e.key));
     }
@@ -350,28 +375,13 @@ function openCookingMode(steps, ingredients, recipeTitle, startAtStep = 0, recip
     toggle.setAttribute('aria-expanded', String(!expanded));
   }, { signal: cookAc.signal });
 
-  document.getElementById('cookTimerBtn').addEventListener('click', () => {
-    const dur = stepDuration(cookSteps[cookIdx]);
-    if (!dur) return;
-    if (cookTimerState && cookTimerState.remaining > 0) {
-      if (cookTimerState.running) pauseCookTimer(); else startCookTimer(dur);
-    } else if (!cookTimerState) {
-      startCookTimer(dur);
-    }
-  }, { signal: cookAc.signal });
-
-  document.getElementById('cookTimerResetBtn').addEventListener('click', () => {
-    resetTimerToStart();
-  }, { signal: cookAc.signal });
-
   document.getElementById('cookDoneBtn').addEventListener('click', closeCookingMode, { signal: cookAc.signal });
-
 }
 
 // ─── Event listeners (set up once on load) ────────────────────────────────────
 document.getElementById('cookClose').addEventListener('click', closeCookingMode);
 document.getElementById('cookPrev').addEventListener('click', () => {
-  if (cookIdx > 0) { cookIdx--; resetCookTimer(); renderCookStep(); }
+  if (cookIdx > 0) { cookIdx--; renderCookStep(); }
 });
 document.getElementById('cookNext').addEventListener('click', advanceCookStep);
 
@@ -389,7 +399,7 @@ document.getElementById('cookModal').addEventListener('close', () => {
     const dx = swipeStartX - e.changedTouches[0].clientX;
     if (Math.abs(dx) < 50) return;
     if (dx > 0) { advanceCookStep(); }
-    else if (dx < 0 && cookIdx > 0) { cookIdx--; resetCookTimer(); renderCookStep(); }
+    else if (dx < 0 && cookIdx > 0) { cookIdx--; renderCookStep(); }
   }, { passive: true });
 })();
 

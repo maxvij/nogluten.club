@@ -46,111 +46,6 @@ function unlockScroll() {
   window.scrollTo(0, _scrollY);
 }
 
-// Emoji lookup by recipe title keywords
-const EMOJI_MAP = [
-  [/\b(egg|eggs|omelette|omelet|frittata|scrambled|poached)\b/i, '🥚'],
-  [/\b(avocado|avo)\b/i, '🥑'],
-  [/\b(salmon|tuna|sardine|mackerel|cod|halibut|sea bass|trout)\b/i, '🐟'],
-  [/\b(chicken|poultry|hen)\b/i, '🍗'],
-  [/\b(steak|beef|brisket|mince|meatball|burger)\b/i, '🥩'],
-  [/\b(shrimp|prawn|lobster|crab)\b/i, '🦐'],
-  [/\b(turkey)\b/i, '🦃'],
-  [/\b(pork|bacon|ham|sausage|chorizo)\b/i, '🥓'],
-  [/\b(lamb|mutton)\b/i, '🐑'],
-  [/\b(rice|risotto|pilaf|fried rice)\b/i, '🍚'],
-  [/\b(pasta|noodle|spaghetti|penne|fettuccine|linguine|tagliatelle|pad thai)\b/i, '🍝'],
-  [/\b(soup|stew|broth|chowder|bisque)\b/i, '🍲'],
-  [/\b(salad|slaw|greens)\b/i, '🥗'],
-  [/\b(wrap|burrito|taco)\b/i, '🌯'],
-  [/\b(bowl)\b/i, '🥣'],
-  [/\b(smoothie|shake|blend)\b/i, '🥤'],
-  [/\b(pancake|waffle|crepe)\b/i, '🥞'],
-  [/\b(toast|bread|bruschetta)\b/i, '🍞'],
-  [/\b(banana|plantain)\b/i, '🍌'],
-  [/\b(berry|berries|blueberry|strawberry|raspberry)\b/i, '🫐'],
-  [/\b(mango)\b/i, '🥭'],
-  [/\b(apple)\b/i, '🍎'],
-  [/\b(lemon|lime|citrus)\b/i, '🍋'],
-  [/\b(orange)\b/i, '🍊'],
-  [/\b(pineapple)\b/i, '🍍'],
-  [/\b(watermelon|melon)\b/i, '🍉'],
-  [/\b(tomato)\b/i, '🍅'],
-  [/\b(sweet potato|yam)\b/i, '🍠'],
-  [/\b(potato)\b/i, '🥔'],
-  [/\b(broccoli)\b/i, '🥦'],
-  [/\b(mushroom)\b/i, '🍄'],
-  [/\b(carrot)\b/i, '🥕'],
-  [/\b(corn)\b/i, '🌽'],
-  [/\b(pepper|capsicum)\b/i, '🌶'],
-  [/\b(edamame|soy|tofu|tempeh)\b/i, '🫘'],
-  [/\b(lentil|chickpea|hummus|legume|bean)\b/i, '🫘'],
-  [/\b(nut|almond|cashew|walnut|pecan|pistachio)\b/i, '🥜'],
-  [/\b(yogurt|yoghurt)\b/i, '🫙'],
-  [/\b(cheese)\b/i, '🧀'],
-  [/\b(oat|granola|porridge|muesli)\b/i, '🥣'],
-  [/\b(chocolate|cocoa|cacao)\b/i, '🍫'],
-  [/\b(cake|muffin|cupcake|brownie)\b/i, '🧁'],
-  [/\b(cookie|biscuit)\b/i, '🍪'],
-  [/\b(curry|masala|tikka|dhal|dal)\b/i, '🍛'],
-  [/\b(sushi|maki|roll)\b/i, '🍱'],
-  [/\b(falafel)\b/i, '🧆'],
-  [/\b(hummus)\b/i, '🫙'],
-  [/\b(zucchini|courgette)\b/i, '🥒'],
-  [/\b(asparagus)\b/i, '🌿'],
-  [/\b(spinach|kale|chard|arugula|rocket)\b/i, '🥬'],
-  [/\b(kebab|skewer)\b/i, '🍢'],
-  [/\b(pizza)\b/i, '🍕'],
-  [/\b(coffee|espresso|latte)\b/i, '☕'],
-  [/\b(tea|matcha)\b/i, '🍵'],
-];
-
-// Returns up to 3 distinct emojis for a title (for pattern tiling)
-function titleEmojis(title) {
-  const found = [];
-  for (const [pattern, emoji] of EMOJI_MAP) {
-    if (pattern.test(title) && !found.includes(emoji)) {
-      found.push(emoji);
-      if (found.length === 3) break;
-    }
-  }
-  return found.length ? found : ['🍽'];
-}
-
-// Build a staggered emoji tile grid as HTML for the card image
-function cardEmojiPattern(title) {
-  const emojis = titleEmojis(title);
-  const cols = 20;
-  const rows = 10;
-  let html = '<div class="card-emoji-grid" aria-hidden="true">';
-  for (let r = 0; r < rows; r++) {
-    html += `<div class="card-emoji-row${r % 2 === 1 ? ' offset' : ''}">`;
-    for (let c = 0; c < cols; c++) {
-      html += `<span>${emojis[(r * cols + c) % emojis.length]}</span>`;
-    }
-    html += '</div>';
-  }
-  html += '</div>';
-  return html;
-}
-
-// FNV-1a hash → deterministic gradient per recipe title
-function hashTitle(str) {
-  let h = 2166136261;
-  for (let i = 0; i < str.length; i++) {
-    h ^= str.charCodeAt(i);
-    h = Math.imul(h, 16777619) >>> 0;
-  }
-  return h;
-}
-
-function cardGradientVars(title) {
-  const h = hashTitle(title);
-  return {
-    hue:    h % 360,
-    angle:  110 + ((h >>> 8)  % 80),  // 110–189 deg
-    spread:  20 + ((h >>> 16) % 35),  // 20–54 deg hue offset
-  };
-}
 
 function debounce(fn, ms) {
   let t;
@@ -330,15 +225,10 @@ function renderCards() {
       const inList = shoppingList.has(r.title);
       const sortOpt = SORT_OPTIONS[currentSort];
       const nutritionText = sortOpt?.display ? sortOpt.display(r.nutrition) : '';
-      const { hue, angle, spread } = cardGradientVars(r.title);
-      card.style.setProperty('--card-hue', hue);
-      card.style.setProperty('--card-angle', angle + 'deg');
-      card.style.setProperty('--card-spread', spread);
       const lastCooked = localStorage.getItem(`cooked:${r.title}`);
       const lastCookedLabel = lastCooked ? formatLastCooked(lastCooked) : 'be the first to try!';
       card.innerHTML = `
         <div class="card-image">
-          ${cardEmojiPattern(r.title)}
           <span class="card-time-chip">${icon('clock', 14)}${formatTime(r.time_seconds)}</span>
         </div>
         <button class="card-fav ${isFav ? 'active' : ''}" aria-label="Favourite">${isFav ? '♥' : '♡'}</button>
@@ -558,6 +448,7 @@ function renderModalBody(r, servings) {
       </div>
       ${renderNutritionPanel(r.nutrition, scale)}
     </div>
+    ${r.source_url ? `<div class="modal-source"><span class="modal-source-label">Source</span><a class="modal-source-link" href="${r.source_url}" target="_blank" rel="noopener noreferrer">${new URL(r.source_url).hostname.replace(/^www\./, '')}</a></div>` : ''}
   `;
   restoreCheckState(r.title);
 }
@@ -581,12 +472,8 @@ function openModal(cat, idx) {
   const modalBar = document.getElementById('modalBar');
   modalBar.classList.remove('modal-bar--scrolled');
 
-  const { hue, angle, spread } = cardGradientVars(r.title);
   const modalArtwork = document.getElementById('modalImageBg');
-  modalArtwork.style.setProperty('--card-hue', hue);
-  modalArtwork.style.setProperty('--card-angle', angle + 'deg');
-  modalArtwork.style.setProperty('--card-spread', spread);
-  modalArtwork.innerHTML = cardEmojiPattern(r.title);
+  modalArtwork.innerHTML = '';
 
   const modalFav = document.getElementById('modalFav');
   const modalShopBtn = document.getElementById('modalShopBtn');
@@ -862,32 +749,6 @@ function buildPantryGroupsFromRecipes(recipes) {
   return groups;
 }
 
-const INGREDIENT_EMOJIS = {
-  // Protein
-  'chicken': '🍗', 'turkey': '🦃', 'beef': '🥩', 'lamb': '🫀', 'pork': '🥓',
-  'salmon': '🐟', 'tuna': '🐟', 'prawns': '🦐', 'cod': '🐠', 'mackerel': '🐟',
-  'sardines': '🐟', 'trout': '🐟', 'egg': '🥚', 'tofu': '🫙', 'pea protein': '💪',
-  // Produce
-  'spinach': '🥬', 'broccoli': '🥦', 'avocado': '🥑', 'zucchini': '🥒',
-  'sweet potato': '🍠', 'green beans': '🫘', 'bok choy': '🥬', 'cucumber': '🥒',
-  'berries': '🫐', 'mango': '🥭', 'banana': '🍌', 'edamame': '🫘',
-  'kale': '🥬', 'asparagus': '🌿', 'bell pepper': '🫑', 'mushrooms': '🍄',
-  'onion': '🧅', 'carrot': '🥕', 'cauliflower': '🥦', 'pumpkin': '🎃',
-  'rocket': '🌿', 'lettuce': '🥬', 'apple': '🍎', 'watermelon': '🍉',
-  'tomatoes': '🍅', 'celery': '🌿', 'red cabbage': '🥬', 'pineapple': '🍍',
-  'mixed salad greens': '🥗', 'beetroot': '🫀',
-  // Pantry
-  'rice': '🍚', 'quinoa': '🌾', 'rice noodles': '🍜', 'coconut milk': '🥥',
-  'oat milk': '🥛', 'lactose-free yoghurt': '🫙', 'red lentils': '🫘',
-  'chickpeas': '🫘', 'black beans': '🫘', 'kidney beans': '🫘',
-  'soy sauce': '🍶', 'plant-based butter': '🥜', 'rolled oats': '🌾',
-  'granola': '🌾', 'rice cakes': '🍘', 'dark chocolate': '🍫',
-  'chia seeds': '🌱', 'miso paste': '🫙', 'curry paste': '🫙',
-  'nuts': '🥜', 'almonds': '🥜', 'walnuts': '🥜', 'mixed nuts': '🥜',
-  'medjool dates': '🍬', 'coconut flakes': '🥥', 'harissa paste': '🌶️',
-  'black beans': '🫘', 'beef broth': '🍲', 'chicken broth': '🍲',
-  'vegetable broth': '🍲',
-};
 
 let pantryGroups = {};
 
@@ -910,9 +771,8 @@ function makePantryItem(id, label) {
     if (selectedIngredients.size > 0) activateBestMatch();
     else deactivateBestMatch();
   });
-  const emoji = INGREDIENT_EMOJIS[id] || '';
   const span = document.createElement('span');
-  span.textContent = (emoji ? emoji + ' ' : '') + label;
+  span.textContent = label;
   el.appendChild(cb);
   el.appendChild(span);
   return el;
@@ -1493,11 +1353,20 @@ function initGreeting() {
   else if (hour >= 18 && hour < 22) { pool = GREETINGS.evening; cat = 'dinner'; }
   else                               { pool = GREETINGS.late;    cat = 'snack'; }
   text = pickGreeting(pool);
-  const recipes_pool = recipes[cat];
-  const pick = recipes_pool[Math.floor(Math.random() * recipes_pool.length)];
-  const recipeIdx = recipes_pool.indexOf(pick);
   const headingEl = document.getElementById('greetingHeading');
   if (headingEl) headingEl.textContent = text;
+
+  // Find a recipe to suggest — fall back to any category if the time-appropriate one is empty
+  let recipes_pool = recipes[cat];
+  if (!recipes_pool?.length) {
+    const fallback = Object.entries(recipes).find(([, items]) => items.length > 0);
+    if (!fallback) return;
+    recipes_pool = fallback[1];
+    cat = fallback[0];
+  }
+  const pick = recipes_pool[Math.floor(Math.random() * recipes_pool.length)];
+  const recipeIdx = recipes_pool.indexOf(pick);
+
   const RECIPE_INTROS = [
     t => `Try ${t}.`,
     t => `Time to make ${t}.`,
@@ -1604,6 +1473,7 @@ window.SB.fetchRecipes()
         steps:       r.steps,
         tips:        r.notes,
         nutrition:   r.nutrition,
+        source_url:  r.source_url,
       });
     });
     // Keep recipe ID map up to date for cloud favourites sync
